@@ -1,5 +1,6 @@
 package com.dm2.dumbledroid
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -23,7 +24,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
     }
 
-    public fun buscar_estudiante(view : View){
+    fun mostrar_busqueda_id(view : View){
+        setContentView(R.layout.buscar_id)
+    }
+
+    fun buscar_estudiante(view : View){
         Toast.makeText(this, "Buscando", Toast.LENGTH_SHORT).show()
 
 
