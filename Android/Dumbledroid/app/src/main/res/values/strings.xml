@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</string>
+    <string name="hechizo_buscar">Buscar</string>
+</resources>
