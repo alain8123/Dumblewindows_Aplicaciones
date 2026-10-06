@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</string>
+    <string name="hechizo_buscar">Bilatu</string>
+    <string name="buscar_por_id">Bilatu ID bidez</string>
+    <string name="buscar_por_datos">Bilatu datuen bidez</string>
+    <string name="flecha_menu">Menura itzultzeko gezia</string>
+    <string name="casa">Etxea</string>
+    <string name="nombre">Izena</string>
+</resources>

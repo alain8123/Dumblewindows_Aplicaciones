@@ -7,15 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Spinner
-        android:id="@+id/selector_idioma"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="30dp"
-        android:entries="@array/idiomas"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <EditText
         android:id="@+id/et_Nombre"
         android:layout_width="wrap_content"

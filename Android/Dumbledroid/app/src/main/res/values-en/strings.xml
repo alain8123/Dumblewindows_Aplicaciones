@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</string>
+    <string name="hechizo_buscar">Search</string>
+    <string name="buscar_por_id">Search by ID</string>
+    <string name="buscar_por_datos">Search by data</string>
+    <string name="flecha_menu">Arrow to go back to menu</string>
+    <string name="casa">Home</string>
+    <string name="nombre">Nane</string>
+</resources>
