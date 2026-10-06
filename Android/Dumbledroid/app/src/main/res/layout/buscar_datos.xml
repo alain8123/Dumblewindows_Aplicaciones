@@ -16,29 +16,42 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/et_Nombre"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text=""
+        android:hint="@string/nombre"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/et_Casa"/>
+
+    <EditText
+        android:id="@+id/et_Casa"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text=""
+        android:hint="@string/casa"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_Nombre"
+        app:layout_constraintBottom_toTopOf="@id/bt_Buscar"/>
+
     <Button
         android:id="@+id/bt_Buscar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="buscar_estudiante_id"
+        android:onClick="buscar_estudiante_datos"
         android:text="@string/hechizo_buscar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_estudiante" />
-
-    <EditText
-        android:id="@+id/et_estudiante"
-        android:layout_width="343dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="@string/formato_id"
-        android:inputType="text"
-        android:text=""
-        app:layout_constraintBottom_toTopOf="@id/bt_Buscar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/et_Casa" />
 
     <ImageView
         android:id="@+id/imageView"
