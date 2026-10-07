@@ -41,11 +41,11 @@ class MainActivity : AppCompatActivity() {
         val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
         // Si no hay idioma elegido, usa el idioma del móvil; si lo hay, se queda con
-        // las 2 primeras letras (por si viene como "es-ES", que pasa a "es")
+        // las 2 primeras letras ("es")
         val actual = if (tags.isEmpty()) java.util.Locale.getDefault().language else tags.take(2)
 
         // Busca en qué posición de la lista está ese idioma (0, 1 o 2).
-        // Si no lo encuentra (devuelve -1), coerceAtLeast(0) lo convierte en 0 (español)
+        // Si no lo encuentra (devuelve -1), coerceAtLeast(0) se asegura que el valor no sea menor al minimo (0)
         val posicion = codigos.indexOf(actual).coerceAtLeast(0)
 
         // Deja el spinner marcado en el idioma actual.
@@ -93,6 +93,5 @@ class MainActivity : AppCompatActivity() {
 
     fun mostrar_menu(view : View){
         setContentView(binding.root)
-        configurarSpinnerIdioma()
     }
 }
