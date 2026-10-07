@@ -84,7 +84,7 @@ public static class MenuMagicStyle
         if (input) StyleInput(input);
         if (button) StyleButton(button);
         LayoutPanel(panel, title, input, button);
-        if (button) BuildPopup(canvas, panel, button, title ? title.font : null);
+        if (button) BuildPopup(canvas, panel, button, input, title ? title.font : null);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -191,7 +191,7 @@ public static class MenuMagicStyle
         input.readOnly = false;
         input.contentType = TMP_InputField.ContentType.Standard;
         input.lineType = TMP_InputField.LineType.SingleLine;
-        input.characterLimit = 20;
+        input.characterLimit = 36;
         input.text = string.Empty;
         input.pointSize = 22;
         input.customCaretColor = true;
@@ -291,7 +291,7 @@ public static class MenuMagicStyle
 
     // ---------------------------------------------------------------- ventana emergente
 
-    static void BuildPopup(Canvas canvas, RectTransform panel, Button buscar, TMP_FontAsset font)
+    static void BuildPopup(Canvas canvas, RectTransform panel, Button buscar, TMP_InputField input, TMP_FontAsset font)
     {
         var uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
         var bgSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
@@ -376,10 +376,17 @@ public static class MenuMagicStyle
         popup.menuDetras = menuGroup;
 
         UnityEventTools.AddPersistentListener(xBtn.onClick, new UnityAction(popup.Close));
+
+        // Buscar ya no abre el popup directamente: lo abre ConsultaAlumno al recibir la respuesta
+        var consulta = buscar.GetComponent<ConsultaAlumno>();
+        if (!consulta) consulta = buscar.gameObject.AddComponent<ConsultaAlumno>();
+        consulta.popup = popup;     // se reasigna porque el popup se reconstruye cada vez
+        consulta.inputId = input;
+
         for (int i = buscar.onClick.GetPersistentEventCount() - 1; i >= 0; i--)
-            if (buscar.onClick.GetPersistentMethodName(i) == nameof(PopupAlumno.Open) || buscar.onClick.GetPersistentTarget(i) == null)
-                UnityEventTools.RemovePersistentListener(buscar.onClick, i);
-        UnityEventTools.AddPersistentListener(buscar.onClick, new UnityAction(popup.Open));
+            UnityEventTools.RemovePersistentListener(buscar.onClick, i);
+        UnityEventTools.AddPersistentListener(buscar.onClick, new UnityAction(consulta.AlPulsarBuscar));
+        EditorUtility.SetDirty(consulta);
 
         popupRt.SetAsLastSibling();
         popupRt.gameObject.SetActive(false); // oculto hasta pulsar Buscar
