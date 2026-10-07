@@ -36,6 +36,12 @@ android {
 }
 
 dependencies {
+    // Retrofit y convertidor Gson
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // Permisos y otras dependencias necesarias
+    implementation("com.google.code.gson:gson:2.8.8")
+
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

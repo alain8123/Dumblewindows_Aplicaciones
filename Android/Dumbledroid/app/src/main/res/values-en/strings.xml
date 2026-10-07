@@ -7,4 +7,5 @@
     <string name="flecha_menu">Arrow to go back to menu</string>
     <string name="casa">Home</string>
     <string name="nombre">Nane</string>
+    <string name="volver">Return</string>
 </resources>

@@ -2,35 +2,107 @@ package com.dm2.dumbledroid
 
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.dm2.dumbledroid.databinding.ActivityMainBinding
-import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.lifecycle.lifecycleScope
+import com.dm2.dumbledroid.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var service: ApiService_id
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        //setContentView(R.layout.activity_main)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
 
-        // Configurar idioma
         configurarSpinnerIdioma()
+        setupRetrofit()
     }
 
-    /*
-     * Configura el spinner (selector) de idioma.
-     * - Muestra en el spinner el idioma que está activo en la app.
-     * - Cuando el usuario elige otro idioma, lo aplica y la pantalla se recarga traducida.
-     */
+    // ---------- Navegación ----------
+
+    fun mostrar_busqueda_id(view: View) {
+        setContentView(R.layout.buscar_id)
+    }
+
+    fun mostrar_busqueda_datos(view: View) {
+        setContentView(R.layout.buscar_datos)
+    }
+
+    fun mostrar_menu(view: View) {
+        setContentView(binding.root)
+    }
+
+    // ---------- Buscar por ID ----------
+
+    fun buscar_estudiante_id(view: View) {
+        val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim()
+        if (id.isEmpty()) {
+            Toast.makeText(this, "Escribe un ID", Toast.LENGTH_SHORT).show()
+            return
+        }
+        Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
+        //getEstudiantePorId(id)
+    }
+
+    /*private fun getEstudiantePorId(id: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val estudiante = service.getEstudiantePorId(
+                    id = id,
+                    apiKey = BuildConfig.API_KEY   // o "tu_key_hardcodeada" mientras pruebas
+                )
+                withContext(Dispatchers.Main) {
+                    mostrarDetalleAlumno(estudiante)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }*/
+
+    // ---------- Pantalla mostrar_alumno ----------
+
+    private fun mostrarDetalleAlumno(e: Estudiante) {
+        setContentView(R.layout.mostrar_alumno)
+
+        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre
+        findViewById<TextView>(R.id.detalle_alias).text             = e.alias
+        findViewById<TextView>(R.id.detalle_casa).text              = e.casa
+        findViewById<TextView>(R.id.detalle_especie).text           = e.especie
+        findViewById<TextView>(R.id.detalle_genero).text            = e.genero
+        findViewById<TextView>(R.id.detalle_fecha_nacimiento).text  = e.fecha_nacimiento
+        findViewById<TextView>(R.id.detalle_patronus).text          = e.patronus
+        findViewById<TextView>(R.id.detalle_nacionalidad).text      = e.nacionalidad
+    }
+
+    // ---------- Configuración ----------
+
+    private fun setupRetrofit() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(Constantes.Base_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        service = retrofit.create(ApiService_id::class.java)
+    }
+
     private fun configurarSpinnerIdioma() {
         // Lista de códigos de idioma. El orden debe coincidir con el de las opciones del spinner:
         // posición 0 = español, 1 = euskera, 2 = inglés
@@ -72,26 +144,5 @@ class MainActivity : AppCompatActivity() {
             // Se ejecuta si no hay nada seleccionado. No necesitamos hacer nada aquí
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
-    }
-
-    fun mostrar_busqueda_id(view : View){
-        setContentView(R.layout.buscar_id)
-    }
-
-    fun mostrar_busqueda_datos(view : View){
-        setContentView(R.layout.buscar_datos)
-    }
-
-
-    fun buscar_estudiante_id(view : View){
-        Toast.makeText(this, "Buscando", Toast.LENGTH_SHORT).show()
-    }
-
-    fun buscar_estudiante_datos(view : View){
-        Toast.makeText(this, "Buscando", Toast.LENGTH_SHORT).show()
-    }
-
-    fun mostrar_menu(view : View){
-        setContentView(binding.root)
     }
 }

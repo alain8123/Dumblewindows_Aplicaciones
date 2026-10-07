@@ -1,3 +1,5 @@
+# Configuracion binding
+
 Para poder usar "binding" al llamar a los objetos de la interfaz hacemos los siguientes pasos:
 
 en la carpeta de "Gradle Scrips", el archivo "build.gradle.kts":
@@ -32,3 +34,26 @@ sincronizamos gradle para aplicar los cambios y en cada archivo .kt añadimos lo
 ahora podemos llamar al botón de búsqueda poniendo:
 	
 	"binding.Buscar" en vez de poner "val buscar = findViewById<Button>(R.id.Buscar)"
+
+
+# Configuracion API
+
+1. Configuración Inicial
+Asegúrate de tener instalado el SDK de Android 11 (API 30) y de haber configurado las dependencias en tu archivo build.gradle (módulo app):
+
+dependencies {
+    // Retrofit y convertidor Gson
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    
+    // Permisos y otras dependencias necesarias
+    implementation 'com.google.code.gson:gson:2.8.8'
+}
+
+- Pulsamos el boton de sincronizar el gradle
+
+2. Permisos de Red
+Debes agregar el permiso de internet en el archivo AndroidManifest.xml:
+
+<uses-permission android:name="android.permission.INTERNET" />
+
