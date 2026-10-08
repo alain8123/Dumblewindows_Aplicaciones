@@ -6,7 +6,7 @@
     <string name="buscar_por_datos">Search by data</string>
     <string name="flecha_menu">Arrow to go back to menu</string>
     <string name="casa">Home</string>
-    <string name="nombre">Nane</string>
+    <string name="nombre">Name</string>
     <string name="volver">Return</string>
     <string name="foto_alumno">photo of the student</string>
 </resources>
