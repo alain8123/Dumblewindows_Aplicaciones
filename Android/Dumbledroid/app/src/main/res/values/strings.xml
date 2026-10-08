@@ -9,4 +9,5 @@
     <string name="nombre">Nombre</string>
     <string name="volver">Volver</string>
     <string name="foto_alumno">foto del alumno</string>
+    <string name="coincidencias">Coincidencias</string>
 </resources>

@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.dm2.dumbledroid.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -28,12 +30,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var service: ApiService_id
+    private lateinit var adapter: EstudianteListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        adapter = EstudianteListAdapter { estudiante ->
+            mostrarDetalleAlumno(estudiante)
+        }
 
         configurarSpinnerIdioma()
         setupRetrofit()
@@ -88,9 +95,17 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Rellena al menos un campo", Toast.LENGTH_SHORT).show()
             return
         }
-
         Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
         getEstudiantePorDatos(nombre, casa)
+    }
+
+    private fun mostrarListaAlumnos(lista: List<Estudiante>) {
+        setContentView(R.layout.alumno)   // ← la pantalla con la lista
+
+        val rv = findViewById<RecyclerView>(R.id.recycler_resultados)
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = adapter
+        adapter.submitList(lista)
     }
 
     private fun getEstudiantePorDatos(nombre: String, casa: String) {
@@ -102,16 +117,22 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 withContext(Dispatchers.Main) {
-                    if (lista.isEmpty()) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Sin resultados",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        // Cogemos el primer resultado y mostramos su detalle,
-                        // igual que hace la búsqueda por ID
-                        mostrarDetalleAlumno(lista.first())
+                    when {
+                        lista.isEmpty() -> {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Sin resultados",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        lista.size == 1 -> {
+                            // Solo 1 coincidencia → directo al detalle
+                            mostrarDetalleAlumno(lista.first())
+                        }
+                        else -> {
+                            // Varias coincidencias → lista en alumno.xml
+                            mostrarListaAlumnos(lista)
+                        }
                     }
                 }
             } catch (e: Exception) {
