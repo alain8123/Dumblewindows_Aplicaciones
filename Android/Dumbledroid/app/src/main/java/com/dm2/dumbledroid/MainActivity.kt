@@ -80,6 +80,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun buscar_estudiante_datos(view: View) {
+        val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
+        val casa   = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
+
+        if (nombre.isEmpty() && casa.isEmpty()) {
+            Toast.makeText(this, "Rellena al menos un campo", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
+        getEstudiantePorDatos(nombre, casa)
+    }
+
+    private fun getEstudiantePorDatos(nombre: String, casa: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val lista = service.getEstudiantesPorDatos(
+                    name = nombre,
+                    house = casa
+                )
+
+                withContext(Dispatchers.Main) {
+                    if (lista.isEmpty()) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Sin resultados",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        // Cogemos el primer resultado y mostramos su detalle,
+                        // igual que hace la búsqueda por ID
+                        mostrarDetalleAlumno(lista.first())
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
     // ---------- Pantalla mostrar_alumno ----------
 
     private fun mostrarDetalleAlumno(e: Estudiante) {
