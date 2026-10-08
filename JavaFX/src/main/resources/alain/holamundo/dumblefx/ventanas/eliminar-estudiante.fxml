@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="operationPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.StudentController" spacing="18" styleClass="card" maxWidth="Infinity" maxHeight="Infinity">
+  <Label text="Eliminar estudiante" styleClass="card-title" />
+  <Label text="Solo se eliminan matrículas de MariaDB, nunca estudiantes históricos. Se pedirá confirmación." styleClass="hint" wrapText="true" />
+  <HBox spacing="10"><TextField fx:id="idField" promptText="ID del estudiante" onAction="#loadForDelete" /><Button text="Consultar" onAction="#loadForDelete" styleClass="secondary" /></HBox>
+  <Label fx:id="result" text="Busca un ID para ver sus datos." wrapText="true" styleClass="result" maxWidth="Infinity" />
+  <Button text="Eliminar estudiante" onAction="#delete" styleClass="danger" />
+  <Label fx:id="status" text="Listo" styleClass="status" />
+</VBox>

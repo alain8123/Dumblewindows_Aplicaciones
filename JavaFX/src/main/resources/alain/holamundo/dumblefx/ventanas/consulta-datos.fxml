@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="operationPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.StudentController" spacing="16" styleClass="card" maxWidth="Infinity" maxHeight="Infinity">
+  <Label text="Consulta por datos" styleClass="card-title" />
+  <Label text="Busca estudiantes históricos por nombre y casa. No incluye matrículas nuevas." styleClass="hint" wrapText="true" />
+  <HBox spacing="10"><TextField fx:id="searchField" promptText="Nombre (opcional)" HBox.hgrow="ALWAYS" onAction="#search" /><TextField fx:id="houseFilterField" promptText="Casa (opcional)" onAction="#search" /></HBox>
+  <HBox spacing="10"><Label text="Máximo de resultados" /><TextField fx:id="limitField" text="20" promptText="1–100" prefWidth="85" onAction="#search" /><Button text="Buscar" onAction="#search" styleClass="primary" /></HBox>
+  <TableView fx:id="table" VBox.vgrow="ALWAYS">
+    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
+    <columns><TableColumn fx:id="idColumn" text="ID" prefWidth="170" /><TableColumn fx:id="nameColumn" text="Nombre completo" prefWidth="200" /><TableColumn fx:id="houseColumn" text="Casa" prefWidth="130" /><TableColumn fx:id="birthColumn" text="Nacimiento" prefWidth="120" /><TableColumn fx:id="originColumn" text="Origen" prefWidth="100" /></columns>
+  </TableView>
+  <Label fx:id="status" text="Pulsa Buscar para cargar estudiantes." styleClass="status" />
+</VBox>

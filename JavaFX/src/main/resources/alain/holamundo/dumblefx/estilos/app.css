@@ -1,0 +1,38 @@
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f3f6fb;
+}
+.sidebar {
+    -fx-padding: 30 18;
+    -fx-background-color: #152742;
+}
+.brand {
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+.eyebrow { -fx-text-fill: #9fb3cc; -fx-font-size: 10px; -fx-font-weight: bold; }
+.side-note { -fx-text-fill: #9fb3cc; -fx-font-size: 12px; }
+.sidebar .separator .line { -fx-border-color: #344865; }
+.nav-button { -fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e5edf7; -fx-background-radius: 10; -fx-padding: 13 14; -fx-cursor: hand; }
+.nav-button:hover, .nav-button:focused { -fx-background-color: #28415f; }
+.workspace { -fx-padding: 34; }
+.overline { -fx-text-fill: #61748c; -fx-font-size: 12px; -fx-font-weight: bold; }
+.page-title { -fx-text-fill: #162b48; -fx-font-size: 27px; -fx-font-weight: bold; }
+.card { -fx-padding: 28; -fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #e1e8f0; -fx-border-radius: 16; }
+.card-title { -fx-text-fill: #223956; -fx-font-size: 19px; -fx-font-weight: bold; }
+.hint { -fx-text-fill: #64768d; }
+.field-label { -fx-text-fill: #344b67; -fx-font-weight: bold; }
+.text-field { -fx-background-color: #f9fbfe; -fx-border-color: #ccd8e5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; }
+.text-field:focused { -fx-border-color: #3776cd; }
+.button { -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 17; }
+.primary { -fx-background-color: #2563b6; -fx-text-fill: white; -fx-font-weight: bold; }
+.primary:hover { -fx-background-color: #174f99; }
+.danger { -fx-background-color: #bf3445; -fx-text-fill: white; -fx-font-weight: bold; }
+.danger:hover { -fx-background-color: #a52b39; }
+.secondary { -fx-background-color: #e9eff7; -fx-text-fill: #27415e; }
+.status { -fx-text-fill: #385775; -fx-font-size: 12px; }
+.result { -fx-padding: 18; -fx-background-color: #eef5ff; -fx-background-radius: 10; -fx-text-fill: #213a59; }
+.table-view { -fx-background-color: white; -fx-border-color: #dce5f0; -fx-border-radius: 8; }
+.table-view .column-header-background { -fx-background-color: #eaf0f7; }

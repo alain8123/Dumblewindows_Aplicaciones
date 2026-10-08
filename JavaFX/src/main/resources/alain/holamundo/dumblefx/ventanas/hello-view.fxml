@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.MainController" styleClass="app">
+  <left>
+    <VBox spacing="9" styleClass="sidebar" prefWidth="248">
+      <Label text="DumbleFX" styleClass="brand" />
+      <Label text="GESTIÓN DE ESTUDIANTES" styleClass="eyebrow" />
+      <Separator />
+      <Button text="Consulta por ID" onAction="#id" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="Consulta por datos" onAction="#data" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="Crear estudiante" onAction="#create" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="Eliminar estudiante" onAction="#delete" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="Actualizar estudiante" onAction="#update" maxWidth="Infinity" styleClass="nav-button" />
+      <Region VBox.vgrow="ALWAYS" />
+      <Label text="Consulta y gestión de datos" styleClass="side-note" />
+    </VBox>
+  </left>
+  <center>
+    <VBox spacing="20" styleClass="workspace">
+      <VBox spacing="4">
+        <Label text="Panel de estudiantes" styleClass="overline" />
+        <Label fx:id="sectionTitle" text="Consulta por ID" styleClass="page-title" />
+      </VBox>
+      <StackPane fx:id="content" VBox.vgrow="ALWAYS" />
+    </VBox>
+  </center>
+</BorderPane>

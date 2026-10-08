@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="operationPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.StudentController" spacing="18" styleClass="card" maxWidth="Infinity" maxHeight="Infinity">
+  <Label text="Busca un estudiante por su identificador" styleClass="card-title" />
+  <Label text="Introduce el ID del estudiante: texto, número o UUID." styleClass="hint" />
+  <HBox spacing="10"><TextField fx:id="idField" promptText="ID del estudiante" onAction="#findId" /><Button text="Buscar" onAction="#findId" styleClass="primary" /></HBox>
+  <Label fx:id="result" text="El resultado aparecerá aquí." wrapText="true" styleClass="result" maxWidth="Infinity" />
+  <Label fx:id="status" text="Listo" styleClass="status" />
+</VBox>
