@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.dm2.dumbledroid.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,6 +22,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import okhttp3.OkHttpClient
 import com.dm2.dumbledroid.BuildConfig
+import coil.size.Size
 
 class MainActivity : AppCompatActivity() {
 
@@ -80,8 +83,18 @@ class MainActivity : AppCompatActivity() {
     // ---------- Pantalla mostrar_alumno ----------
 
     private fun mostrarDetalleAlumno(e: Estudiante) {
+        // Carga la ventana
         setContentView(R.layout.mostrar_alumno)
 
+        // Carga la imagen desde la url que devuelve la api
+        findViewById<ImageView>(R.id.detalle_imagen).load(e.imagen) {
+            crossfade(true)
+            placeholder(R.mipmap.ejemplo)   // mientras carga
+            error(R.mipmap.ejemplo)         // si falla
+            size(Size.ORIGINAL)
+        }
+
+        // Cargar datos en su campo respectivo
         findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre
         findViewById<TextView>(R.id.detalle_alias).text             = e.alias
         findViewById<TextView>(R.id.detalle_casa).text              = e.casa

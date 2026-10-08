@@ -53,6 +53,9 @@ dependencies {
     // Permisos y otras dependencias necesarias
     implementation("com.google.code.gson:gson:2.8.8")
 
+    // Coil (para cargar imágenes desde URL)
+    implementation("io.coil-kt:coil:2.6.0")
+
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
