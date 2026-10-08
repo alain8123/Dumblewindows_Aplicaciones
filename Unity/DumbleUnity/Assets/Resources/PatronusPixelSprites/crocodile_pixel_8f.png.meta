@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: 181b1c361df51ab468a8f21be2a33e8e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1895058409068765840
+    second: crocodile_pixel_8f_0
+  - first:
+      213: -5556527458159951611
+    second: crocodile_pixel_8f_1
+  - first:
+      213: 8075318126667422567
+    second: crocodile_pixel_8f_2
+  - first:
+      213: -925736871553659862
+    second: crocodile_pixel_8f_3
+  - first:
+      213: 7659159564716029354
+    second: crocodile_pixel_8f_4
+  - first:
+      213: 3729727544934863619
+    second: crocodile_pixel_8f_5
+  - first:
+      213: 562054541941304953
+    second: crocodile_pixel_8f_6
+  - first:
+      213: -2068699239085737209
+    second: crocodile_pixel_8f_7
+  - first:
+      213: -1317052275851694453
+    second: crocodile_pixel_8f_8
+  - first:
+      213: 8129734373076980691
+    second: crocodile_pixel_8f_9
+  - first:
+      213: -2352455957595851194
+    second: crocodile_pixel_8f_10
+  - first:
+      213: 8565830849882885608
+    second: crocodile_pixel_8f_11
+  - first:
+      213: 1641414948146346108
+    second: crocodile_pixel_8f_12
+  - first:
+      213: 8522386780551114667
+    second: crocodile_pixel_8f_13
+  - first:
+      213: 3647586276206501396
+    second: crocodile_pixel_8f_14
+  - first:
+      213: -8703450087483017664
+    second: crocodile_pixel_8f_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_0
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 12
+        width: 44
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 092292525999c4a10800000000000000
+      internalID: 1895058409068765840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_1
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 26
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5010caf67bf33e2b0800000000000000
+      internalID: -5556527458159951611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_2
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 11
+        width: 45
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76bd8442d0b411070800000000000000
+      internalID: 8075318126667422567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_3
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 25
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2c0097583f1723f0800000000000000
+      internalID: -925736871553659862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_4
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 11
+        width: 46
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa53fec4b0dca4a60800000000000000
+      internalID: 7659159564716029354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_5
+      rect:
+        serializedVersion: 2
+        x: 175
+        y: 24
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30315d0f077a2c330800000000000000
+      internalID: 3729727544934863619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_6
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 11
+        width: 47
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97e6ec4c0a1dcc700800000000000000
+      internalID: 562054541941304953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_7
+      rect:
+        serializedVersion: 2
+        x: 239
+        y: 25
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70b7c23a0018a43e0800000000000000
+      internalID: -2068699239085737209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_8
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 12
+        width: 47
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8e6d33eee3e8bde0800000000000000
+      internalID: -1317052275851694453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_9
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 26
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d35981d65e92d070800000000000000
+      internalID: 8129734373076980691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_10
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 11
+        width: 47
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6467fb935c56a5fd0800000000000000
+      internalID: -2352455957595851194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_11
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 25
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ed0a5536c1ffd670800000000000000
+      internalID: 8565830849882885608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_12
+      rect:
+        serializedVersion: 2
+        x: 390
+        y: 11
+        width: 46
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c787741e23a77c610800000000000000
+      internalID: 1641414948146346108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_13
+      rect:
+        serializedVersion: 2
+        x: 431
+        y: 24
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bafeb359f99954670800000000000000
+      internalID: 8522386780551114667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_14
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 11
+        width: 45
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41ed0e87464de9230800000000000000
+      internalID: 3647586276206501396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crocodile_pixel_8f_15
+      rect:
+        serializedVersion: 2
+        x: 495
+        y: 25
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0467b3f1242273780800000000000000
+      internalID: -8703450087483017664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      crocodile_pixel_8f_0: 1895058409068765840
+      crocodile_pixel_8f_1: -5556527458159951611
+      crocodile_pixel_8f_10: -2352455957595851194
+      crocodile_pixel_8f_11: 8565830849882885608
+      crocodile_pixel_8f_12: 1641414948146346108
+      crocodile_pixel_8f_13: 8522386780551114667
+      crocodile_pixel_8f_14: 3647586276206501396
+      crocodile_pixel_8f_15: -8703450087483017664
+      crocodile_pixel_8f_2: 8075318126667422567
+      crocodile_pixel_8f_3: -925736871553659862
+      crocodile_pixel_8f_4: 7659159564716029354
+      crocodile_pixel_8f_5: 3729727544934863619
+      crocodile_pixel_8f_6: 562054541941304953
+      crocodile_pixel_8f_7: -2068699239085737209
+      crocodile_pixel_8f_8: -1317052275851694453
+      crocodile_pixel_8f_9: 8129734373076980691
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
