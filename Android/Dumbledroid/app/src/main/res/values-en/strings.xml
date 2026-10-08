@@ -10,4 +10,5 @@
     <string name="volver">Return</string>
     <string name="foto_alumno">photo of the student</string>
     <string name="coincidencias">Coincidences</string>
+    <string name="idioma">Language: </string>
 </resources>

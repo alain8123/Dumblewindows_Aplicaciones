@@ -11,8 +11,9 @@
         android:id="@+id/selector_idioma"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="40dp"
         android:entries="@array/idiomas"
+        android:tooltipText="Selector de idioma"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -20,8 +21,9 @@
         android:id="@+id/bt_menu_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/buscar_por_id"
         android:onClick="mostrar_busqueda_id"
+        android:text="@string/buscar_por_id"
+        android:tooltipText="Busqueda mediante ID"
         app:layout_constraintBottom_toTopOf="@id/bt_menu_datos"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -32,10 +34,22 @@
         android:id="@+id/bt_menu_datos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/buscar_por_datos"
         android:onClick="mostrar_busqueda_datos"
+        android:text="@string/buscar_por_datos"
+        android:tooltipText="Busqueda mediante Datos"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bt_menu_id"/>
+        app:layout_constraintTop_toBottomOf="@id/bt_menu_id" />
+
+    <TextView
+        android:id="@+id/texto_idiomas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:textSize="20dp"
+        android:text="@string/idioma"
+        app:layout_constraintBottom_toBottomOf="@+id/selector_idioma"
+        app:layout_constraintEnd_toStartOf="@+id/selector_idioma"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
