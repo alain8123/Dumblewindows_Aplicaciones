@@ -18,6 +18,8 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
+import okhttp3.OkHttpClient
+import com.dm2.dumbledroid.BuildConfig
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,16 +59,13 @@ class MainActivity : AppCompatActivity() {
             return
         }
         Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
-        //getEstudiantePorId(id)
+        getEstudiantePorId(id)   // ← descomenta esto
     }
 
-    /*private fun getEstudiantePorId(id: String) {
+    private fun getEstudiantePorId(id: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val estudiante = service.getEstudiantePorId(
-                    id = id,
-                    apiKey = BuildConfig.API_KEY   // o "tu_key_hardcodeada" mientras pruebas
-                )
+                val estudiante = service.getEstudiantePorId(id = id)
                 withContext(Dispatchers.Main) {
                     mostrarDetalleAlumno(estudiante)
                 }
@@ -76,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }*/
+    }
 
     // ---------- Pantalla mostrar_alumno ----------
 
@@ -96,10 +95,22 @@ class MainActivity : AppCompatActivity() {
     // ---------- Configuración ----------
 
     private fun setupRetrofit() {
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("X-API-Key", BuildConfig.API_KEY)
+                    .addHeader("accept", "*/*")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(Constantes.Base_URL)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
         service = retrofit.create(ApiService_id::class.java)
     }
 

@@ -1,3 +1,6 @@
+//import para poder leer la api_key en secret.properties
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -16,10 +19,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        //lee secret.properties para recoger la api_key
+        val secrets = Properties().apply {
+            val f = rootProject.file("secrets.properties")
+            if (f.exists()) f.inputStream().use { load(it) }
+        }
+        buildConfigField("String", "API_KEY", "\"${secrets["API_KEY"] ?: ""}\"")
     }
 
     buildFeatures{
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
