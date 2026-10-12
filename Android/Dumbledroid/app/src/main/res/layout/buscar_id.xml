@@ -5,12 +5,14 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".MainActivity">
 
     <Button
         android:id="@+id/bt_Buscar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/color_boton"
         android:onClick="buscar_estudiante_id"
         android:text="@string/hechizo_buscar"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -26,6 +28,8 @@
         android:hint="@string/formato_id"
         android:inputType="text"
         android:text=""
+        android:textColor="@color/white"
+        android:textColorHint="@color/color_boton"
         app:layout_constraintBottom_toTopOf="@id/bt_Buscar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,13 +37,13 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:contentDescription="@string/flecha_menu"
         android:layout_width="93dp"
         android:layout_height="54dp"
         android:layout_marginTop="30dp"
+        android:contentDescription="@string/flecha_menu"
         android:onClick="mostrar_menu"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/flecha" />
+        app:srcCompat="@android:drawable/ic_menu_revert" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

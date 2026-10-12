@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     tools:context=".MainActivity">
 
     <Spinner
@@ -12,6 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginTop="40dp"
+        android:background="@color/white"
         android:entries="@array/idiomas"
         android:tooltipText="Selector de idioma"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,6 +23,7 @@
         android:id="@+id/bt_menu_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/color_boton"
         android:onClick="mostrar_busqueda_id"
         android:text="@string/buscar_por_id"
         android:tooltipText="Busqueda mediante ID"
@@ -34,6 +37,7 @@
         android:id="@+id/bt_menu_datos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/color_boton"
         android:onClick="mostrar_busqueda_datos"
         android:text="@string/buscar_por_datos"
         android:tooltipText="Busqueda mediante Datos"
@@ -47,8 +51,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:textSize="20dp"
         android:text="@string/idioma"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/selector_idioma"
         app:layout_constraintEnd_toStartOf="@+id/selector_idioma"
         app:layout_constraintTop_toTopOf="parent" />
