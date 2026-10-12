@@ -11,8 +11,9 @@ public class VideoFondo : MonoBehaviour
     public VideoPlayer player;
 
     RawImage image;
-    RenderTexture rt;
+    RenderTexture rt; // textura donde el VideoPlayer pinta cada fotograma
 
+    // Prepara el vídeo; cuando está listo se llama a OnPrepared
     void OnEnable()
     {
         image = GetComponent<RawImage>();
@@ -31,6 +32,7 @@ public class VideoFondo : MonoBehaviour
         player.Prepare();
     }
 
+    // Ya se conoce el tamaño del vídeo: crea la textura, la muestra en el RawImage y arranca la reproducción
     void OnPrepared(VideoPlayer p)
     {
         if (!rt)
@@ -54,6 +56,7 @@ public class VideoFondo : MonoBehaviour
     }
 #endif
 
+    // Suelta los eventos y libera la textura (en el editor también para el vídeo)
     void OnDisable()
     {
         if (player)

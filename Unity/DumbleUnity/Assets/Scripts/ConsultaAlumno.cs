@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -19,9 +19,11 @@ public class RespuestaApi
 public class AnimacionPorValor
 {
     public string valor;      // el string que devuelve la API (ej. "Stag")
-    public GameObject prefab; // prefab de UI (Image + Animator, etc.) que sustituye a la animación procedural
+    public GameObject prefab; // prefab de UI (Image + Animator, etc.) que sustituye al spritesheet
 }
 
+// Botón Buscar: consulta la API con el ID escrito y muestra el patronus del estudiante en PopupAlumno,
+// o un aviso en PopupAviso si algo falla.
 public class ConsultaAlumno : MonoBehaviour
 {
     [Header("UI")]
@@ -41,7 +43,7 @@ public class ConsultaAlumno : MonoBehaviour
     public bool usarBearer = false;             // actívalo si Swagger pide "Authorization: Bearer ..."
 
     [Header("Animaciones personalizadas (opcional)")]
-    // Si un patronus no está aquí, se usa la animación procedural generada por código.
+    // Si un patronus no está aquí, se usa su spritesheet de Resources/PatronusPixelSprites.
     public List<AnimacionPorValor> animacionesPersonalizadas = new List<AnimacionPorValor>();
 
     [Header("Valores que significan 'sin patronus'")]
@@ -50,15 +52,14 @@ public class ConsultaAlumno : MonoBehaviour
     [Header("Depuración")]
     public bool mostrarLogs = true;
 
-    bool consultando;
+    bool consultando; // evita lanzar dos consultas a la vez
 
     // Asígnalo al OnClick del botón Buscar
     public void AlPulsarBuscar()
     {
         if (consultando) return;
 
-        string id = inputId != null ? inputId.text.Trim() : "";
-
+        string id = inputId ? inputId.text.Trim() : "";
         if (string.IsNullOrEmpty(id))
         {
             Avisar("ID no válida", "Escribe el ID del estudiante.");
@@ -78,6 +79,7 @@ public class ConsultaAlumno : MonoBehaviour
         StartCoroutine(Consultar(id));
     }
 
+    // Petición GET a la API y reacción según el código HTTP de la respuesta
     IEnumerator Consultar(string id)
     {
         consultando = true;
@@ -90,7 +92,6 @@ public class ConsultaAlumno : MonoBehaviour
         {
             request.timeout = 10;
             request.SetRequestHeader("Accept", "application/json");
-
             if (!string.IsNullOrEmpty(apiKey))
             {
                 if (usarBearer) request.SetRequestHeader("Authorization", "Bearer " + apiKey);
@@ -102,34 +103,33 @@ public class ConsultaAlumno : MonoBehaviour
             string texto = request.downloadHandler != null ? request.downloadHandler.text : "";
             if (mostrarLogs) Debug.Log($"[ConsultaAlumno] HTTP {request.responseCode} - Respuesta: {texto}");
 
-            if (request.result == UnityWebRequest.Result.Success)
+            if (request.result == UnityWebRequest.Result.Success) ProcesarRespuesta(texto);
+            else switch (request.responseCode)
             {
-                ProcesarRespuesta(texto);
-            }
-            else if (request.responseCode == 404)
-            {
-                Avisar("ID no encontrada", "No existe ningún estudiante con ese ID.");
-            }
-            else if (request.responseCode == 400 || request.responseCode == 422)
-            {
-                Avisar("ID no válida", "La API ha rechazado ese ID.");
-                Debug.LogWarning("[ConsultaAlumno] La API rechazó el ID: " + texto);
-            }
-            else if (request.responseCode == 401 || request.responseCode == 403)
-            {
-                Avisar("Acceso denegado", "La clave de API no es válida.");
-                Debug.LogError("[ConsultaAlumno] Autenticación rechazada: " + texto);
-            }
-            else
-            {
-                Avisar("Error de conexión", "No se ha podido contactar con el servidor.");
-                Debug.LogError($"[ConsultaAlumno] {request.error}");
+                case 404:
+                    Avisar("ID no encontrada", "No existe ningún estudiante con ese ID.");
+                    break;
+                case 400:
+                case 422:
+                    Avisar("ID no válida", "La API ha rechazado ese ID.");
+                    Debug.LogWarning("[ConsultaAlumno] La API rechazó el ID: " + texto);
+                    break;
+                case 401:
+                case 403:
+                    Avisar("Acceso denegado", "La clave de API no es válida.");
+                    Debug.LogError("[ConsultaAlumno] Autenticación rechazada: " + texto);
+                    break;
+                default:
+                    Avisar("Error de conexión", "No se ha podido contactar con el servidor.");
+                    Debug.LogError($"[ConsultaAlumno] {request.error}");
+                    break;
             }
         }
 
         consultando = false;
     }
 
+    // Lee el JSON, decide qué patronus mostrar y abre el popup
     void ProcesarRespuesta(string texto)
     {
         string limpio = texto.TrimStart();
@@ -154,7 +154,7 @@ public class ConsultaAlumno : MonoBehaviour
             return;
         }
 
-        string patronus = datos != null ? datos.patronus : null;
+        string patronus = datos?.patronus;
 
         // El estudiante existe pero no tiene patronus (campo ausente, null o vacío)
         if (string.IsNullOrWhiteSpace(patronus))
@@ -164,7 +164,8 @@ public class ConsultaAlumno : MonoBehaviour
         }
 
         // La API marca explícitamente que no tiene patronus corpóreo (ej. "Non-corporeal")
-        if (EsSinPatronus(patronus))
+        if (valoresSinPatronus != null && valoresSinPatronus.Any(s =>
+                !string.IsNullOrEmpty(s) && string.Equals(s.Trim(), patronus.Trim(), StringComparison.OrdinalIgnoreCase)))
         {
             Avisar("Sin patronus", "Este estudiante no puede producir un patronus corpóreo.");
             return;
@@ -184,63 +185,31 @@ public class ConsultaAlumno : MonoBehaviour
         popup.Open();
     }
 
-    // ---------- Animaciones personalizadas ----------
-
+    // Prefab propio configurado en el inspector para ese patronus (o null si no hay)
     GameObject BuscarPrefab(string valor)
     {
-        string buscado = Normalizar(valor);
-        foreach (var par in animacionesPersonalizadas)
-        {
-            if (par == null || par.prefab == null || string.IsNullOrEmpty(par.valor)) continue;
-            if (Normalizar(par.valor) == buscado) return par.prefab;
-        }
-        return null;
-    }
-
-    // "Polar Bear" / "polar bear " / "Cérvido" -> "polar_bear" / "cervido"
-    static string Normalizar(string s)
-    {
-        if (string.IsNullOrEmpty(s)) return "";
-        string descompuesto = s.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
-        var sb = new StringBuilder(descompuesto.Length);
-        foreach (char c in descompuesto)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) continue; // quita tildes
-            sb.Append(c == ' ' ? '_' : c);
-        }
-        return sb.ToString().Normalize(NormalizationForm.FormC);
-    }
-
-    // ---------- Utilidades ----------
-
-    bool EsSinPatronus(string valor)
-    {
-        if (valoresSinPatronus == null) return false;
-        string v = valor.Trim();
-        foreach (var s in valoresSinPatronus)
-            if (!string.IsNullOrEmpty(s) && string.Equals(s.Trim(), v, StringComparison.OrdinalIgnoreCase))
-                return true;
-        return false;
+        string buscado = PatronusSpriteAnimation.NormalizarNombre(valor);
+        return animacionesPersonalizadas
+            .Where(p => p != null && p.prefab && !string.IsNullOrEmpty(p.valor))
+            .FirstOrDefault(p => PatronusSpriteAnimation.NormalizarNombre(p.valor) == buscado)?.prefab;
     }
 
     // "Jack Rabbit (c. 1986), Wolf (1995-1998)" -> "Wolf"   |   "Stag" -> "Stag"
     static string ExtraerPatronusActual(string valor)
     {
-        string v = valor;
-        int coma = v.LastIndexOf(',');
-        if (coma >= 0) v = v.Substring(coma + 1);
-
+        string v = valor.Substring(valor.LastIndexOf(',') + 1); // lo que va tras la última coma
         var sb = new StringBuilder(v.Length);
-        int nivel = 0;
+        int nivel = 0; // profundidad de paréntesis: se descarta todo lo que hay dentro
         foreach (char c in v)
         {
-            if (c == '(') { nivel++; continue; }
-            if (c == ')') { if (nivel > 0) nivel--; continue; }
-            if (nivel == 0) sb.Append(c);
+            if (c == '(') nivel++;
+            else if (c == ')') nivel = Math.Max(0, nivel - 1);
+            else if (nivel == 0) sb.Append(c);
         }
         return sb.ToString().Trim();
     }
 
+    // Muestra un aviso en el popup (o en el texto de estado si no hay popup)
     void Avisar(string titulo, string mensaje)
     {
         Mostrar("");

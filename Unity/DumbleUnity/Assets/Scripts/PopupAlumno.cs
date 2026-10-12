@@ -1,99 +1,71 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(CanvasGroup))]
-public class PopupAlumno : MonoBehaviour
+// Ventana emergente que muestra el patronus del alumno animado y su nombre debajo.
+// Se cierra con la X (Close, heredado de PopupBase).
+public class PopupAlumno : PopupBase
 {
-    public RectTransform ventana;
-    public Image imagen;
-    public GameObject textoVacio;
-    public CanvasGroup menuDetras;
-    [Range(0f, 1f)] public float alphaMenuDetras = 0.35f;
+    public Image imagen;          // recuadro donde va la animación
+    public GameObject textoVacio; // texto que se usa como etiqueta con el nombre del patronus
 
     [Header("Animación")]
     public PatronusSpriteAnimation animacion;
 
-    CanvasGroup grupo;
-    GameObject instanciaPersonalizada;
+    GameObject instanciaPersonalizada; // prefab propio del patronus, si lo hay
 
-    void Awake()
-    {
-        grupo = GetComponent<CanvasGroup>();
-    }
+    public void Open() => Abrir();
 
-    public void Open()
-    {
-        gameObject.SetActive(true);
-        transform.SetAsLastSibling();
-        if (menuDetras) menuDetras.interactable = false;
-        if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
-        StopAllCoroutines();
-        StartCoroutine(Animar(0f, 1f));
-    }
-
-    public void Close()
-    {
-        if (menuDetras) menuDetras.interactable = true;
-        StopAllCoroutines();
-        StartCoroutine(Animar(1f, 0f, () => gameObject.SetActive(false)));
-    }
-
+    // Prepara la animación: un prefab propio si se indica, si no el spritesheet del patronus
     public void SetPatronus(string nombre, GameObject prefabPersonalizado = null)
     {
         AsegurarAnimacion();
-
         if (instanciaPersonalizada) Destroy(instanciaPersonalizada);
 
+        animacion.gameObject.SetActive(!prefabPersonalizado);
         if (prefabPersonalizado)
         {
             instanciaPersonalizada = Instantiate(prefabPersonalizado, imagen.transform);
-            if (instanciaPersonalizada.transform is RectTransform rt)
-            {
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = rt.offsetMax = Vector2.zero;
-                rt.localScale = Vector3.one;
-            }
-            animacion.gameObject.SetActive(false);
+            if (instanciaPersonalizada.transform is RectTransform rt) Llenar(rt);
         }
-        else
-        {
-            animacion.gameObject.SetActive(true);
-            animacion.Configurar(nombre);
-        }
+        else animacion.Configurar(nombre);
 
         PrepararEtiqueta(nombre);
     }
 
+    // Fondo oscuro en el recuadro y, si no existe, crea el objeto con la animación dentro
     void AsegurarAnimacion()
     {
         imagen.sprite = null;
         imagen.color = new Color(0.03f, 0.04f, 0.08f, 0.90f);
-
         if (animacion) return;
 
         var go = new GameObject("PatronusSpriteAnimation", typeof(RectTransform), typeof(Image));
         go.layer = gameObject.layer;
         var rt = (RectTransform)go.transform;
         rt.SetParent(imagen.transform, false);
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = rt.offsetMax = Vector2.zero;
+        Llenar(rt);
         rt.SetAsFirstSibling();
         animacion = go.AddComponent<PatronusSpriteAnimation>();
     }
 
+    // Ocupa todo el recuadro de la imagen
+    static void Llenar(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+        rt.localScale = Vector3.one;
+    }
+
+    // Coloca el nombre del patronus en la parte de abajo del recuadro
     void PrepararEtiqueta(string nombre)
     {
-        if (!textoVacio) return;
-        var txt = textoVacio.GetComponent<TMP_Text>();
+        var txt = textoVacio ? textoVacio.GetComponent<TMP_Text>() : null;
         if (!txt) return;
 
         var rt = txt.rectTransform;
-        rt.anchorMin = new Vector2(0f, 0f);
+        rt.anchorMin = Vector2.zero;
         rt.anchorMax = new Vector2(1f, 0f);
         rt.pivot = new Vector2(0.5f, 0f);
         rt.anchoredPosition = new Vector2(0f, 14f);
@@ -105,24 +77,6 @@ public class PopupAlumno : MonoBehaviour
         txt.characterSpacing = 2;
         txt.color = new Color(0.92f, 0.92f, 0.94f, 1f);
         textoVacio.SetActive(true);
-        txt.transform.SetAsLastSibling();
-    }
-
-    IEnumerator Animar(float desde, float hasta, System.Action alFinal = null)
-    {
-        const float duracion = 0.15f;
-        grupo.blocksRaycasts = true;
-        for (float t = 0f; t < duracion; t += Time.unscaledDeltaTime)
-        {
-            float k = Mathf.SmoothStep(desde, hasta, t / duracion);
-            grupo.alpha = k;
-            if (ventana) ventana.localScale = Vector3.one * Mathf.Lerp(0.92f, 1f, k);
-            if (menuDetras) menuDetras.alpha = Mathf.Lerp(1f, alphaMenuDetras, k);
-            yield return null;
-        }
-        grupo.alpha = hasta;
-        if (ventana) ventana.localScale = Vector3.one;
-        if (menuDetras) menuDetras.alpha = Mathf.Lerp(1f, alphaMenuDetras, hasta);
-        alFinal?.Invoke();
+        txt.transform.SetAsLastSibling(); // por encima de la animación
     }
 }
