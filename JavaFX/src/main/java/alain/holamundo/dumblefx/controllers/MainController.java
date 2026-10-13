@@ -1,6 +1,6 @@
 package alain.holamundo.dumblefx.controllers;
 
-import alain.holamundo.dumblefx.I18n;
+import alain.holamundo.dumblefx.I18n.I18n;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;

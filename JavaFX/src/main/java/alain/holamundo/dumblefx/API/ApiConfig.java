@@ -1,6 +1,6 @@
 package alain.holamundo.dumblefx.API;
 
-import alain.holamundo.dumblefx.I18n;
+import alain.holamundo.dumblefx.I18n.I18n;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;

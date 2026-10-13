@@ -5,7 +5,7 @@ import alain.holamundo.dumblefx.assets.Matricula;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import alain.holamundo.dumblefx.I18n;
+import alain.holamundo.dumblefx.I18n.I18n;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;

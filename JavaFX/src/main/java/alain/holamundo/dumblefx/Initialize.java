@@ -1,5 +1,6 @@
 package alain.holamundo.dumblefx;
 
+import alain.holamundo.dumblefx.I18n.I18n;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

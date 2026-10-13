@@ -1,7 +1,7 @@
 package alain.holamundo.dumblefx.controllers;
 
 import alain.holamundo.dumblefx.API.ApiClient;
-import alain.holamundo.dumblefx.I18n;
+import alain.holamundo.dumblefx.I18n.I18n;
 import alain.holamundo.dumblefx.assets.Alumno;
 import alain.holamundo.dumblefx.assets.Matricula;
 import javafx.beans.property.SimpleStringProperty;

@@ -1,4 +1,4 @@
-package alain.holamundo.dumblefx;
+package alain.holamundo.dumblefx.I18n;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
