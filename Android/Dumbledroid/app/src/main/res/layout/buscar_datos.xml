@@ -1,23 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/negro"
     tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+    android:layout_marginLeft="16dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_boton_plata"
+        android:contentDescription="@string/flecha_menu"
+        android:onClick="mostrar_menu"
+        android:padding="12dp"
+        android:src="@android:drawable/ic_menu_revert"
+        app:tint="@color/plata_clara"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/et_Nombre"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        style="@style/InputPlata"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_boton_plata"
         android:ems="10"
         android:hint="@string/nombre"
         android:inputType="text"
-        android:text=""
-        android:textColor="@color/white"
-        android:textColorHint="@color/color_boton"
         app:layout_constraintBottom_toTopOf="@id/et_Casa"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,40 +43,35 @@
 
     <EditText
         android:id="@+id/et_Casa"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        style="@style/InputPlata"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_boton_plata"
         android:ems="10"
         android:hint="@string/casa"
         android:inputType="text"
-        android:text=""
-        android:textColor="@color/white"
-        android:textColorHint="@color/color_boton"
-        app:layout_constraintBottom_toTopOf="@id/bt_Buscar"
+        app:layout_constraintBottom_toTopOf="@+id/bt_Buscar"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_Nombre" />
+        app:layout_constraintTop_toBottomOf="@id/et_Nombre"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/bt_Buscar"
-        android:layout_width="wrap_content"
+        style="@style/BotonPlata"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/color_boton"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="80dp"
         android:onClick="buscar_estudiante_datos"
         android:text="@string/hechizo_buscar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_Casa" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="93dp"
-        android:layout_height="54dp"
-        android:layout_marginTop="30dp"
-        android:contentDescription="@string/flecha_menu"
-        android:onClick="mostrar_menu"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_revert" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

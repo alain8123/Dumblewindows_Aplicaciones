@@ -1,60 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@color/negro"
     tools:context=".MainActivity">
+
+    <!-- Etiqueta "Idioma" sutil, arriba a la DERECHA -->
+
+    <!-- Spinner forzado a texto plata desde XML -->
+    <TextView
+        android:id="@+id/texto_idiomas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:letterSpacing="0.15"
+        android:text="@string/idioma"
+        android:textAllCaps="true"
+        android:textColor="@color/plata_brillo"
+        app:layout_constraintBottom_toBottomOf="@+id/selector_idioma"
+        app:layout_constraintEnd_toStartOf="@+id/selector_idioma"
+        app:layout_constraintTop_toTopOf="@+id/selector_idioma" />
 
     <Spinner
         android:id="@+id/selector_idioma"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="40dp"
-        android:background="@color/white"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_input_plata"
         android:entries="@array/idiomas"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:popupBackground="@color/negro_elevado"
+        android:spinnerMode="dropdown"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
         android:tooltipText="Selector de idioma"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Botón 1 -->
+
+    <!-- Botón 2 -->
+
     <Button
         android:id="@+id/bt_menu_id"
-        android:layout_width="wrap_content"
+        style="@style/BotonPlata"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/color_boton"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
         android:onClick="mostrar_busqueda_id"
         android:text="@string/buscar_por_id"
         android:tooltipText="Busqueda mediante ID"
-        app:layout_constraintBottom_toTopOf="@id/bt_menu_datos"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.578" />
 
     <Button
         android:id="@+id/bt_menu_datos"
-        android:layout_width="wrap_content"
+        style="@style/BotonPlata"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/color_boton"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
         android:onClick="mostrar_busqueda_datos"
         android:text="@string/buscar_por_datos"
         android:tooltipText="Busqueda mediante Datos"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bt_menu_id" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.396" />
 
-    <TextView
-        android:id="@+id/texto_idiomas"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="@string/idioma"
-        android:textColor="#FFFFFF"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="@+id/selector_idioma"
-        app:layout_constraintEnd_toStartOf="@+id/selector_idioma"
-        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

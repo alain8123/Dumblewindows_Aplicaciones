@@ -8,17 +8,18 @@
     android:layout_marginTop="8dp"
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="8dp"
-    android:padding="16dp"
-    android:background="#FFFFFFFF"
-    android:elevation="4dp">
+    android:background="@drawable/bg_fila_alumno"
+    android:elevation="4dp"
+    android:padding="18dp">
 
     <TextView
         android:id="@+id/fila_nombre"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
+        android:textColor="@color/plata_brillo"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:letterSpacing="0.03"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -28,8 +29,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textColor="@color/plata"
+        android:textSize="15sp"
+        android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/fila_nombre" />
@@ -39,9 +41,11 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textColor="@color/white"
-        android:textSize="15sp"
+        android:textColor="@color/plata_oscura"
+        android:textSize="14sp"
         android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:textAllCaps="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
