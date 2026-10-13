@@ -1,26 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.MainController" styleClass="app">
   <left>
     <VBox spacing="9" styleClass="sidebar" prefWidth="248">
+      <ComboBox fx:id="languageSelector" value="Español" maxWidth="Infinity" accessibleText="%language" styleClass="language-selector">
+        <items>
+          <FXCollections fx:factory="observableArrayList">
+            <String fx:value="Español" />
+            <String fx:value="Inglés" />
+            <String fx:value="Euskera" />
+          </FXCollections>
+        </items>
+      </ComboBox>
       <Label text="DumbleFX" styleClass="brand" />
-      <Label text="GESTIÓN DE ESTUDIANTES" styleClass="eyebrow" />
+      <Label text="%sidebar.heading" styleClass="eyebrow" />
       <Separator />
-      <Button text="Consulta por ID" onAction="#id" maxWidth="Infinity" styleClass="nav-button" />
-      <Button text="Consulta por datos" onAction="#data" maxWidth="Infinity" styleClass="nav-button" />
-      <Button text="Crear estudiante" onAction="#create" maxWidth="Infinity" styleClass="nav-button" />
-      <Button text="Eliminar estudiante" onAction="#delete" maxWidth="Infinity" styleClass="nav-button" />
-      <Button text="Actualizar estudiante" onAction="#update" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="%nav.id" onAction="#id" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="%nav.data" onAction="#data" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="%nav.create" onAction="#create" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="%nav.delete" onAction="#delete" maxWidth="Infinity" styleClass="nav-button" />
+      <Button text="%nav.update" onAction="#update" maxWidth="Infinity" styleClass="nav-button" />
       <Region VBox.vgrow="ALWAYS" />
-      <Label text="Consulta y gestión de datos" styleClass="side-note" />
+      <Label text="%sidebar.note" styleClass="side-note" />
     </VBox>
   </left>
   <center>
     <VBox spacing="20" styleClass="workspace">
       <VBox spacing="4">
-        <Label text="Panel de estudiantes" styleClass="overline" />
-        <Label fx:id="sectionTitle" text="Consulta por ID" styleClass="page-title" />
+        <Label text="%panel.title" styleClass="overline" />
+        <Label fx:id="sectionTitle" text="%nav.id" styleClass="page-title" />
       </VBox>
       <StackPane fx:id="content" VBox.vgrow="ALWAYS" />
     </VBox>

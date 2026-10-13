@@ -1,5 +1,6 @@
 package alain.holamundo.dumblefx.API;
 
+import alain.holamundo.dumblefx.I18n;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,7 @@ public final class ApiConfig {
                     properties.load(reader);
                 }
             } else if (explicit != null) {
-                throw new IOException("No existe el archivo de configuración indicado.");
+                throw new IOException(I18n.text("config.missing"));
             } else {
                 var resource = ApiConfig.class.getResourceAsStream("/alain/holamundo/dumblefx/config.properties");
                 if (resource == null) resource = ApiConfig.class.getResourceAsStream("/config.properties");
@@ -37,7 +38,7 @@ public final class ApiConfig {
                 }
             }
         } catch (IOException error) {
-            throw new IllegalStateException("No se pudo leer config.properties.", error);
+            throw new IllegalStateException(I18n.text("config.read"), error);
         }
         return properties;
     }
@@ -53,7 +54,7 @@ public final class ApiConfig {
                 .replaceAll("/+$", "");
         String url = value(operation, base + defaultPath);
         if (!url.startsWith("https://") && !url.startsWith("http://")) {
-            throw new IllegalStateException("Configura una URL HTTP o HTTPS en " + operation);
+            throw new IllegalStateException(I18n.text("config.url", operation));
         }
         return url;
     }

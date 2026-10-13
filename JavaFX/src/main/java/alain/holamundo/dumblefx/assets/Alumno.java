@@ -23,6 +23,4 @@ public class Alumno {
     public void setFechaNacimiento(String fecha) {
         if (fecha != null && !fecha.isBlank()) nacimiento = fecha;
     }
-    public String getOrigen() { return origen; }
-    public void setOrigen(String origen) { this.origen = origen; }
 }

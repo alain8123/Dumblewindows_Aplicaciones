@@ -5,6 +5,7 @@ import alain.holamundo.dumblefx.assets.Matricula;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import alain.holamundo.dumblefx.I18n;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -21,7 +22,7 @@ public final class ApiClient {
 
     private JsonNode request(String method, String url, Matricula body) throws Exception {
         String key = ApiConfig.key();
-        if (key.isBlank()) throw new IllegalStateException("Configura DUMBLEFX_API_KEY en config.properties o en el entorno.");
+        if (key.isBlank()) throw new IllegalStateException(I18n.text("api.key"));
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
                 .timeout(Duration.ofSeconds(20)).header("Accept", "application/json")
                 .header("X-API-Key", key);
@@ -33,11 +34,11 @@ public final class ApiClient {
             String detail;
             try {
                 JsonNode error = mapper.readTree(response.body()).get("detail");
-                detail = error == null ? "Respuesta de error sin detalle." : error.isTextual() ? error.asText() : error.toString();
+                detail = error == null ? I18n.text("api.noDetail") : error.isTextual() ? error.asText() : error.toString();
             } catch (Exception ignored) {
-                detail = "Respuesta no JSON; comprueba la URL y la disponibilidad de la API.";
+                detail = I18n.text("api.notJson");
             }
-            throw new IOException(("HTTP " + response.statusCode() + ": " + detail).replace(key, "[clave ocultada]"));
+            throw new IOException(("HTTP " + response.statusCode() + ": " + detail).replace(key, I18n.text("api.hidden")));
         }
         return response.body().isBlank() ? mapper.createObjectNode() : mapper.readTree(response.body());
     }
@@ -48,7 +49,7 @@ public final class ApiClient {
 
     private static String studentUrl(String operation, String defaultPath, String id) {
         String url = ApiConfig.endpoint(operation, defaultPath);
-        if (!url.contains("{student_id}")) throw new IllegalStateException(operation + " debe contener {student_id}.");
+        if (!url.contains("{student_id}")) throw new IllegalStateException(I18n.text("api.studentPath", operation));
         return url.replace("{student_id}", encode(id));
     }
 
@@ -57,13 +58,13 @@ public final class ApiClient {
     }
 
     public List<Alumno> search(String name, String house, int limit) throws Exception {
-        if (limit < 1 || limit > 100) throw new IllegalArgumentException("El límite debe estar entre 1 y 100.");
+        if (limit < 1 || limit > 100) throw new IllegalArgumentException(I18n.text("validation.limit"));
         String url = ApiConfig.endpoint("DUMBLEFX_API_URL_CONSULTA_DATOS", "/estudiantes");
         StringBuilder query = new StringBuilder(url).append(url.contains("?") ? "&" : "?").append("limit=").append(limit);
         if (!name.isBlank()) query.append("&name=").append(encode(name));
         if (!house.isBlank()) query.append("&house=").append(encode(house));
         JsonNode result = request("GET", query.toString(), null);
-        if (!result.isArray()) throw new IOException("La consulta debe devolver una lista de estudiantes.");
+        if (!result.isArray()) throw new IOException(I18n.text("api.list"));
         return mapper.convertValue(result, new TypeReference<List<Alumno>>() { });
     }
 
