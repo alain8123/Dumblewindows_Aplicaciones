@@ -8,8 +8,8 @@ Arquitectura:
       por la API.
     * Derby, HSQLDB, H2 y Oracle contienen fuentes historicas separadas por
       casas; se consultan por identificador cuando hace falta.
-    * Los CSV de /app/data sirven para busquedas historicas e inicializan las
-      tablas historicas vacias.
+    * Los CSV de /app/data inicializan las tablas historicas vacias; las
+      busquedas consultan las bases de datos vivas.
     * SQLite, en CACHE_PATH, guarda respuestas historicas temporalmente durante
       CACHE_TTL_SECONDS; no es la base principal de estudiantes.
 
@@ -256,16 +256,32 @@ def query_history(student_id: str) -> StudentOut | None:
 
 
 def find_history(name: str | None, house: str | None, limit: int) -> list[StudentOut]:
-    """Lista desde los CSV originales, no desde las tablas históricas vivas."""
-    houses = [house] if house in SOURCES else list(SOURCES)
+    """Busca por nombre y casa en las tablas históricas vivas."""
+    houses = [current_house for current_house in SOURCES if not house or current_house.casefold() == house.casefold()]
     result: list[StudentOut] = []
     for current_house in houses:
-        for raw in csv_rows(current_house):
-            if name and name.lower() not in (raw.get("nombre") or "").lower():
-                continue
-            result.append(row_to_student([raw.get(k) for k in ("id", "nombre", "casa", "alias", "especie", "genero", "nacimiento", "nacionalidad", "patronus", "patronus_origen", "imagen", "wiki")], current_house))
-            if len(result) >= limit:
-                return result
+        kind = SOURCES[current_house]["kind"]
+        try:
+            with source_connection(kind) as connection:
+                cursor = connection.cursor()
+                try:
+                    query = "SELECT id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students"
+                    params = []
+                    if name:
+                        placeholder = ":1" if kind == "oracle" else "?"
+                        query += f" WHERE LOWER(nombre) LIKE {placeholder} ESCAPE '!'"
+                        escaped = name.lower().replace("!", "!!").replace("%", "!%").replace("_", "!_")
+                        params.append(f"%{escaped}%")
+                    query += " ORDER BY id"
+                    cursor.execute(query, params)
+                    result.extend(row_to_student(row, current_house) for row in cursor.fetchmany(limit - len(result)))
+                finally:
+                    cursor.close()
+        except Exception as error:
+            print(f"history search failed for {current_house}: {error}", flush=True)
+            raise HTTPException(503, f"Fuente histórica no disponible: {current_house}") from error
+        if len(result) >= limit:
+            break
     return result
 
 
@@ -301,15 +317,33 @@ def health() -> dict[str, Any]:
     return {"status": "ok", "code": "R01", "cache": str(CACHE_PATH), "sources": {house: config["kind"] for house, config in SOURCES.items()}, "no_migration": True}
 
 @app.get("/students", dependencies=[Depends(require_api_key)], response_model=list[StudentOut], include_in_schema=False)
-@app.get("/estudiantes", dependencies=[Depends(require_api_key)], response_model=list[StudentOut], tags=["Consultas"], summary="Buscar estudiantes históricos", description="Busca por nombre y casa en los CSV de referencia, no en las tablas históricas vivas. No incluye nuevas matrículas de MariaDB. Almacena temporalmente el resultado en SQLite.")
+@app.get("/estudiantes", dependencies=[Depends(require_api_key)], response_model=list[StudentOut], tags=["Consultas"], summary="Buscar estudiantes por datos", description="Busca primero matrículas nuevas en MariaDB, después resultados históricos vigentes en SQLite y finalmente en las bases históricas vivas. Combina resultados sin duplicar IDs, con prioridad para MariaDB. Solo almacena los resultados históricos en SQLite.")
 def search_students(name: str | None = Query(default=None), house: str | None = Query(default=None), limit: int = Query(default=20, ge=1, le=100)) -> list[StudentOut]:
-    """Busca históricos en los CSV de referencia y almacena el resultado en SQLite."""
-    key = f"search:{name or ''}:{house or ''}:{limit}"
+    """Consulta MariaDB antes de la caché y completa con históricos vivos."""
+    with Session() as session:
+        query = select(Enrollment)
+        if name:
+            query = query.where(Enrollment.full_name.icontains(name, autoescape=True))
+        if house:
+            query = query.where(Enrollment.house.ilike(house.replace("!", "!!").replace("%", "!%").replace("_", "!_"), escape="!"))
+        current = session.scalars(query.order_by(Enrollment.id).limit(limit)).all()
+        result = [StudentOut(id=row.student_id, nombre=row.full_name, casa=row.house or "", origen="mariadb") for row in current]
+    if len(result) >= limit:
+        return result
+    key = "search:live:v1:" + json.dumps([name or "", house or "", limit], ensure_ascii=False)
     hit = cached(key)
-    if hit is not None:
-        return [StudentOut(**item) for item in hit]
-    result = find_history(name, house, limit)
-    cache(key, [item.model_dump() for item in result])
+    if hit is None:
+        historical = find_history(name, house, limit)
+        cache(key, [item.model_dump() for item in historical])
+    else:
+        historical = [StudentOut(**item) for item in hit]
+    seen = {item.id for item in result}
+    for item in historical:
+        if item.id not in seen:
+            result.append(item)
+            seen.add(item.id)
+        if len(result) >= limit:
+            break
     return result
 
 @app.get("/students/{student_id}", dependencies=[Depends(require_api_key)], response_model=StudentOut, include_in_schema=False)
@@ -363,4 +397,3 @@ def delete_enrollment(student_id: str) -> dict[str, str]:
             raise HTTPException(404, "Matrícula no encontrada en MariaDB")
         session.delete(row)
     return {"status": "deleted"}
-
