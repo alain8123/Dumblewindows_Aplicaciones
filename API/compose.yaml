@@ -1,0 +1,131 @@
+services:
+  api:
+    environment:
+      API_ACCESS_KEY: "${API_API_ACCESS_KEY}"
+      APP_USER: "${API_APP_USER}"
+      APP_USER_PASSWORD: "${API_APP_USER_PASSWORD}"
+      CACHE_PATH: "${API_CACHE_PATH}"
+      CACHE_TTL_SECONDS: "${API_CACHE_TTL_SECONDS}"
+      DERBY_URL: "${API_DERBY_URL}"
+      H2_URL: "${API_H2_URL}"
+      HISTORY_CSV_DIR: "${API_HISTORY_CSV_DIR}"
+      HSQLDB_URL: "${API_HSQLDB_URL}"
+      JAVA_HOME: "${API_JAVA_HOME}"
+      MARIADB_DATABASE: "${API_MARIADB_DATABASE}"
+      MARIADB_PASSWORD: "${API_MARIADB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${API_MARIADB_ROOT_PASSWORD}"
+      MARIADB_URL: "${API_MARIADB_URL}"
+      MARIADB_USER: "${API_MARIADB_USER}"
+      ORACLE_HOST: "${API_ORACLE_HOST}"
+      ORACLE_PASSWORD: "${API_ORACLE_PASSWORD}"
+      ORACLE_PORT: "${API_ORACLE_PORT}"
+      ORACLE_SERVICE: "${API_ORACLE_SERVICE}"
+      ORACLE_USER: "${API_ORACLE_USER}"
+    build: "${API_BUILD}"
+    restart: "${API_RESTART}"
+    ports: ["${API_PORTS}"]
+    volumes: [api_cache:/data]
+    depends_on:
+      mariadb: {condition: service_healthy}
+      derby: {condition: service_started}
+      hsqldb: {condition: service_started}
+      h2: {condition: service_started}
+      oracle: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
+      interval: ${API_HEALTH_INTERVAL}
+      timeout: ${API_HEALTH_TIMEOUT}
+      retries: ${API_HEALTH_RETRIES}
+      start_period: ${API_HEALTH_START_PERIOD}
+
+  tailscale:
+    image: "${TAILSCALE_IMAGE}"
+    container_name: "${TAILSCALE_CONTAINER_NAME}"
+    hostname: "${TAILSCALE_HOSTNAME}"
+    restart: "${TAILSCALE_RESTART}"
+    command: "${TAILSCALE_COMMAND}"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - tailscale_state:/var/lib/tailscale
+      - tailscale_socket:/var/run/tailscale
+    depends_on:
+      api: {condition: service_healthy}
+    networks: [default]
+
+  mariadb:
+    environment:
+      APP_USER: "${MARIADB_APP_USER}"
+      APP_USER_PASSWORD: "${MARIADB_APP_USER_PASSWORD}"
+      MARIADB_DATABASE: "${MARIADB_MARIADB_DATABASE}"
+      MARIADB_PASSWORD: "${MARIADB_MARIADB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${MARIADB_MARIADB_ROOT_PASSWORD}"
+      MARIADB_URL: "${MARIADB_MARIADB_URL}"
+      MARIADB_USER: "${MARIADB_MARIADB_USER}"
+      ORACLE_PASSWORD: "${MARIADB_ORACLE_PASSWORD}"
+    image: "${MARIADB_IMAGE}"
+    restart: "${MARIADB_RESTART}"
+    volumes: [mariadb_data:/var/lib/mysql, ./init/mariadb.sql:/docker-entrypoint-initdb.d/001-mariadb.sql:ro]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: ${MARIADB_HEALTH_INTERVAL}
+      timeout: ${MARIADB_HEALTH_TIMEOUT}
+      retries: ${MARIADB_HEALTH_RETRIES}
+
+  derby:
+    environment:
+      DB_ENGINE: "${DERBY_DB_ENGINE}"
+    build: "${DERBY_BUILD}"
+    volumes: [derby_data:/data]
+    expose: ["${DERBY_EXPOSE}"]
+
+  hsqldb:
+    environment:
+      DB_ENGINE: "${HSQLDB_DB_ENGINE}"
+    build: "${HSQLDB_BUILD}"
+    volumes: [hsqldb_data:/data]
+    expose: ["${HSQLDB_EXPOSE}"]
+
+  h2:
+    environment:
+      DB_ENGINE: "${H2_DB_ENGINE}"
+    build: "${H2_BUILD}"
+    volumes: [h2_data:/data]
+    expose: ["${H2_EXPOSE}"]
+
+  oracle:
+    environment:
+      APP_USER: "${ORACLE_APP_USER}"
+      APP_USER_PASSWORD: "${ORACLE_APP_USER_PASSWORD}"
+      MARIADB_DATABASE: "${ORACLE_MARIADB_DATABASE}"
+      MARIADB_PASSWORD: "${ORACLE_MARIADB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${ORACLE_MARIADB_ROOT_PASSWORD}"
+      MARIADB_URL: "${ORACLE_MARIADB_URL}"
+      MARIADB_USER: "${ORACLE_MARIADB_USER}"
+      ORACLE_PASSWORD: "${ORACLE_ORACLE_PASSWORD}"
+    image: "${ORACLE_IMAGE}"
+    restart: "${ORACLE_RESTART}"
+    volumes: [oracle_data:/opt/oracle/oradata]
+    expose: ["${ORACLE_EXPOSE}"]
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh"]
+      interval: ${ORACLE_HEALTH_INTERVAL}
+      timeout: ${ORACLE_HEALTH_TIMEOUT}
+      retries: ${ORACLE_HEALTH_RETRIES}
+
+volumes:
+  mariadb_data:
+  api_cache:
+  derby_data:
+  hsqldb_data:
+  h2_data:
+  oracle_data:
+  tailscale_state:
+  tailscale_socket:
+
+networks:
+  default:
+    name: "${NETWORK_NAME}"

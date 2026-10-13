@@ -1,0 +1,3 @@
+.api-secret.env
+.env
+*.bak

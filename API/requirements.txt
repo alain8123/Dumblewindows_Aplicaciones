@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+SQLAlchemy==2.0.36
+PyMySQL==1.1.1
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+JayDeBeApi==1.2.3
+JPype1==1.5.2
+oracledb==2.5.1
