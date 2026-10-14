@@ -3,6 +3,7 @@ package com.dm2.dumbledroid
 data class Estudiante(
     val id : String,
     val nombre : String,
+    val apellidos : String,
     val casa : String,
     val alias : String,
     val especie : String,
