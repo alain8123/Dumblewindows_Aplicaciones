@@ -1,1 +1,0 @@
-SUCCESS: Scene saved; PopupAlumno, PopupAviso, BotonMenu prefabs connected; decorations removed. Unused decoration prefabs deleted: 0. Backup: ThemeBackups\UIRefactor_20261013_140810_027

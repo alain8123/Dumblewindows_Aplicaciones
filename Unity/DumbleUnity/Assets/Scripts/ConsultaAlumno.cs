@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 // Modelo parcial: solo el campo que nos interesa del JSON del estudiante
 [Serializable]
@@ -35,7 +37,16 @@ public class ConsultaAlumno : MonoBehaviour
     [Header("API")]
     // Debe terminar en "/" y SIN llaves. El ID escrito en el campo se añade al final.
     [SerializeField] private string urlBase = "https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/";
-    [SerializeField] private bool validarFormatoUuid = true; // evita llamar a la API si el ID no tiene formato UUID
+    
+    // Conserva la configuración guardada en escenas y prefabs al renombrar el campo.
+    [FormerlySerializedAs("validarFormatoUuid")]
+    [SerializeField] private bool validarFormatoId = true;
+
+    // Dos letras, dos grupos de tres letras y un sufijo opcional de dos dígitos.
+    private static readonly Regex IdRegex = new Regex(
+        @"^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}(-[0-9]{2})?$",
+        RegexOptions.Compiled
+    );
 
     [Header("Autenticación")]
     [SerializeField] private string nombreCabecera = "X-API-Key"; // el nombre que indique Swagger (botón Authorize)
@@ -66,14 +77,16 @@ public class ConsultaAlumno : MonoBehaviour
             return;
         }
 
-        if (validarFormatoUuid)
+        // Normaliza el identificador antes de validarlo y enviarlo a la API.
+        id = (id ?? string.Empty).Trim().ToUpperInvariant();
+
+        if (validarFormatoId && !IdRegex.IsMatch(id))
         {
-            if (!Guid.TryParse(id, out Guid guid))
-            {
-                Avisar("ID no válido", "El ID no tiene un formato correcto.");
-                return;
-            }
-            id = guid.ToString(); // formato estándar con guiones y en minúsculas
+            Avisar(
+                "ID no válido",
+                "El ID no tiene un formato correcto (AA-BBB-CCC o AA-BBB-CCC-00)."
+            );
+            return;
         }
 
         if (string.IsNullOrWhiteSpace(urlBase) ||

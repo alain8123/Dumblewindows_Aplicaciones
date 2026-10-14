@@ -2231,7 +2231,7 @@ MonoBehaviour:
   popup: {fileID: 275144341}
   popupAviso: {fileID: 2020609044592249866}
   urlBase: https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/
-  validarFormatoUuid: 1
+  validarFormatoId: 1
   nombreCabecera: X-API-Key
   apiKey: 
   usarBearer: 0
