@@ -11,4 +11,10 @@
     <string name="foto_alumno">photo of the student</string>
     <string name="coincidencias">Coincidences</string>
     <string name="idioma">Language: </string>
+    <string name="escribe_un_id">Write an ID</string>
+    <string name="buscando">Searching...</string>
+    <string name="error">Error: %1$s</string>
+    <string name="rellena_al_menos_un_campo">Fill out at least one field</string>
+    <string name="sin_resultados">No results</string>
+    <string name="el_id_no_cumple_el_formato">The ID does not comply with the format</string>
 </resources>

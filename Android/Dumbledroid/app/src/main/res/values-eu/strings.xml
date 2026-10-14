@@ -11,4 +11,10 @@
     <string name="foto_alumno">ikaslearen argazkia</string>
     <string name="coincidencias">koincidentziak</string>
     <string name="idioma">Hizkuntza: </string>
+    <string name="escribe_un_id">Idatzi ID</string>
+    <string name="buscando">Bilatu...</string>
+    <string name="error">Errorea: %1$s</string>
+    <string name="rellena_al_menos_un_campo">Bete gutxienez eremu bat</string>
+    <string name="sin_resultados">Emaitzarik ez</string>
+    <string name="el_id_no_cumple_el_formato">IDak ez du formatua betetzen</string>
 </resources>
