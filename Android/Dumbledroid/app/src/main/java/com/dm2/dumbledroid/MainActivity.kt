@@ -1,32 +1,32 @@
 package com.dm2.dumbledroid
 
 // -------------------- IMPORTS --------------------
-// Se importan las clases necesarias para el funcionamiento de la Activity:
-import android.content.pm.ActivityInfo
-import android.content.res.Configuration          // Configuracion para saber la orientacion de la pantalla
-import android.os.Bundle                          // Contenedor de estado de la Activity
-import android.view.View                          // Clase base de los componentes visuales (para callbacks de clicks)
-import android.widget.AdapterView                 // Maneja eventos de selección en Spinners
-import android.widget.EditText                    // Campo de texto editable
-import android.widget.ImageView                   // Vista para mostrar imágenes
-import android.widget.TextView                    // Vista para mostrar texto
-import android.widget.Toast                       // Mensajes emergentes cortos
-import androidx.activity.enableEdgeToEdge         // Habilita el modo "edge to edge" (UI a pantalla completa)
-import androidx.appcompat.app.AppCompatActivity   // Activity base compatible con versiones antiguas
-import androidx.appcompat.app.AppCompatDelegate   // Permite cambiar idioma/tema globalmente
-import androidx.core.os.LocaleListCompat          // Lista de locales compatibles
-import androidx.lifecycle.lifecycleScope          // Scope de corrutinas ligado al ciclo de vida
-import androidx.recyclerview.widget.LinearLayoutManager // Layout lineal para RecyclerView
-import androidx.recyclerview.widget.RecyclerView  // Lista eficiente para muchos elementos
-import coil.load                                  // Extensión de Coil para cargar imágenes desde URL
-import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding generado del layout principal
-import kotlinx.coroutines.Dispatchers             // Define hilos (IO, Main, etc.)
-import kotlinx.coroutines.launch                  // Lanza una corrutina
-import kotlinx.coroutines.withContext             // Cambia de contexto dentro de una corrutina
-import retrofit2.Retrofit                         // Cliente HTTP para consumir la API
-import retrofit2.converter.gson.GsonConverterFactory // Convertidor JSON <-> Objetos Kotlin
-import okhttp3.OkHttpClient                       // Cliente HTTP subyacente
-import coil.size.Size                             // Enum para definir el tamaño de la imagen
+import android.content.res.Configuration                    // Info de configuración (orientación, tamaño, etc.)
+import android.os.Bundle                                   // Contenedor de estado de la Activity
+import android.view.View                                   // Clase base de las vistas (para callbacks de click)
+import android.widget.AdapterView                          // Eventos de selección en Spinners
+import android.widget.EditText                             // Campo de texto editable
+import android.widget.ImageView                            // Vista para mostrar imágenes
+import android.widget.TextView                             // Vista para mostrar texto
+import android.widget.Toast                                // Mensajes emergentes cortos
+import androidx.activity.enableEdgeToEdge                  // Habilita el modo "edge to edge"
+import androidx.appcompat.app.AppCompatActivity            // Activity base compatible con versiones antiguas
+import androidx.appcompat.app.AppCompatDelegate            // Permite cambiar idioma/tema globalmente
+import androidx.core.os.LocaleListCompat                   // Lista de locales compatibles
+import androidx.lifecycle.lifecycleScope                   // Scope de corrutinas ligado al ciclo de vida
+import androidx.recyclerview.widget.LinearLayoutManager    // Layout lineal para RecyclerView
+import androidx.recyclerview.widget.RecyclerView           // Lista eficiente para muchos elementos
+import coil.load                                           // Extensión de Coil para cargar imágenes desde URL
+import coil.size.Size                                      // Enum para definir el tamaño de imagen
+import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding del layout principal
+import com.google.gson.Gson                                // Serialización JSON para guardar el estado
+import com.google.gson.reflect.TypeToken                   // Tipo genérico para deserializar listas
+import kotlinx.coroutines.Dispatchers                      // Hilos (IO, Main, etc.)
+import kotlinx.coroutines.launch                           // Lanza una corrutina
+import kotlinx.coroutines.withContext                      // Cambia de contexto dentro de una corrutina
+import okhttp3.OkHttpClient                                // Cliente HTTP subyacente
+import retrofit2.Retrofit                                  // Cliente HTTP para consumir la API
+import retrofit2.converter.gson.GsonConverterFactory       // Convertidor JSON <-> Objetos Kotlin
 
 /**
  * Activity principal de la aplicación "Dumbledroid".
@@ -37,10 +37,18 @@ import coil.size.Size                             // Enum para definir el tamañ
  *  - Mostrar listas de resultados y detalles de cada estudiante.
  *  - Configurar Retrofit para consumir la API.
  *  - Permitir el cambio de idioma desde un Spinner.
+ *  - **Mantener el estado (pantalla y datos) al girar el dispositivo.**
+ *
+ * Para que la restauración funcione correctamente, en el `AndroidManifest.xml`
+ * debe estar declarado `android:configChanges` con al menos
+ * `orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden`.
  */
 class MainActivity : AppCompatActivity() {
 
-    // -------------------- PROPIEDADES --------------------
+    // ==========================================================
+    //                       PROPIEDADES
+    // ==========================================================
+
     /** Binding del layout `activity_main.xml` para acceder a las vistas sin findViewById. */
     private lateinit var binding: ActivityMainBinding
 
@@ -51,8 +59,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: EstudianteListAdapter
 
     /**
+     * Indica en qué pantalla estamos ahora mismo.
+     * Valores posibles: "menu", "buscar_id", "buscar_datos", "lista", "detalle".
+     * Se usa para restaurar la pantalla tras una recreación.
+     */
+    private var pantallaActual: String = "menu"
+
+    /** Estudiante mostrado en la pantalla de detalle (para restaurarlo al recrear la Activity). */
+    private var estudianteActual: Estudiante? = null
+
+    /** Lista de estudiantes mostrada en la pantalla de lista (para restaurarla al recrear). */
+    private var listaActual: List<Estudiante> = emptyList()
+
+    // ==========================================================
+    //                    CICLO DE VIDA
+    // ==========================================================
+
+    /**
      * Método del ciclo de vida que se ejecuta al crear la Activity.
-     * Inicializa el binding, el adaptador, el spinner de idioma y Retrofit.
+     * Inicializa binding, adaptador, idioma y Retrofit; y restaura el estado si procede.
      *
      * @param savedInstanceState Estado previo guardado (si la Activity se recrea).
      */
@@ -68,8 +93,7 @@ class MainActivity : AppCompatActivity() {
         // Establece la vista raíz como contenido de la Activity.
         setContentView(binding.root)
 
-        // Crea el adaptador pasándole un lambda como callback.
-        // Cuando se pulse un elemento de la lista, se llamará a mostrarDetalleAlumno().
+        // Crea el adaptador pasándole un callback para cuando se pulse un elemento.
         adapter = EstudianteListAdapter { estudiante ->
             mostrarDetalleAlumno(estudiante)
         }
@@ -79,6 +103,109 @@ class MainActivity : AppCompatActivity() {
 
         // Configura Retrofit con la API Key y la URL base.
         setupRetrofit()
+
+        //    Si venimos de una recreación (giro, cambio de idioma, etc.),
+        //    reconstruimos la pantalla donde estábamos con sus datos.
+        savedInstanceState?.let { restaurarEstado(it) }
+    }
+
+    /**
+     * Se llama antes de que la Activity sea destruida para guardar su estado.
+     * Guarda la pantalla actual, el estudiante, la lista y el texto de los EditText.
+     *
+     * @param outState Bundle donde se almacena el estado.
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        // 1. Guardamos en qué pantalla estamos.
+        outState.putString(KEY_PANTALLA, pantallaActual)
+
+        // 2. Guardamos el estudiante actual (si lo hay) serializado a JSON.
+        estudianteActual?.let {
+            outState.putString(KEY_ESTUDIANTE, Gson().toJson(it))
+        }
+
+        // 3. Guardamos la lista actual (si no está vacía) serializada a JSON.
+        if (listaActual.isNotEmpty()) {
+            outState.putString(KEY_LISTA, Gson().toJson(listaActual))
+        }
+
+        // 4. Guardamos el texto que el usuario haya escrito en los EditText visibles.
+        findViewById<EditText>(R.id.et_estudiante)?.let {
+            outState.putString(KEY_TXT_ID, it.text.toString())
+        }
+        findViewById<EditText>(R.id.et_Nombre)?.let {
+            outState.putString(KEY_TXT_NOMBRE, it.text.toString())
+        }
+        findViewById<EditText>(R.id.et_Casa)?.let {
+            outState.putString(KEY_TXT_CASA, it.text.toString())
+        }
+    }
+
+    // ==========================================================
+    //                 RESTAURACIÓN DE ESTADO
+    // ==========================================================
+
+    /**
+     * Reconstruye la pantalla y los datos guardados en [onSaveInstanceState].
+     *
+     * Se llama desde [onCreate] cuando `savedInstanceState` no es nulo, es decir,
+     * cuando la Activity se ha recreado (por ejemplo, tras girar el dispositivo).
+     *
+     * @param state Bundle con el estado previamente guardado.
+     */
+    private fun restaurarEstado(state: Bundle) {
+        // Leemos en qué pantalla estábamos (por defecto, "menu").
+        val pantalla = state.getString(KEY_PANTALLA, "menu")
+
+        // Recuperamos el estudiante y la lista desde JSON (si existen).
+        state.getString(KEY_ESTUDIANTE)?.let {
+            estudianteActual = Gson().fromJson(it, Estudiante::class.java)
+        }
+        state.getString(KEY_LISTA)?.let { json ->
+            val tipo = object : TypeToken<List<Estudiante>>() {}.type
+            listaActual = Gson().fromJson(json, tipo) ?: emptyList()
+        }
+
+        // Reconstruimos la pantalla correspondiente.
+        when (pantalla) {
+            "buscar_id" -> {
+                pantallaActual = "buscar_id"
+                setContentView(R.layout.buscar_id)
+                // Restauramos el texto introducido en el campo ID.
+                state.getString(KEY_TXT_ID)?.let {
+                    findViewById<EditText>(R.id.et_estudiante).setText(it)
+                }
+            }
+
+            "buscar_datos" -> {
+                pantallaActual = "buscar_datos"
+                setContentView(R.layout.buscar_datos)
+                // Restauramos los textos introducidos en nombre y casa.
+                state.getString(KEY_TXT_NOMBRE)?.let {
+                    findViewById<EditText>(R.id.et_Nombre).setText(it)
+                }
+                state.getString(KEY_TXT_CASA)?.let {
+                    findViewById<EditText>(R.id.et_Casa).setText(it)
+                }
+            }
+
+            "lista" -> {
+                // Vuelve a pintar la lista con los mismos datos.
+                mostrarListaAlumnos(listaActual)
+            }
+
+            "detalle" -> {
+                // Vuelve a pintar el detalle del estudiante.
+                estudianteActual?.let { mostrarDetalleAlumno(it) }
+            }
+
+            else -> {
+                // "menu" u otro caso: no hay nada que restaurar, ya estamos en el menú.
+                pantallaActual = "menu"
+            }
+        }
     }
 
     // ==========================================================
@@ -88,10 +215,10 @@ class MainActivity : AppCompatActivity() {
     /**
      * Muestra la pantalla de búsqueda por ID.
      *
-     * @param view Vista que dispara el evento (definida en el layout XML).
+     * @param view Vista que dispara el evento.
      */
     fun mostrar_busqueda_id(view: View) {
-        // Cambia el contenido de la pantalla al layout `buscar_id.xml`.
+        pantallaActual = "buscar_id"
         setContentView(R.layout.buscar_id)
     }
 
@@ -101,7 +228,7 @@ class MainActivity : AppCompatActivity() {
      * @param view Vista que dispara el evento.
      */
     fun mostrar_busqueda_datos(view: View) {
-        // Cambia el contenido de la pantalla al layout `buscar_datos.xml`.
+        pantallaActual = "buscar_datos"
         setContentView(R.layout.buscar_datos)
     }
 
@@ -111,7 +238,7 @@ class MainActivity : AppCompatActivity() {
      * @param view Vista que dispara el evento.
      */
     fun mostrar_menu(view: View) {
-        // Restaura el layout principal usando el binding previamente inflado.
+        pantallaActual = "menu"
         setContentView(binding.root)
     }
 
@@ -178,7 +305,6 @@ class MainActivity : AppCompatActivity() {
      * @param view Vista que dispara el evento (botón buscar).
      */
     fun buscar_estudiante_datos(view: View) {
-        // Obtiene el texto de los campos nombre y casa.
         val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
         val casa   = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
 
@@ -197,23 +323,21 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Muestra una lista de alumnos en un RecyclerView dentro del layout `alumno.xml`.
+     * Guarda la lista en [listaActual] para poder restaurarla tras una recreación.
      *
-     * @param lista Lista de estudiantes que se mostrará.
+     * @param lista Lista de estudiantes a mostrar.
      */
     private fun mostrarListaAlumnos(lista: List<Estudiante>) {
-        // Cambia el contenido de la pantalla al layout de lista.
+        // Guardamos la pantalla y los datos para poder restaurarlos.
+        pantallaActual = "lista"
+        listaActual = lista
+
+        // Cargamos el layout de lista.
         setContentView(R.layout.alumno)
 
-        // Obtiene la referencia al RecyclerView del layout.
         val rv = findViewById<RecyclerView>(R.id.recycler_resultados)
-
-        // Asigna un LinearLayoutManager (lista vertical) al RecyclerView.
         rv.layoutManager = LinearLayoutManager(this)
-
-        // Asigna el adaptador previamente creado.
         rv.adapter = adapter
-
-        // Envía la lista al adaptador para que la renderice.
         adapter.submitList(lista)
     }
 
@@ -237,10 +361,8 @@ class MainActivity : AppCompatActivity() {
                     house = casa
                 )
 
-                // Vuelve al hilo principal para decidir qué mostrar.
                 withContext(Dispatchers.Main) {
                     when {
-                        // Caso 1: no hay resultados.
                         lista.isEmpty() -> {
                             Toast.makeText(
                                 this@MainActivity,
@@ -259,7 +381,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // En caso de error, muestra un Toast en el hilo principal.
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@MainActivity,
@@ -278,11 +399,16 @@ class MainActivity : AppCompatActivity() {
     /**
      * Muestra la pantalla de detalle de un estudiante concreto.
      * Carga la imagen desde la URL y rellena todos los campos de texto.
+     * Guarda el estudiante en [estudianteActual] para poder restaurarlo al recrear.
      *
      * @param e Objeto [Estudiante] con los datos a mostrar.
      */
     private fun mostrarDetalleAlumno(e: Estudiante) {
-        // Carga la ventana
+        // Guardamos la pantalla y el estudiante para poder restaurarlos.
+        pantallaActual = "detalle"
+        estudianteActual = e
+
+        // Cargamos el layout de detalle.
         setContentView(R.layout.mostrar_alumno)
 
         // Carga la imagen desde la URL que devuelve la API usando Coil.
@@ -315,27 +441,22 @@ class MainActivity : AppCompatActivity() {
      *  - El convertidor Gson para parsear JSON.
      */
     private fun setupRetrofit() {
-        // Construye un OkHttpClient con un interceptor personalizado.
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
-                // Crea una nueva petición añadiendo las cabeceras necesarias.
                 val request = chain.request().newBuilder()
                     .addHeader("X-API-Key", BuildConfig.API_KEY) // Autenticación con la API.
                     .addHeader("accept", "*/*")                  // Acepta cualquier tipo de respuesta.
                     .build()
-                // Continúa la cadena con la petición modificada.
                 chain.proceed(request)
             }
             .build()
 
-        // Construye la instancia de Retrofit.
         val retrofit = Retrofit.Builder()
             .baseUrl(Constantes.Base_URL)                          // URL base de la API.
             .client(client)                                        // Cliente OkHttp configurado.
             .addConverterFactory(GsonConverterFactory.create())    // Conversor JSON <-> Kotlin.
             .build()
 
-        // Crea el servicio a partir de la interfaz ApiService_id.
         service = retrofit.create(ApiService_id::class.java)
     }
 
@@ -347,39 +468,31 @@ class MainActivity : AppCompatActivity() {
      * Configura el Spinner de selección de idioma.
      *
      * Idiomas soportados (en orden): español (`es`), euskera (`eu`), inglés (`en`).
-     *
      * Al seleccionar una opción distinta a la actual, se aplica el nuevo idioma
      * a toda la aplicación usando [AppCompatDelegate.setApplicationLocales].
      */
     private fun configurarSpinnerIdioma() {
-        // Lista de códigos de idioma. El orden debe coincidir con el de las opciones del spinner:
-        // posición 0 = español, 1 = euskera, 2 = inglés
+        // Lista de códigos de idioma. El orden debe coincidir con el del spinner.
         val codigos = listOf("es", "eu", "en")
 
-        // Obtiene el idioma que se ha elegido en la app (por ejemplo "eu").
-        // Si el usuario aún no ha elegido ninguno, el texto viene vacío.
+        // Idioma actualmente seleccionado en la app (vacío si aún no se ha elegido).
         val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
-        // Si no hay idioma elegido, usa el idioma del móvil; si lo hay, se queda con
-        // las 2 primeras letras ("es").
+        // Si no hay idioma elegido, usa el del móvil; si lo hay, las 2 primeras letras.
         val actual = if (tags.isEmpty()) java.util.Locale.getDefault().language else tags.take(2)
 
-        // Busca en qué posición de la lista está ese idioma (0, 1 o 2).
-        // Si no lo encuentra (devuelve -1), `coerceAtLeast(0)` asegura que el valor no sea negativo.
+        // Posición en la lista del idioma actual (con protección por si no lo encuentra).
         val posicion = codigos.indexOf(actual).coerceAtLeast(0)
 
-        // Deja el spinner marcado en el idioma actual.
-        // El "false" indica que no hay que animar ni disparar el listener al hacerlo,
-        // así evitamos que se cambie el idioma solo al abrir la pantalla.
+        // Marca el spinner en el idioma actual sin disparar el listener.
         binding.selectorIdioma.setSelection(posicion, false)
 
-        // Define qué hacer cuando el usuario selecciona una opción del spinner.
+        // Listener para reaccionar al cambio de idioma.
         binding.selectorIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
             // Se ejecuta cada vez que se selecciona un elemento. "pos" es la posición elegida.
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                // Solo cambia el idioma si el elegido es distinto al actual;
-                // así no se recarga la pantalla sin necesidad (ni se entra en bucle).
+                // Solo cambia el idioma si es distinto al actual (evita bucles).
                 if (pos != posicion) {
                     // Aplica el nuevo idioma a toda la app. Android recrea la Activity
                     // y carga los textos del `values-xx` correspondiente.
@@ -392,5 +505,22 @@ class MainActivity : AppCompatActivity() {
             // Se ejecuta si no hay nada seleccionado. No necesitamos hacer nada aquí.
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
+    }
+
+    // ==========================================================
+    //                       CONSTANTES
+    // ==========================================================
+
+    /**
+     * Claves usadas para guardar y restaurar el estado de la Activity.
+     * Se agrupan aquí para evitar errores tipográficos al escribir strings sueltos.
+     */
+    private companion object {
+        const val KEY_PANTALLA   = "pantalla_actual"
+        const val KEY_ESTUDIANTE = "estudiante_json"
+        const val KEY_LISTA      = "lista_json"
+        const val KEY_TXT_ID     = "txt_id"
+        const val KEY_TXT_NOMBRE = "txt_nombre"
+        const val KEY_TXT_CASA   = "txt_casa"
     }
 }
