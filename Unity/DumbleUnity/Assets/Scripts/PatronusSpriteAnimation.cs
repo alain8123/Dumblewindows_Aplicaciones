@@ -12,7 +12,7 @@ public class PatronusSpriteAnimation : MonoBehaviour
     const int FrameCount = 8;
     const int PixelsPerUnit = 64;
 
-    [SerializeField, Min(1f)] float framesPerSecond = 10f;
+    [SerializeField, Min(1f)] private float framesPerSecond = 10f;
 
     Image image;
     Sprite[] frames;
@@ -44,23 +44,28 @@ public class PatronusSpriteAnimation : MonoBehaviour
 
         LiberarFrames();
         image.sprite = null;
-        string resourceName = "PatronusPixelSprites/" + NormalizarNombre(nombre) + "_pixel_8f";
-        var texture = Resources.Load<Texture2D>(resourceName);
-        if (!texture)
+        string nombreNormalizado = EsNoCorporeo(nombre) ? "non_corporeal" : NormalizarNombre(nombre);
+        string rutaRecurso = "PatronusPixelSprites/" + nombreNormalizado + "_pixel_8f";
+        var textura = Resources.Load<Texture2D>(rutaRecurso);
+        if (!textura)
         {
-            Debug.LogWarning("[PatronusSpriteAnimation] No se encontró el spritesheet: " + resourceName);
+            Debug.LogWarning("[PatronusSpriteAnimation] No se encontró el spritesheet: " + rutaRecurso);
             return;
         }
 
-        int cellWidth = texture.width / FrameCount;
-        if (cellWidth <= 0 || texture.height <= 0 || texture.width % FrameCount != 0) return;
+        int anchoFotograma = textura.width / FrameCount;
+        if (anchoFotograma <= 0 || textura.height <= 0 || textura.width % FrameCount != 0)
+        {
+            Debug.LogWarning("[PatronusSpriteAnimation] El spritesheet debe contener ocho fotogramas horizontales.", this);
+            return;
+        }
 
         frames = new Sprite[FrameCount];
-        for (int i = 0; i < FrameCount; i++)
+        for (int indiceFotograma = 0; indiceFotograma < FrameCount; indiceFotograma++)
         {
-            var rect = new Rect(i * cellWidth, 0f, cellWidth, texture.height);
-            frames[i] = Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), PixelsPerUnit, 0, SpriteMeshType.FullRect);
-            frames[i].name = resourceName + "_frame_" + i;
+            var regionFotograma = new Rect(indiceFotograma * anchoFotograma, 0f, anchoFotograma, textura.height);
+            frames[indiceFotograma] = Sprite.Create(textura, regionFotograma, new Vector2(0.5f, 0.5f), PixelsPerUnit, 0, SpriteMeshType.FullRect);
+            frames[indiceFotograma].name = rutaRecurso + "_frame_" + indiceFotograma;
         }
 
         frameIndex = 0;
@@ -94,20 +99,28 @@ public class PatronusSpriteAnimation : MonoBehaviour
         frames = null;
     }
 
+    // Reconoce las variantes de nombre usadas para el Patronus no corpóreo.
     // "Polar Bear" / " polar-bear " / "Cérvido" -> "polar_bear" / "polar_bear" / "cervido"
     // (minúsculas, sin tildes y con "_" en lugar de espacios y signos)
-    public static string NormalizarNombre(string value)
+    public static bool EsNoCorporeo(string nombre)
     {
-        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        string nombreNormalizado = NormalizarNombre(nombre);
+        return nombreNormalizado == "non_corporeal" || nombreNormalizado == "noncorporeal" ||
+               nombreNormalizado == "no_corporeo" || nombreNormalizado == "no_corporeal" ||
+               nombreNormalizado == "no_corporea" || nombreNormalizado == "non_corporeal_patronus";
+    }
+    public static string NormalizarNombre(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return string.Empty;
 
-        string decomposed = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
-        var builder = new StringBuilder(decomposed.Length);
-        foreach (char c in decomposed)
+        string nombreDescompuesto = nombre.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var nombreNormalizado = new StringBuilder(nombreDescompuesto.Length);
+        foreach (char caracter in nombreDescompuesto)
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) continue; // tilde suelta
-            if (char.IsLetterOrDigit(c)) builder.Append(c);
-            else if (builder.Length > 0 && builder[builder.Length - 1] != '_') builder.Append('_');
+            if (CharUnicodeInfo.GetUnicodeCategory(caracter) == UnicodeCategory.NonSpacingMark) continue; // tilde suelta
+            if (char.IsLetterOrDigit(caracter)) nombreNormalizado.Append(caracter);
+            else if (nombreNormalizado.Length > 0 && nombreNormalizado[nombreNormalizado.Length - 1] != '_') nombreNormalizado.Append('_');
         }
-        return builder.ToString().Trim('_');
+        return nombreNormalizado.ToString().Trim('_');
     }
 }

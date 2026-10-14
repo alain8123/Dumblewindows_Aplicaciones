@@ -8,17 +8,17 @@ using UnityEngine.Video;
 [RequireComponent(typeof(RawImage))]
 public class VideoFondo : MonoBehaviour
 {
-    public VideoPlayer player;
+    [SerializeField] private VideoPlayer player;
 
-    RawImage image;
-    RenderTexture rt; // textura donde el VideoPlayer pinta cada fotograma
+    RawImage imagenVideo;
+    RenderTexture texturaVideo; // textura donde el VideoPlayer pinta cada fotograma
 
     // Prepara el vídeo; cuando está listo se llama a OnPrepared
     void OnEnable()
     {
-        image = GetComponent<RawImage>();
+        imagenVideo = GetComponent<RawImage>();
         if (!player) player = FindAnyObjectByType<VideoPlayer>();
-        if (!player || !player.clip)
+        if (!imagenVideo || !player || !player.clip)
         {
             Debug.LogError("[VideoFondo] No hay VideoPlayer con clip asignado.");
             return;
@@ -33,20 +33,21 @@ public class VideoFondo : MonoBehaviour
     }
 
     // Ya se conoce el tamaño del vídeo: crea la textura, la muestra en el RawImage y arranca la reproducción
-    void OnPrepared(VideoPlayer p)
+    void OnPrepared(VideoPlayer reproductor)
     {
-        if (!rt)
+        if (!isActiveAndEnabled || !reproductor || !imagenVideo || reproductor.width == 0 || reproductor.height == 0) return;
+        if (!texturaVideo)
         {
-            rt = new RenderTexture((int)p.width, (int)p.height, 0) { name = "VideoFondoRT", hideFlags = HideFlags.DontSave };
-            rt.Create();
+            texturaVideo = new RenderTexture((int)reproductor.width, (int)reproductor.height, 0) { name = "VideoFondoRT", hideFlags = HideFlags.DontSave };
+            texturaVideo.Create();
         }
-        p.targetTexture = rt;
-        image.texture = rt;
-        image.color = Color.white;
-        p.Play();
+        reproductor.targetTexture = texturaVideo;
+        imagenVideo.texture = texturaVideo;
+        imagenVideo.color = Color.white;
+        reproductor.Play();
     }
 
-    void OnError(VideoPlayer p, string msg) => Debug.LogError("[VideoFondo] " + msg);
+    void OnError(VideoPlayer reproductor, string mensaje) => Debug.LogError("[VideoFondo] " + mensaje);
 
 #if UNITY_EDITOR
     void Update()
@@ -63,9 +64,16 @@ public class VideoFondo : MonoBehaviour
         {
             player.prepareCompleted -= OnPrepared;
             player.errorReceived -= OnError;
-            if (!Application.isPlaying) { player.Stop(); player.targetTexture = null; }
+            if (!Application.isPlaying) player.Stop();
+            if (player.targetTexture == texturaVideo) player.targetTexture = null;
         }
-        if (image) { image.texture = null; image.color = Color.black; }
-        if (rt) { rt.Release(); DestroyImmediate(rt); rt = null; }
+        if (imagenVideo) { imagenVideo.texture = null; imagenVideo.color = Color.black; }
+        if (texturaVideo)
+        {
+            texturaVideo.Release();
+            if (Application.isPlaying) Destroy(texturaVideo);
+            else DestroyImmediate(texturaVideo);
+            texturaVideo = null;
+        }
     }
 }

@@ -1,0 +1,1 @@
+SUCCESS: Sheet 960x120, 8 frames, Point filter; exit prefab connected with internal Salir callback; scene saved. Menu appearance unchanged.

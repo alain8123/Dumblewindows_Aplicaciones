@@ -22,47 +22,47 @@ public class AnimacionPorValor
     public GameObject prefab; // prefab de UI (Image + Animator, etc.) que sustituye al spritesheet
 }
 
-// Botón Buscar: consulta la API con el ID escrito y muestra el patronus del estudiante en PopupAlumno,
+// Controlador de consulta: consulta la API con el ID escrito y muestra el patronus del estudiante en PopupAlumno,
 // o un aviso en PopupAviso si algo falla.
 public class ConsultaAlumno : MonoBehaviour
 {
     [Header("UI")]
-    public TMP_InputField inputId;
-    public TMP_Text textoEstado;       // opcional: texto "Buscando..."
-    public PopupAlumno popup;          // muestra la animación del patronus
-    public PopupAviso popupAviso;      // avisos de error
+    [SerializeField] private TMP_InputField inputId;
+    [SerializeField] private TMP_Text textoEstado;       // opcional: texto "Buscando..."
+    [SerializeField] private PopupAlumno popup;          // muestra la animación del patronus
+    [SerializeField] private PopupAviso popupAviso;      // avisos de error
 
     [Header("API")]
     // Debe terminar en "/" y SIN llaves. El ID escrito en el campo se añade al final.
-    public string urlBase = "https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/";
-    public bool validarFormatoUuid = true; // evita llamar a la API si el ID no tiene formato UUID
+    [SerializeField] private string urlBase = "https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/";
+    [SerializeField] private bool validarFormatoUuid = true; // evita llamar a la API si el ID no tiene formato UUID
 
     [Header("Autenticación")]
-    public string nombreCabecera = "X-API-Key"; // el nombre que indique Swagger (botón Authorize)
-    public string apiKey = "";                  // rellénala en el inspector, no en el código
-    public bool usarBearer = false;             // actívalo si Swagger pide "Authorization: Bearer ..."
+    [SerializeField] private string nombreCabecera = "X-API-Key"; // el nombre que indique Swagger (botón Authorize)
+    [SerializeField] private string apiKey = "";                  // Una clave incluida en el cliente no debe considerarse secreta.
+    [SerializeField] private bool usarBearer = false;             // actívalo si Swagger pide "Authorization: Bearer ..."
 
     [Header("Animaciones personalizadas (opcional)")]
     // Si un patronus no está aquí, se usa su spritesheet de Resources/PatronusPixelSprites.
-    public List<AnimacionPorValor> animacionesPersonalizadas = new List<AnimacionPorValor>();
+    [SerializeField] private List<AnimacionPorValor> animacionesPersonalizadas = new List<AnimacionPorValor>();
 
     [Header("Valores que significan 'sin patronus'")]
-    public string[] valoresSinPatronus = { "Non-corporeal" };
+    [SerializeField] private string[] valoresSinPatronus = { "Non-corporeal" };
 
     [Header("Depuración")]
-    public bool mostrarLogs = true;
+    [SerializeField] private bool mostrarLogs = true;
 
-    bool consultando; // evita lanzar dos consultas a la vez
+    private bool consultando; // evita lanzar dos consultas a la vez
 
     // Asígnalo al OnClick del botón Buscar
     public void AlPulsarBuscar()
     {
         if (consultando) return;
 
-        string id = inputId ? inputId.text.Trim() : "";
+        string id = inputId ? (inputId.text ?? string.Empty).Trim() : "";
         if (string.IsNullOrEmpty(id))
         {
-            Avisar("ID no válida", "Escribe el ID del estudiante.");
+            Avisar("ID no válido", "Escribe el ID del estudiante.");
             return;
         }
 
@@ -70,10 +70,23 @@ public class ConsultaAlumno : MonoBehaviour
         {
             if (!Guid.TryParse(id, out Guid guid))
             {
-                Avisar("ID no válida", "El ID no tiene un formato correcto.");
+                Avisar("ID no válido", "El ID no tiene un formato correcto.");
                 return;
             }
             id = guid.ToString(); // formato estándar con guiones y en minúsculas
+        }
+
+        if (string.IsNullOrWhiteSpace(urlBase) ||
+            !Uri.TryCreate(urlBase, UriKind.Absolute, out Uri direccionBase) ||
+            (direccionBase.Scheme != Uri.UriSchemeHttp && direccionBase.Scheme != Uri.UriSchemeHttps))
+        {
+            Avisar("Configuración incorrecta", "La dirección del servidor no es válida.");
+            return;
+        }
+        if (!usarBearer && !string.IsNullOrEmpty(apiKey) && string.IsNullOrWhiteSpace(nombreCabecera))
+        {
+            Avisar("Configuración incorrecta", "Falta el nombre de la cabecera de autenticación.");
+            return;
         }
 
         StartCoroutine(Consultar(id));
@@ -85,54 +98,87 @@ public class ConsultaAlumno : MonoBehaviour
         consultando = true;
         Mostrar("Buscando...");
 
-        string url = urlBase + UnityWebRequest.EscapeURL(id);
-        if (mostrarLogs) Debug.Log("[ConsultaAlumno] URL: " + url);
+        // El finally restablece el estado aunque falle la petición o el procesamiento.
+        try
+        {
+            using (UnityWebRequest request = CrearPeticion(id))
+            {
+                yield return request.SendWebRequest();
+                GestionarRespuesta(request);
+            }
+        }
+        finally
+        {
+            consultando = false;
+            if (textoEstado && textoEstado.text == "Buscando...") Mostrar("");
+        }
+    }
 
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+    // Centraliza la URL, el tiempo de espera y las cabeceras; no registra credenciales.
+    UnityWebRequest CrearPeticion(string id)
+    {
+        string url = urlBase.TrimEnd('/') + "/" + UnityWebRequest.EscapeURL(id);
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        try
         {
             request.timeout = 10;
             request.SetRequestHeader("Accept", "application/json");
             if (!string.IsNullOrEmpty(apiKey))
             {
-                if (usarBearer) request.SetRequestHeader("Authorization", "Bearer " + apiKey);
-                else request.SetRequestHeader(nombreCabecera, apiKey);
+                string cabecera = usarBearer ? "Authorization" : nombreCabecera;
+                string credencial = usarBearer ? "Bearer " + apiKey : apiKey;
+                request.SetRequestHeader(cabecera, credencial);
             }
+            return request;
+        }
+        catch
+        {
+            request.Dispose();
+            throw;
+        }
+    }
 
-            yield return request.SendWebRequest();
-
-            string texto = request.downloadHandler != null ? request.downloadHandler.text : "";
-            if (mostrarLogs) Debug.Log($"[ConsultaAlumno] HTTP {request.responseCode} - Respuesta: {texto}");
-
-            if (request.result == UnityWebRequest.Result.Success) ProcesarRespuesta(texto);
-            else switch (request.responseCode)
-            {
-                case 404:
-                    Avisar("ID no encontrada", "No existe ningún estudiante con ese ID.");
-                    break;
-                case 400:
-                case 422:
-                    Avisar("ID no válida", "La API ha rechazado ese ID.");
-                    Debug.LogWarning("[ConsultaAlumno] La API rechazó el ID: " + texto);
-                    break;
-                case 401:
-                case 403:
-                    Avisar("Acceso denegado", "La clave de API no es válida.");
-                    Debug.LogError("[ConsultaAlumno] Autenticación rechazada: " + texto);
-                    break;
-                default:
-                    Avisar("Error de conexión", "No se ha podido contactar con el servidor.");
-                    Debug.LogError($"[ConsultaAlumno] {request.error}");
-                    break;
-            }
+    // Distingue una respuesta válida de errores de formato, acceso o conexión.
+    void GestionarRespuesta(UnityWebRequest request)
+    {
+        if (mostrarLogs) Debug.Log($"[ConsultaAlumno] HTTP {request.responseCode}", this);
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            ProcesarRespuesta(request.downloadHandler?.text ?? string.Empty);
+            return;
         }
 
+        switch (request.responseCode)
+        {
+            case 404:
+                Avisar("Alumno no encontrado", "No existe ningún estudiante con ese ID.");
+                break;
+            case 400:
+            case 422:
+                Avisar("ID no válido", "La API ha rechazado ese ID.");
+                break;
+            case 401:
+            case 403:
+                Avisar("Acceso denegado", "La clave de API no es válida.");
+                break;
+            default:
+                Avisar("Error de conexión", "No se ha podido contactar con el servidor.");
+                break;
+        }
+    }
+
+    // Una desactivación cancela la consulta y permite volver a buscar al reactivar.
+    void OnDisable()
+    {
+        StopAllCoroutines();
         consultando = false;
+        Mostrar("");
     }
 
     // Lee el JSON, decide qué patronus mostrar y abre el popup
     void ProcesarRespuesta(string texto)
     {
-        string limpio = texto.TrimStart();
+        string limpio = (texto ?? string.Empty).TrimStart();
 
         // Si la URL fuese incorrecta, el servidor podría devolver HTML en vez de JSON
         if (!limpio.StartsWith("{"))
@@ -164,10 +210,10 @@ public class ConsultaAlumno : MonoBehaviour
         }
 
         // La API marca explícitamente que no tiene patronus corpóreo (ej. "Non-corporeal")
-        if (valoresSinPatronus != null && valoresSinPatronus.Any(s =>
-                !string.IsNullOrEmpty(s) && string.Equals(s.Trim(), patronus.Trim(), StringComparison.OrdinalIgnoreCase)))
+        if (!PatronusSpriteAnimation.EsNoCorporeo(patronus) && valoresSinPatronus != null && valoresSinPatronus.Any(valor =>
+                !string.IsNullOrEmpty(valor) && string.Equals(valor.Trim(), patronus.Trim(), StringComparison.OrdinalIgnoreCase)))
         {
-            Avisar("Sin patronus", "Este estudiante no puede producir un patronus corpóreo.");
+            Avisar("Sin patronus", "Este estudiante no puede producir un patronus corporeo.");
             return;
         }
 
@@ -176,7 +222,7 @@ public class ConsultaAlumno : MonoBehaviour
 
         if (!popup)
         {
-            Debug.LogError("[ConsultaAlumno] Falta asignar el PopupAlumno. Ejecuta Tools > Menú > Aplicar estilo.");
+            Debug.LogError("[ConsultaAlumno] Falta asignar PopupAlumno en ControladorConsultaAlumno.");
             return;
         }
 
@@ -189,24 +235,26 @@ public class ConsultaAlumno : MonoBehaviour
     GameObject BuscarPrefab(string valor)
     {
         string buscado = PatronusSpriteAnimation.NormalizarNombre(valor);
-        return animacionesPersonalizadas
-            .Where(p => p != null && p.prefab && !string.IsNullOrEmpty(p.valor))
-            .FirstOrDefault(p => PatronusSpriteAnimation.NormalizarNombre(p.valor) == buscado)?.prefab;
+        if (animacionesPersonalizadas == null) return null;
+        return animacionesPersonalizadas.FirstOrDefault(animacion =>
+            animacion != null && animacion.prefab &&
+            !string.IsNullOrEmpty(animacion.valor) &&
+            PatronusSpriteAnimation.NormalizarNombre(animacion.valor) == buscado)?.prefab;
     }
 
     // "Jack Rabbit (c. 1986), Wolf (1995-1998)" -> "Wolf"   |   "Stag" -> "Stag"
     static string ExtraerPatronusActual(string valor)
     {
-        string v = valor.Substring(valor.LastIndexOf(',') + 1); // lo que va tras la última coma
-        var sb = new StringBuilder(v.Length);
-        int nivel = 0; // profundidad de paréntesis: se descarta todo lo que hay dentro
-        foreach (char c in v)
+        string ultimoPatronus = valor.Substring(valor.LastIndexOf(',') + 1); // lo que va tras la última coma
+        var nombreSinFechas = new StringBuilder(ultimoPatronus.Length);
+        int profundidadParentesis = 0; // profundidad de paréntesis: se descarta todo lo que hay dentro
+        foreach (char caracter in ultimoPatronus)
         {
-            if (c == '(') nivel++;
-            else if (c == ')') nivel = Math.Max(0, nivel - 1);
-            else if (nivel == 0) sb.Append(c);
+            if (caracter == '(') profundidadParentesis++;
+            else if (caracter == ')') profundidadParentesis = Math.Max(0, profundidadParentesis - 1);
+            else if (profundidadParentesis == 0) nombreSinFechas.Append(caracter);
         }
-        return sb.ToString().Trim();
+        return nombreSinFechas.ToString().Trim();
     }
 
     // Muestra un aviso en el popup (o en el texto de estado si no hay popup)

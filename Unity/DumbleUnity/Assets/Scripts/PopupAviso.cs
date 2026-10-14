@@ -1,11 +1,12 @@
 using TMPro;
+using UnityEngine;
 
 // Ventana emergente de aviso (ID no válida, no encontrada, sin patronus...).
 // Se cierra con el botón Aceptar (Close, heredado de PopupBase).
 public class PopupAviso : PopupBase
 {
-    public TMP_Text titulo;
-    public TMP_Text mensaje;
+    [SerializeField] private TMP_Text titulo;
+    [SerializeField] private TMP_Text mensaje;
 
     public void Open(string textoTitulo, string textoMensaje)
     {

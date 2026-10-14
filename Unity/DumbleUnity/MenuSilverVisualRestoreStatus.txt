@@ -1,0 +1,1 @@
+SUCCESS: Menu frames restored; original exit sprite/colors restored as scene overrides; prefab connections preserved; no prefab asset written. UNSAVED: Existing edits preserved; save with Ctrl+S. Backup: ThemeBackups/MenuVisualRestore_20261013_142904_612
