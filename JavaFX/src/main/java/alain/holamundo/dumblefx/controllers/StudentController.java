@@ -4,6 +4,7 @@ import alain.holamundo.dumblefx.API.ApiClient;
 import alain.holamundo.dumblefx.I18n.I18n;
 import alain.holamundo.dumblefx.assets.Alumno;
 import alain.holamundo.dumblefx.assets.Matricula;
+import alain.holamundo.dumblefx.assets.StudentIdPreview;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -17,14 +18,23 @@ import java.util.function.Consumer;
 
 public final class StudentController {
     @FXML private VBox operationPane;
-    @FXML private TextField idField, searchField, houseFilterField, limitField, nameField, houseField, birthDateField;
+    @FXML private TextField idField, searchField, houseFilterField, limitField, nameField, surnameField, houseField, birthDateField;
     @FXML private Label status, result;
     @FXML private TableView<Alumno> table;
     @FXML private TableColumn<Alumno, String> idColumn, nameColumn, houseColumn, birthColumn;
     private final ApiClient api = new ApiClient();
     private String loadedId;
+    private String loadedSurname;
 
     @FXML private void initialize() {
+        if (surnameField != null) {
+            houseField.setText("Central");
+            idField.setEditable(false);
+            nameField.textProperty().addListener((observable, previous, current) -> previewId());
+            surnameField.textProperty().addListener((observable, previous, current) -> previewId());
+            houseField.textProperty().addListener((observable, previous, current) -> previewId());
+            previewId();
+        }
         if (table == null) return;
         idColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getId()));
         nameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNombre()));
@@ -33,6 +43,10 @@ public final class StudentController {
         Label placeholder = new Label();
         I18n.message(placeholder.textProperty(), "status.empty");
         table.setPlaceholder(placeholder);
+    }
+
+    private void previewId() {
+        idField.setText(StudentIdPreview.generate(houseField.getText(), nameField.getText(), surnameField.getText()));
     }
 
     @FXML private void findId() {
@@ -58,12 +72,11 @@ public final class StudentController {
     }
 
     @FXML private void create() {
-        String id = parsedId();
-        if (id == null) return;
-        Matricula value = form(id);
+        Matricula value = form(null);
         if (value == null) return;
         run(() -> api.create(value), created -> {
-            idField.clear(); nameField.clear(); houseField.clear(); birthDateField.clear();
+            nameField.clear(); surnameField.clear(); houseField.setText("Central"); birthDateField.clear();
+            idField.setText(created.studentId());
             I18n.message(status.textProperty(), "status.created", created.studentId());
         });
     }
@@ -72,10 +85,12 @@ public final class StudentController {
         String id = parsedId();
         if (id == null) return;
         loadedId = null;
+        loadedSurname = null;
         run(() -> api.get(id), alumno -> {
             nameField.setText(alumno.getNombre()); houseField.setText(alumno.getCasa());
             birthDateField.setText(alumno.getNacimiento());
             loadedId = id;
+            loadedSurname = alumno.getApellidos();
             I18n.message(status.textProperty(), "status.loaded");
         });
     }
@@ -123,7 +138,13 @@ public final class StudentController {
 
     private Matricula form(String id) {
         String name = nameField.getText().trim();
+        String surname = surnameField == null ? loadedSurname : surnameField.getText().trim();
         String house = houseField.getText().trim();
+        if (surnameField != null && house.isBlank()) house = "Central";
+        if (surname == null || surname.isBlank() || surname.length() > 200) {
+            I18n.message(status.textProperty(), "validation.surname");
+            return null;
+        }
         String birth = birthDateField.getText().trim();
         if (name.isBlank() || name.length() > 200 || house.length() > 80) {
             I18n.message(status.textProperty(), "validation.name");
@@ -138,7 +159,7 @@ public final class StudentController {
             I18n.message(status.textProperty(), "validation.date");
             return null;
         }
-        return new Matricula(id, name, house.isBlank() ? null : house, birth.isBlank() ? null : birth);
+        return new Matricula(id, name, surname, house.isBlank() ? null : house, birth.isBlank() ? null : birth);
     }
 
     private void describe(Alumno alumno) {

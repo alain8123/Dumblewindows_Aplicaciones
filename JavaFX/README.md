@@ -44,22 +44,37 @@ Las búsquedas envían los filtros a la API, no filtran una lista local.
 Las respuestas de consulta usan `id`, `nombre`, `casa`, `nacimiento` o
 `fecha_nacimiento`, y `origen`; los IDs pueden ser UUID o texto.
 
-Crear y actualizar envían exclusivamente este formato:
+Al crear una matrícula, nombre y apellidos se introducen por separado. La casa
+aparece como `Central` y, si se deja vacía, también se usa `Central`.
+El ID es de solo lectura y se muestra mientras se rellenan los datos:
+`CC-NNN-AAA` (dos letras de la casa, tres del nombre y tres del primer apellido),
+en mayúsculas y sin tildes. Ejemplo: Central, Harry, Potter Evans → `CE-HAR-POT`.
+La vista previa no consulta ni reserva IDs. Al guardar, la API comprueba
+los duplicados y devuelve el ID definitivo, con `-02`, `-03`, etc. si procede.
+El formulario muestra ese ID final y no envía el ID calculado en la petición POST.
+
+Ejemplo de alta:
 
 ```json
 {
-  "student_id": "estudiante-001",
-  "full_name": "Nombre Apellidos",
-  "house": "Gryffindor",
+  "full_name": "Harry",
+  "apellidos": "Potter Evans",
+  "house": "Central",
   "birth_date": "2000-01-31"
 }
 ```
 
-ID y nombre completo son obligatorios (máximos 64 y 200 caracteres).
-Casa es opcional (máximo 80). Fecha es opcional, `AAAA-MM-DD`; los campos
-opcionales vacíos se envían como `null`. PUT conserva el ID cargado.
-La respuesta de matrícula incluye `student_id`, `full_name`, `house`,
-`birth_date` y un `id` numérico interno, que no se usa como ID de consulta.
+Nombre y apellidos son obligatorios (máximo 200 caracteres cada uno).
+Casa admite hasta 80 caracteres. La fecha es opcional, en formato `AAAA-MM-DD`;
+si está vacía, se omite del JSON. Las abreviaturas con menos letras conservan
+las disponibles; el primer apellido sigue las mismas reglas de partículas
+que la API (`de`, `del`, `van`, etc.).
+
+En la actualización se conservan y envían los apellidos obtenidos al cargar
+la matrícula, junto con el nombre, la casa, la fecha y el ID de consulta.
+La API puede generar otro ID si cambia la identidad; se muestra el ID devuelto.
+La respuesta de matrícula incluye `student_id`, `full_name`, `apellidos`,
+`house`, `birth_date` y un `id` numérico interno, que no se usa como ID de consulta.
 Eliminar devuelve un objeto de confirmación, no una ficha de estudiante.
 
 **Límite de la API:** la búsqueda por datos consulta estudiantes históricos y
