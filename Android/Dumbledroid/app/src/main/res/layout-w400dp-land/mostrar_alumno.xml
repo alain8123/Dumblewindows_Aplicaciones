@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/negro"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/detalle_imagen"
+            android:layout_width="222dp"
+            android:layout_height="239dp"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/bg_boton_plata"
+            android:contentDescription="@string/foto_alumno"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ejemplo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/volver"
+            tools:ignore="Suspicious0dp" />
+
+        <TextView
+            android:id="@+id/detalle_nombre"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.03"
+            android:textColor="@color/plata_brillo"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/detalle_alias"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/detalle_imagen"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/detalle_alias"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/plata"
+            android:textSize="18sp"
+            android:textStyle="italic"
+            app:layout_constraintBottom_toTopOf="@id/detalle_casa"
+            app:layout_constraintStart_toStartOf="@+id/detalle_nombre"
+            app:layout_constraintTop_toBottomOf="@id/detalle_nombre" />
+
+        <TextView
+            android:id="@+id/detalle_casa"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="15dp"
+            android:letterSpacing="0.1"
+            android:paddingBottom="12dp"
+            android:textAllCaps="true"
+            android:textColor="@color/plata_oscura"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/detalle_especie"
+            app:layout_constraintStart_toStartOf="@+id/detalle_alias"
+            app:layout_constraintTop_toBottomOf="@id/detalle_alias" />
+
+        <TextView
+            android:id="@+id/detalle_especie"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_genero"
+            app:layout_constraintStart_toStartOf="@+id/detalle_casa"
+            app:layout_constraintTop_toBottomOf="@id/detalle_casa" />
+
+        <TextView
+            android:id="@+id/detalle_genero"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_fecha_nacimiento"
+            app:layout_constraintStart_toStartOf="@+id/detalle_especie"
+            app:layout_constraintTop_toBottomOf="@id/detalle_especie" />
+
+        <TextView
+            android:id="@+id/detalle_fecha_nacimiento"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_patronus"
+            app:layout_constraintStart_toStartOf="@+id/detalle_genero"
+            app:layout_constraintTop_toBottomOf="@id/detalle_genero" />
+
+        <TextView
+            android:id="@+id/detalle_patronus"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_nacionalidad"
+            app:layout_constraintStart_toStartOf="@+id/detalle_fecha_nacimiento"
+            app:layout_constraintTop_toBottomOf="@id/detalle_fecha_nacimiento" />
+
+        <TextView
+            android:id="@+id/detalle_nacionalidad"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/detalle_patronus"
+            app:layout_constraintTop_toBottomOf="@id/detalle_patronus" />
+
+        <Button
+            style="@style/BotonPlata"
+            android:id="@+id/volver"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="mostrar_menu"
+            android:text="@string/volver"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/detalle_imagen"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/detalle_imagen" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
