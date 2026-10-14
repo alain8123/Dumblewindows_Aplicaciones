@@ -71,6 +71,16 @@ class MainActivity : AppCompatActivity() {
     /** Lista de estudiantes mostrada en la pantalla de lista (para restaurarla al recrear). */
     private var listaActual: List<Estudiante> = emptyList()
 
+    /** Valores de formato de id*/
+
+    //formato de id unico
+    private val REGEX_ID = Regex("^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}$")
+
+    //formato de id duplicado
+    private val REGEX_ID_DUPE = Regex("^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}-[0-9]{2}$")
+
+
+
     // ==========================================================
     //                    CICLO DE VIDA
     // ==========================================================
@@ -257,15 +267,41 @@ class MainActivity : AppCompatActivity() {
 
         // Validación: si el campo está vacío, muestra un aviso y sale.
         if (id.isEmpty()) {
-            Toast.makeText(this, "Escribe un ID", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.escribe_un_id), Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Informa al usuario de que la búsqueda ha comenzado.
-        Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
+        // Validacion que el id del estudiante cumpla con el formato
+        if (verificar_formato_id(id)){
+            // Informa al usuario de que la búsqueda ha comenzado.
+            Toast.makeText(this, getString(R.string.buscando), Toast.LENGTH_SHORT).show()
 
-        // Lanza la petición a la API.
-        getEstudiantePorId(id)
+            // Lanza la petición a la API.
+            getEstudiantesPorId(id)
+
+        }else{
+            // Informa al usuario de que el id no cumple el formato.
+            Toast.makeText(this,
+                getString(R.string.el_id_no_cumple_el_formato), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Verifica el formato del id pasado como parametro.
+     *
+     * @return Boolean True si el id tiene el formato correcto y false si no lo tiene.
+     * @param id Identificador a comprobar el formato.
+     */
+    private fun verificar_formato_id(id: String): Boolean {
+        if (REGEX_ID.matches(id.trim())){
+            return true
+        }else{
+            if (REGEX_ID_DUPE.matches(id.trim())){
+                return true
+            }else{
+                return false
+            }
+        }
     }
 
     /**
@@ -274,24 +310,51 @@ class MainActivity : AppCompatActivity() {
      *
      * @param id Identificador del estudiante a buscar.
      */
-    private fun getEstudiantePorId(id: String) {
-        // Lanza una corrutina ligada al ciclo de vida de la Activity.
+    private fun getEstudiantesPorId(id: String) {
+        val base = idBase(id)
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Llama al endpoint del servicio pasando el ID.
-                val estudiante = service.getEstudiantePorId(id = id)
+                val lista = service.getEstudiantesPorId(base)
 
-                // Vuelve al hilo principal para actualizar la UI.
                 withContext(Dispatchers.Main) {
-                    // Muestra la pantalla de detalle con los datos obtenidos.
-                    mostrarDetalleAlumno(estudiante)
+                    when {
+                        lista.isEmpty() -> {
+                            Toast.makeText(
+                                this@MainActivity,
+                                getString(R.string.sin_resultados),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        lista.size == 1 -> {
+                            // Solo hay uno -> detalle directo
+                            mostrarDetalleAlumno(lista.first())
+                        }
+                        else -> {
+                            // Varios con el mismo ID base -> lista
+                            mostrarListaAlumnos(lista)
+                        }
+                    }
                 }
             } catch (e: Exception) {
-                // En caso de error, vuelve al hilo principal y muestra un Toast.
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.error, e.message),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
+        }
+    }
+
+    private fun idBase(id: String): String {
+        val partes = id.split("-")
+        // Si hay 4 partes y la última son 2 dígitos, es un duplicado
+        return if (partes.size == 4 && partes[3].length == 2 && partes[3].all { it.isDigit() }) {
+            partes.take(3).joinToString("-")
+        } else {
+            id
         }
     }
 
@@ -310,12 +373,12 @@ class MainActivity : AppCompatActivity() {
 
         // Validación: al menos uno de los dos campos debe estar relleno.
         if (nombre.isEmpty() && casa.isEmpty()) {
-            Toast.makeText(this, "Rellena al menos un campo", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.rellena_al_menos_un_campo), Toast.LENGTH_SHORT).show()
             return
         }
 
         // Informa al usuario de que la búsqueda ha comenzado.
-        Toast.makeText(this, "Buscando...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.buscando, Toast.LENGTH_SHORT).show()
 
         // Lanza la petición a la API.
         getEstudiantePorDatos(nombre, casa)
@@ -366,7 +429,7 @@ class MainActivity : AppCompatActivity() {
                         lista.isEmpty() -> {
                             Toast.makeText(
                                 this@MainActivity,
-                                "Sin resultados",
+                                getString(R.string.sin_resultados),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -384,7 +447,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@MainActivity,
-                        "Error: ${e.message}",
+                        getString(R.string.error, e.message),
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -420,7 +483,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Rellena cada TextView con su dato correspondiente del estudiante.
-        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre
+        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre + " " + e.apellidos
         findViewById<TextView>(R.id.detalle_alias).text             = e.alias
         findViewById<TextView>(R.id.detalle_casa).text              = e.casa
         findViewById<TextView>(R.id.detalle_especie).text           = e.especie

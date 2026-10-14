@@ -5,10 +5,8 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService_id {
-    @GET(Constantes.PATH_ID)
-    suspend fun getEstudiantePorId(
-        @Path("student_id") id: String
-    ): Estudiante
+    @GET("students") // o el endpoint que sea
+    suspend fun getEstudiantesPorId(@Query("id") id: String): List<Estudiante>
 
     @GET(Constantes.PATH_DATOS)   // "/estudiantes"
     suspend fun getEstudiantesPorDatos(
