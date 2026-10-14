@@ -33,6 +33,7 @@ import os
 import re
 import sqlite3
 import time
+import unicodedata
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -43,8 +44,8 @@ import jpype
 import oracledb
 from fastapi import Depends, FastAPI, HTTPException, Query, Security
 from fastapi.security import APIKeyHeader
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import Date, DateTime, Integer, String, create_engine, select
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlalchemy import Date, DateTime, Integer, String, create_engine, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 MARIADB_URL = os.getenv("MARIADB_URL", "mysql+pymysql://hogwarts_app:hogwarts_app@mariadb:3306/hogwarts")
@@ -78,6 +79,7 @@ class Enrollment(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     student_id: Mapped[str] = mapped_column(String(64), unique=True)
     full_name: Mapped[str] = mapped_column(String(200))
+    apellidos: Mapped[str] = mapped_column(String(200))
     house: Mapped[str | None] = mapped_column(String(80), nullable=True)
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -85,20 +87,33 @@ class Enrollment(Base):
 
 class EnrollmentIn(BaseModel):
     """Campos recibidos al crear o modificar una matrícula."""
-    student_id: str = Field(min_length=1, max_length=64)
-    full_name: str = Field(min_length=1, max_length=200)
-    house: str | None = Field(default=None, max_length=80)
+    student_id: str | None = Field(default=None, max_length=64, description="Se genera automáticamente; el valor enviado no se utiliza")
+    full_name: str = Field(min_length=1, max_length=200, description="Nombre o nombres de pila, sin apellidos")
+    apellidos: str = Field(min_length=1, max_length=200)
+    house: str = Field(min_length=2, max_length=80)
+
+    @field_validator("full_name", "apellidos", "house")
+    @classmethod
+    def validate_identity(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if not value or not any(char.isalpha() for char in value):
+            raise ValueError("Debe contener un nombre real, no un campo vacío")
+        if any(term in value.casefold() for term in ("father of", "mother of", "unnamed", "unknown", "quidditch player")):
+            raise ValueError("No se admiten descripciones en lugar de nombres")
+        return value
     birth_date: date | None = None
 
 class EnrollmentOut(EnrollmentIn):
     """Matrícula devuelta con su identificador interno de MariaDB."""
     model_config = ConfigDict(from_attributes=True)
+    student_id: str
     id: int
 
 class StudentOut(BaseModel):
     """Formato común de respuesta para estudiantes de cualquier origen."""
     id: str
     nombre: str
+    apellidos: str
     casa: str
     alias: str | None = None
     especie: str | None = None
@@ -114,7 +129,7 @@ class StudentOut(BaseModel):
 
 app = FastAPI(
     title="API de estudiantes de Hogwarts",
-    version="2.0.0",
+    version="2.1.0",
     description=("MariaDB contiene solo matrículas nuevas. Derby, HSQLDB, H2 y Oracle "
                  "son fuentes históricas de consulta; SQLite almacena la caché temporal. "
                  "Las rutas en inglés siguen operativas para clientes anteriores pero no aparecen en /docs."),
@@ -199,13 +214,13 @@ def source_connection(kind: str) -> Iterator[Any]:
 def create_history_tables() -> None:
     """Crea y carga tablas históricas vacías durante el arranque inicial."""
     statements = {
-        "derby": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
-        "hsqldb": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
-        "h2": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
-        "oracle": 'CREATE TABLE students (id VARCHAR2(64) PRIMARY KEY, nombre VARCHAR2(2000), casa VARCHAR2(40), alias VARCHAR2(2000), especie VARCHAR2(100), genero VARCHAR2(30), nacimiento VARCHAR2(1000), nacionalidad VARCHAR2(2000), patronus VARCHAR2(2000), patronus_origen VARCHAR2(2000), imagen VARCHAR2(1000), wiki VARCHAR2(1000))',
+        "derby": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), apellidos VARCHAR(2000) NOT NULL, casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
+        "hsqldb": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), apellidos VARCHAR(2000) NOT NULL, casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
+        "h2": 'CREATE TABLE students (id VARCHAR(64) PRIMARY KEY, nombre VARCHAR(2000), apellidos VARCHAR(2000) NOT NULL, casa VARCHAR(40), alias VARCHAR(2000), especie VARCHAR(100), genero VARCHAR(30), nacimiento VARCHAR(1000), nacionalidad VARCHAR(2000), patronus VARCHAR(2000), patronus_origen VARCHAR(2000), imagen VARCHAR(1000), wiki VARCHAR(1000))',
+        "oracle": 'CREATE TABLE students (id VARCHAR2(64) PRIMARY KEY, nombre VARCHAR2(2000), apellidos VARCHAR2(2000) NOT NULL, casa VARCHAR2(40), alias VARCHAR2(2000), especie VARCHAR2(100), genero VARCHAR2(30), nacimiento VARCHAR2(1000), nacionalidad VARCHAR2(2000), patronus VARCHAR2(2000), patronus_origen VARCHAR2(2000), imagen VARCHAR2(1000), wiki VARCHAR2(1000))',
     }
-    insert = "INSERT INTO students (id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
-    oracle_insert = "INSERT INTO students (id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12)"
+    insert = "INSERT INTO students (id,nombre,apellidos,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    oracle_insert = "INSERT INTO students (id,nombre,apellidos,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki) VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13)"
     for house, config in SOURCES.items():
         kind = config["kind"]
         try:
@@ -221,7 +236,7 @@ def create_history_tables() -> None:
                 count = int(cursor.fetchone()[0])
                 if count == 0:
                     for row in csv_rows(house):
-                        values = [row.get(key) or None for key in ("id", "nombre", "casa", "alias", "especie", "genero", "nacimiento", "nacionalidad", "patronus", "patronus_origen", "imagen", "wiki")]
+                        values = [row.get(key) or None for key in ("id", "nombre", "apellidos", "casa", "alias", "especie", "genero", "nacimiento", "nacionalidad", "patronus", "patronus_origen", "imagen", "wiki")]
                         cursor.execute(oracle_insert if kind == "oracle" else insert, values)
                     connection.commit()
                 cursor.close()
@@ -231,7 +246,7 @@ def create_history_tables() -> None:
 
 def row_to_student(row: Any, house: str) -> StudentOut:
     """Normaliza una fila histórica y anota la base de datos de origen."""
-    values = {key: (None if value is None else str(value)) for key, value in zip(("id", "nombre", "casa", "alias", "especie", "genero", "nacimiento", "nacionalidad", "patronus", "patronus_origen", "imagen", "wiki"), row)}
+    values = {key: (None if value is None else str(value)) for key, value in zip(("id", "nombre", "apellidos", "casa", "alias", "especie", "genero", "nacimiento", "nacionalidad", "patronus", "patronus_origen", "imagen", "wiki"), row)}
     nacimiento, fecha = format_birth(values.get("nacimiento"))
     values["nacimiento"] = nacimiento
     values["fecha_nacimiento"] = fecha
@@ -245,7 +260,7 @@ def query_history(student_id: str) -> StudentOut | None:
         try:
             with source_connection(config["kind"]) as connection:
                 cursor = connection.cursor()
-                cursor.execute("SELECT id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students WHERE id = :1" if config["kind"] == "oracle" else "SELECT id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students WHERE id = ?", [student_id])
+                cursor.execute("SELECT id,nombre,apellidos,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students WHERE id = :1" if config["kind"] == "oracle" else "SELECT id,nombre,apellidos,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students WHERE id = ?", [student_id])
                 row = cursor.fetchone()
                 cursor.close()
                 if row:
@@ -265,11 +280,11 @@ def find_history(name: str | None, house: str | None, limit: int) -> list[Studen
             with source_connection(kind) as connection:
                 cursor = connection.cursor()
                 try:
-                    query = "SELECT id,nombre,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students"
+                    query = "SELECT id,nombre,apellidos,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students"
                     params = []
                     if name:
                         placeholder = ":1" if kind == "oracle" else "?"
-                        query += f" WHERE LOWER(nombre) LIKE {placeholder} ESCAPE '!'"
+                        query += f" WHERE LOWER(nombre || ' ' || apellidos) LIKE {placeholder} ESCAPE '!'"
                         escaped = name.lower().replace("!", "!!").replace("%", "!%").replace("_", "!_")
                         params.append(f"%{escaped}%")
                     query += " ORDER BY id"
@@ -323,14 +338,14 @@ def search_students(name: str | None = Query(default=None), house: str | None = 
     with Session() as session:
         query = select(Enrollment)
         if name:
-            query = query.where(Enrollment.full_name.icontains(name, autoescape=True))
+            query = query.where((Enrollment.full_name + " " + Enrollment.apellidos).icontains(name, autoescape=True))
         if house:
             query = query.where(Enrollment.house.ilike(house.replace("!", "!!").replace("%", "!%").replace("_", "!_"), escape="!"))
         current = session.scalars(query.order_by(Enrollment.id).limit(limit)).all()
-        result = [StudentOut(id=row.student_id, nombre=row.full_name, casa=row.house or "", origen="mariadb") for row in current]
+        result = [StudentOut(id=row.student_id, nombre=row.full_name, apellidos=row.apellidos, casa=row.house or "", origen="mariadb") for row in current]
     if len(result) >= limit:
         return result
-    key = "search:live:v1:" + json.dumps([name or "", house or "", limit], ensure_ascii=False)
+    key = "search:live:v2:" + json.dumps([name or "", house or "", limit], ensure_ascii=False)
     hit = cached(key)
     if hit is None:
         historical = find_history(name, house, limit)
@@ -353,7 +368,7 @@ def get_student(student_id: str) -> StudentOut:
     with Session() as session:
         current = session.scalar(select(Enrollment).where(Enrollment.student_id == student_id))
         if current:
-            return StudentOut(id=current.student_id, nombre=current.full_name, casa=current.house or "", origen="mariadb")
+            return StudentOut(id=current.student_id, nombre=current.full_name, apellidos=current.apellidos, casa=current.house or "", origen="mariadb")
     hit = cached(f"student:{student_id}")
     if hit is not None:
         return StudentOut(**hit)
@@ -363,14 +378,73 @@ def get_student(student_id: str) -> StudentOut:
     cache(f"student:{student_id}", result.model_dump())
     return result
 
+
+def first_surname(apellidos: str) -> str:
+    words = apellidos.split()
+    surname = [words[0]]
+    index = 1
+    particles = {"de", "del", "la", "las", "los", "van", "von", "da", "das", "do", "dos", "di"}
+    while surname[-1].casefold() in particles and index < len(words):
+        surname.append(words[index])
+        index += 1
+    return " ".join(surname)
+
+
+def identity_prefix(value: str, size: int) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    letters = "".join(char for char in normalized if char.isascii() and char.isalpha()).upper()
+    if not letters:
+        raise HTTPException(422, "Nombre, apellido y casa deben contener letras")
+    return letters[:size]
+
+
+@contextmanager
+def identity_session() -> Iterator[Any]:
+    with engine.connect() as connection:
+        locked = connection.execute(text("SELECT GET_LOCK('student_identity', 15)")).scalar()
+        connection.commit()
+        if locked != 1:
+            raise HTTPException(503, "No se pudo reservar el identificador; vuelve a intentarlo")
+        try:
+            with Session(bind=connection) as session:
+                with session.begin():
+                    yield session
+        finally:
+            connection.execute(text("SELECT RELEASE_LOCK('student_identity')"))
+            connection.commit()
+
+
+def generate_student_id(session: Any, data: EnrollmentIn, exclude_id: str | None = None) -> str:
+    base = "-".join((identity_prefix(data.house, 2), identity_prefix(data.full_name, 3), identity_prefix(first_surname(data.apellidos), 3)))
+    used = set(session.scalars(select(Enrollment.student_id)).all())
+    for config in SOURCES.values():
+        try:
+            with source_connection(config["kind"]) as connection:
+                cursor = connection.cursor()
+                try:
+                    cursor.execute("SELECT id FROM students")
+                    used.update(str(row[0]) for row in cursor.fetchall())
+                finally:
+                    cursor.close()
+        except Exception as error:
+            raise HTTPException(503, "No se pueden verificar los identificadores históricos") from error
+    if exclude_id:
+        used.discard(exclude_id)
+    candidate = base
+    suffix = 2
+    while candidate in used:
+        candidate = f"{base}-{suffix:02d}"
+        suffix += 1
+    return candidate
+
 @app.post("/enrollments", dependencies=[Depends(require_api_key)], response_model=EnrollmentOut, status_code=201, include_in_schema=False)
 @app.post("/matriculas", dependencies=[Depends(require_api_key)], response_model=EnrollmentOut, status_code=201, tags=["Matrículas"], summary="Crear matrícula", description="Crea una matrícula nueva en MariaDB; no escribe en bases históricas.")
 def create_enrollment(data: EnrollmentIn) -> EnrollmentOut:
     """Inserta una matrícula nueva únicamente en MariaDB."""
-    with Session.begin() as session:
-        if session.scalar(select(Enrollment).where(Enrollment.student_id == data.student_id)):
-            raise HTTPException(409, "student_id ya existe")
-        row = Enrollment(**data.model_dump())
+    with identity_session() as session:
+        values = data.model_dump(exclude={"student_id"})
+        values["student_id"] = generate_student_id(session, data)
+        row = Enrollment(**values)
         session.add(row)
         session.flush()
         return row
@@ -379,12 +453,16 @@ def create_enrollment(data: EnrollmentIn) -> EnrollmentOut:
 @app.put("/matriculas/{student_id}", dependencies=[Depends(require_api_key)], response_model=EnrollmentOut, tags=["Matrículas"], summary="Modificar matrícula", description="Actualiza exclusivamente una matrícula nueva de MariaDB.")
 def update_enrollment(student_id: str, data: EnrollmentIn) -> EnrollmentOut:
     """Modifica en MariaDB la matrícula nueva indicada."""
-    with Session.begin() as session:
+    with identity_session() as session:
         row = session.scalar(select(Enrollment).where(Enrollment.student_id == student_id))
         if not row:
             raise HTTPException(404, "Matrícula no encontrada en MariaDB")
-        for key, value in data.model_dump().items():
+        changed = (row.full_name, row.apellidos, row.house) != (data.full_name, data.apellidos, data.house)
+        new_id = generate_student_id(session, data, exclude_id=student_id) if changed else student_id
+        for key, value in data.model_dump(exclude={"student_id"}).items():
             setattr(row, key, value)
+        row.student_id = new_id
+        session.flush()
         return row
 
 @app.delete("/enrollments/{student_id}", dependencies=[Depends(require_api_key)], include_in_schema=False)
@@ -397,3 +475,4 @@ def delete_enrollment(student_id: str) -> dict[str, str]:
             raise HTTPException(404, "Matrícula no encontrada en MariaDB")
         session.delete(row)
     return {"status": "deleted"}
+

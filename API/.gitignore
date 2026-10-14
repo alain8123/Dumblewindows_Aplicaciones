@@ -1,3 +1,6 @@
 .api-secret.env
 .env
 *.bak
+.env
+.env.*
+!.env.example
