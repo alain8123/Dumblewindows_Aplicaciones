@@ -1,79 +1,203 @@
-# DumbleFX
+# DumbleFX — Guía de la aplicación
 
-Cliente JavaFX adaptado al contrato OpenAPI de la API DumbleWindows.
+Aplicación de escritorio desarrollada con **JavaFX** para consultar estudiantes y gestionar matrículas mediante la API **DumbleWindows**. Su interfaz está ambientada en un castillo mágico inspirado en Hogwarts y permite trabajar en español, inglés y euskera.
 
-## Configuración
+Este documento explica **qué hace cada parte, cómo funciona y por qué se utiliza**. Se entrega como descarga independiente: no sustituye el README existente ni modifica el proyecto.
 
-Si no existe ningún archivo de configuración, antes de abrir la ventana principal
-aparece un formulario de configuración inicial. Introduce la URL base y la clave
-de la API; las cinco URLs de operación son opcionales y, si se dejan vacías, se
-calculan a partir de la URL base. La clave se muestra oculta en el formulario,
-pero se guarda en texto plano en el archivo. Las URLs se validan antes de guardar;
-esto no comprueba la disponibilidad del servidor ni la validez de la clave.
+## 1. Funcionalidades
 
-Al pulsar **Guardar y continuar**, se crea
-`src/main/resources/alain/holamundo/dumblefx/config.properties`, relativo a la raíz
-del proyecto (o en la ruta indicada por `-Ddumblefx.config`), y continúa el arranque.
-Las cinco variables opcionales siempre se escriben, aunque su valor esté vacío;
-los textos de ejemplo del formulario se incluyen como comentarios, no como URLs.
-Si falla el guardado, el formulario permanece abierto. Cancelar o cerrar el
-formulario termina la aplicación sin crear el archivo. Si el archivo ya existe,
-no se muestra el formulario ni se sobrescribe la configuración.
+| Sección | Qué permite hacer |
+| --- | --- |
+| Consulta por ID | Localizar un estudiante mediante su identificador y seleccionar una coincidencia si hay varias. |
+| Consulta por datos | Buscar por nombre y casa con un máximo de resultados. |
+| Crear estudiante | Registrar una matrícula con nombre, apellidos, casa y fecha opcional. |
+| Actualizar estudiante | Cargar una matrícula y guardar cambios en sus datos. |
+| Eliminar estudiante | Consultar una matrícula y eliminarla tras confirmación. |
 
-En desarrollo se lee `src/main/resources/alain/holamundo/dumblefx/config.properties`.
-El archivo de la raíz y `src/main/resources/config.properties` ya no se buscan.
-Puedes elegir
-un archivo externo con `-Ddumblefx.config=C:\ruta\config.properties` en las
-opciones de la JVM de IntelliJ. Las variables de entorno del mismo nombre
-prevalecen sobre el archivo. Reinicia la aplicación después de cambiarlo.
+La aplicación es un **cliente**: envía peticiones a la API y presenta sus respuestas. No se conecta directamente a MariaDB. Las pantallas describen las escrituras como operaciones sobre matrículas de MariaDB, no sobre estudiantes históricos; esa restricción también debe aplicarla el servidor.
 
-```properties
-DUMBLEFX_API_URL=https://dumblewindows-api.tail6bccfa.ts.net
-DUMBLEFX_API_URL_CONSULTA_ID=https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/{student_id}
-DUMBLEFX_API_URL_CONSULTA_DATOS=https://dumblewindows-api.tail6bccfa.ts.net/estudiantes
-DUMBLEFX_API_URL_CREAR=https://dumblewindows-api.tail6bccfa.ts.net/matriculas
-DUMBLEFX_API_URL_ELIMINAR=https://dumblewindows-api.tail6bccfa.ts.net/matriculas/{student_id}
-DUMBLEFX_API_URL_ACTUALIZAR=https://dumblewindows-api.tail6bccfa.ts.net/matriculas/{student_id}
-DUMBLEFX_API_KEY=TU_CLAVE
+## 2. Tecnologías y propósito
+
+Versiones declaradas en el `pom.xml` revisado:
+
+| Tecnología | Versión | Cómo se utiliza y por qué |
+| --- | --- | --- |
+| Java | 21 | Lenguaje principal y cliente HTTP del JDK. |
+| JavaFX | 21.0.6 | Ventanas, controles, formularios, tablas y diálogos. |
+| FXML | JavaFX | Separa la estructura visual de la lógica de las operaciones. |
+| CSS de JavaFX | — | Centraliza colores, fuentes, fondos y estados visuales. |
+| Jackson Databind | 2.17.2 | Convierte objetos Java a JSON y respuestas JSON a modelos Java. |
+| Maven y wrapper | — | Gestionan dependencias, compilación y ejecución. |
+| ResourceBundle | JDK | Organiza los textos por idioma. |
+
+Esta separación facilita cambiar una pantalla sin mezclar su diseño con el código HTTP o las reglas de validación.
+
+## 3. Estructura del proyecto
+
+```text
+JavaFX/
+├── pom.xml
+├── mvnw / mvnw.cmd
+└── src/main/
+    ├── java/alain/holamundo/dumblefx/
+    │   ├── Launcher.java
+    │   ├── Initialize.java
+    │   ├── ConfigDialog.java
+    │   ├── API/
+    │   │   ├── ApiConfig.java
+    │   │   └── ApiClient.java
+    │   ├── controllers/
+    │   │   ├── MainController.java
+    │   │   └── StudentController.java
+    │   ├── assets/
+    │   │   ├── Alumno.java
+    │   │   ├── Matricula.java
+    │   │   ├── InputValidation.java
+    │   │   └── StudentIdPreview.java
+    │   └── I18n/I18n.java
+    └── resources/alain/holamundo/dumblefx/
+        ├── config.properties
+        ├── estilos/app.css
+        ├── i18n/messages_es.properties
+        ├── i18n/messages_en.properties
+        ├── i18n/messages_eu.properties
+        ├── icono/
+        ├── imagenes/
+        └── ventanas/
+            ├── hello-view.fxml
+            ├── consulta-id.fxml
+            ├── consulta-datos.fxml
+            ├── crear-estudiante.fxml
+            ├── actualizar-estudiante.fxml
+            └── eliminar-estudiante.fxml
 ```
 
-Las URLs de operación son completas y tienen prioridad sobre la URL base.
-Conserva literalmente `{student_id}`; el cliente lo sustituye por el ID
-codificado. No utilices `/docs` como URL de las operaciones.
+### Responsabilidad de las clases
 
-La clave se envía mediante `X-API-Key`. No se imprime en los mensajes de error.
-El archivo privado se ignora en Git y no se empaqueta en el JAR; para distribuir
-la aplicación utiliza un archivo externo o variables de entorno. Una clave en
-un cliente de escritorio sigue siendo extraíble: esto no es autenticación por
-usuario ni protección contra la reutilización de una clave robada.
+- **`Launcher`:** punto de entrada configurado para ejecutar la aplicación.
+- **`Initialize`:** prepara la configuración, carga la vista principal, aplica traducciones, estilos e iconos y muestra la ventana.
+- **`ConfigDialog`:** solicita los datos iniciales de conexión si falta configuración.
+- **`ApiConfig`:** localiza y carga las propiedades, consulta variables de entorno y resuelve las URLs.
+- **`ApiClient`:** construye peticiones HTTP, envía la clave y procesa respuestas y errores.
+- **`MainController`:** cambia la sección visible, su título, la ayuda y el botón activo del menú.
+- **`StudentController`:** valida formularios, coordina las operaciones y muestra resultados.
+- **`Alumno`:** modelo de los datos recibidos en las consultas.
+- **`Matricula`:** modelo utilizado para solicitudes y respuestas de creación y actualización.
+- **`InputValidation`:** reúne las reglas reutilizables de nombres e identificadores.
+- **`StudentIdPreview`:** calcula la vista previa del ID durante el alta.
+- **`I18n`:** obtiene traducciones y vincula textos al idioma seleccionado.
 
-## Operaciones y formatos
+Los FXML definen los controles y su distribución; los controladores responden a las acciones; los modelos representan los datos; la capa API realiza la comunicación externa.
 
-| Pantalla | Método | Ruta | Datos |
-|---|---|---|---|
-| Consulta por ID | GET | `/estudiantes/{student_id}` | ID textual, no el ID interno de la matrícula |
-| Consulta por datos | GET | `/estudiantes` | `name`, `house` opcionales; `limit` entre 1 y 100 |
-| Crear estudiante | POST | `/matriculas` | JSON de matrícula |
-| Actualizar estudiante | PUT | `/matriculas/{student_id}` | JSON completo de matrícula |
-| Eliminar estudiante | DELETE | `/matriculas/{student_id}` | Sin cuerpo |
+## 4. Arranque y configuración
 
-Las búsquedas envían los filtros a la API, no filtran una lista local.
-Las respuestas de consulta usan `id`, `nombre`, `apellido`, `casa`, `nacimiento` o
-`fecha_nacimiento`, y `origen`; los IDs pueden ser UUID o texto.
+### Flujo de inicio
 
-Al crear una matrícula, nombre y apellidos se introducen por separado, con los
-apellidos a la derecha del nombre. La fecha opcional se elige con un DatePicker
-y se envía en formato `AAAA-MM-DD`. La tabla de búsqueda también muestra los
-apellidos a la derecha del nombre. La casa
-aparece como `Central` y, si se deja vacía, también se usa `Central`.
-El ID es de solo lectura y se muestra mientras se rellenan los datos:
-`CC-NNN-AAA` (dos letras de la casa, tres del nombre y tres del primer apellido),
-en mayúsculas y sin tildes. Ejemplo: Central, Harry, Potter Evans → `CE-HAR-POT`.
-La vista previa no consulta ni reserva IDs. Al guardar, la API comprueba
-los duplicados y devuelve el ID definitivo, con `-02`, `-03`, etc. si procede.
-El formulario muestra ese ID final y no envía el ID calculado en la petición POST.
+1. Se ejecuta `Launcher`.
+2. `Initialize` prepara la configuración mediante `ConfigDialog`.
+3. Si falta, se muestra el formulario inicial antes de abrir la ventana principal.
+4. Guardar correctamente permite continuar. Cancelar o cerrar ese formulario termina la aplicación.
+5. Se carga `hello-view.fxml`, se aplican estilos e iconos y se muestra la ventana.
+6. El controlador abre inicialmente la consulta por ID.
 
-Ejemplo de alta:
+**Por qué:** evita abrir el espacio de trabajo sin haber preparado los datos de conexión.
+
+### Archivo de configuración
+
+En desarrollo, ejecutando desde la raíz del proyecto, la ruta predeterminada es:
+
+```text
+C:\Users\alain\IA\JavaFX\src\main\resources\alain\holamundo\dumblefx\config.properties
+```
+
+El código calcula `src/main/resources/alain/holamundo/dumblefx/config.properties` **respecto al directorio de trabajo**; no tiene fija la carpeta personal de Alain.
+
+Se puede indicar otro archivo mediante esta opción de la JVM:
+
+```text
+-Ddumblefx.config=C:\ruta\config.properties
+```
+
+`ApiConfig` contempla una configuración incluida como recurso si no se indica una ruta externa. Sin embargo, el `pom.xml` actual excluye los archivos `config.properties` de los recursos empaquetados. Para distribuir la aplicación conviene utilizar un archivo externo.
+
+### Variables
+
+| Variable | Función |
+| --- | --- |
+| `DUMBLEFX_API_URL` | URL base del servidor. |
+| `DUMBLEFX_API_KEY` | Clave enviada en la cabecera `X-API-Key`. |
+| `DUMBLEFX_API_URL_CONSULTA_ID` | URL opcional de consulta por ID. |
+| `DUMBLEFX_API_URL_CONSULTA_DATOS` | URL opcional de búsqueda. |
+| `DUMBLEFX_API_URL_CREAR` | URL opcional de creación. |
+| `DUMBLEFX_API_URL_ELIMINAR` | URL opcional de eliminación. |
+| `DUMBLEFX_API_URL_ACTUALIZAR` | URL opcional de actualización. |
+
+Las cinco propiedades opcionales se guardan aunque estén vacías. Los ejemplos del formulario quedan como comentarios, no como valores de conexión.
+
+Ejemplo ilustrativo, sin credenciales reales:
+
+```properties
+DUMBLEFX_API_URL=https://api.ejemplo.invalid
+DUMBLEFX_API_KEY=REEMPLAZAR_POR_TU_CLAVE
+
+# Ejemplo: https://api.ejemplo.invalid/estudiantes/{student_id}
+DUMBLEFX_API_URL_CONSULTA_ID=
+# Ejemplo: https://api.ejemplo.invalid/estudiantes
+DUMBLEFX_API_URL_CONSULTA_DATOS=
+# Ejemplo: https://api.ejemplo.invalid/matriculas
+DUMBLEFX_API_URL_CREAR=
+# Ejemplo: https://api.ejemplo.invalid/matriculas/{student_id}
+DUMBLEFX_API_URL_ELIMINAR=
+# Ejemplo: https://api.ejemplo.invalid/matriculas/{student_id}
+DUMBLEFX_API_URL_ACTUALIZAR=
+```
+
+Si una URL opcional está vacía, se utiliza la URL base más la ruta de la operación. Si se indica, tiene prioridad. Las URLs específicas de consulta por ID, actualización y eliminación deben conservar literalmente `{student_id}`.
+
+Las variables de entorno **no vacías** del mismo nombre prevalecen sobre el archivo. Reinicia la aplicación después de cambiar la configuración para recargarla.
+
+**Seguridad:** el formulario oculta la clave al introducirla, pero el archivo la almacena en texto plano. No lo publiques ni incluyas la clave en capturas. Una clave en un cliente de escritorio no equivale a autenticación individual por usuario. Validar una URL no comprueba la disponibilidad del servidor ni la validez de la clave.
+
+## 5. Pantallas: qué hacen, cómo y por qué
+
+### 5.1. Ventana principal y navegación
+
+`hello-view.fxml` contiene la estructura general. El menú cambia la vista central sin crear una ventana principal diferente para cada operación.
+
+El botón de la sección abierta conserva un tono más claro aunque el foco pase a un campo. `MainController` activa la pseudoclase `selected` y el CSS define su apariencia.
+
+**Por qué:** distingue la sección activa sin depender del último control que recibió el foco.
+
+### 5.2. Consulta por ID
+
+Se introduce un identificador válido y se solicita la información a la API. Si hay una coincidencia, se muestran sus datos; si hay varias, aparece un diálogo para seleccionar un estudiante. Cancelar no carga ninguno.
+
+**Por qué:** un identificador base puede tener varias coincidencias y no debe tratarse automáticamente la primera como la correcta.
+
+### 5.3. Consulta por datos
+
+Permite buscar por nombre y casa, ambos opcionales, con un máximo de entre **1 y 100** resultados. La tabla muestra ID, nombre, apellidos, casa y nacimiento.
+
+Los filtros se envían al servidor; no se descarga toda la información para filtrarla localmente.
+
+**Por qué:** limita los datos transferidos y deja la búsqueda en el sistema que posee los registros.
+
+### 5.4. Crear estudiante o matrícula
+
+Se rellenan nombre y apellidos por separado y, opcionalmente, la fecha de nacimiento. En el alta, la casa permanece como `Central` y el ID se calcula automáticamente como vista previa. ID y casa están bloqueados en este formulario.
+
+Ejemplo:
+
+```text
+Casa: Central
+Nombre: Harry
+Apellidos: Potter Evans
+ID previsto: CE-HAR-POT
+```
+
+La vista previa usa abreviaturas de casa, nombre y primer apellido, en mayúsculas y sin tildes. **No reserva el identificador ni garantiza que esté libre.** La API devuelve el ID definitivo y puede añadir un sufijo como `-02` si corresponde.
+
+Ejemplo del cuerpo enviado:
 
 ```json
 {
@@ -84,39 +208,181 @@ Ejemplo de alta:
 }
 ```
 
-Nombre y apellidos son obligatorios (máximo 200 caracteres cada uno).
-Casa admite hasta 80 caracteres. La fecha es opcional, en formato `AAAA-MM-DD`;
-si está vacía, se omite del JSON. Las abreviaturas con menos letras conservan
-las disponibles; el primer apellido sigue las mismas reglas de partículas
-que la API (`de`, `del`, `van`, etc.).
+Si no hay fecha, se omite del JSON. El cliente no impone el ID de la vista previa en el alta. Tras crear correctamente, limpia los datos personales y muestra el ID devuelto.
 
-En la actualización se conservan y envían los apellidos obtenidos al cargar
-la matrícula, junto con el nombre, la casa, la fecha y el ID de consulta.
-La API puede generar otro ID si cambia la identidad; se muestra el ID devuelto.
-La respuesta de matrícula incluye `student_id`, `full_name`, `apellido`,
-`house`, `birth_date` y un `id` numérico interno, que no se usa como ID de consulta.
-Eliminar devuelve un objeto de confirmación, no una ficha de estudiante.
+**Por qué:** la vista previa orienta al usuario y el servidor conserva la responsabilidad de asignar el identificador definitivo.
 
-La consulta por ID acepta un objeto o una lista. Cuando un ID base coincide con
-varios estudiantes, la consulta y la carga para actualizar abren un diálogo con
-ID, nombre, apellidos, casa y fecha para elegir uno. Cancelar no carga ni modifica
-ningún estudiante. La actualización utiliza el ID completo del elegido, incluido
-su sufijo, y conserva el nuevo ID si la API lo cambia al guardar.
+### 5.5. Actualizar estudiante
 
-La búsqueda por datos incluye matrículas nuevas e históricos. Las escrituras
-afectan únicamente a las matrículas de MariaDB; no permiten modificar ni eliminar
-datos históricos.
+1. Introduce un ID y carga sus datos.
+2. Si hay varias coincidencias, selecciona una.
+3. Edita nombre, **apellidos**, casa o nacimiento.
+4. Guarda los cambios.
 
-## Ejecutar
+El formulario incluye apellidos entre nombre y casa. Se conserva el ID completo elegido y se exige cargar la matrícula antes de actualizarla. Si se cambia el campo a otro ID, es necesario cargarlo antes de guardar.
 
-Desde la raíz del proyecto: `mvnw.cmd javafx:run`, o ejecuta `Launcher` en IntelliJ.
-Para compilar: `mvnw.cmd clean package` (JDK 21 o compatible).
+La solicitud envía los datos de la matrícula, no solamente el campo editado. Si la respuesta devuelve un nuevo ID, la interfaz lo conserva.
 
-## Estructura
+**Por qué:** evita actualizar un registro distinto del revisado y mantiene los apellidos en el envío.
 
-- `ApiConfig`: carga del archivo y variables de entorno; URLs por operación.
-- `ApiClient`: HTTP, cabeceras, codificación y errores, incluidos detalles 422.
-- `Alumno`: respuesta de consulta; `Matricula`: solicitud y respuesta CRUD.
-- `MainController`: navegación del menú de cinco botones.
-- `StudentController`: validación y tareas HTTP en segundo plano.
-- Los cinco FXML: formularios específicos del contrato real.
+### 5.6. Eliminar estudiante
+
+Primero se consulta el ID. Cuando hay varias coincidencias, aparece el selector y se cargan los datos de la matrícula elegida. El ID que se elimina debe coincidir con el cargado. Después se solicita confirmación final.
+
+Cancelar la selección o la confirmación no elimina nada. Un ID distinto al cargado requiere una nueva consulta antes del borrado.
+
+**Por qué:** la consulta, la selección y la confirmación reducen el riesgo de borrar una matrícula equivocada.
+
+## 6. Validaciones
+
+### IDs
+
+Formatos completos admitidos:
+
+```text
+CE-HAR-POT
+CE-HAR-POT-02
+```
+
+Expresión regular utilizada:
+
+```regex
+[A-Za-z]{2}-[A-Za-z]{3}-[A-Za-z]{3}(?:-[0-9]{2})?
+```
+
+Son dos letras, guion, tres letras, guion y tres letras, con un sufijo opcional de guion y dos cifras. Las letras son ASCII, mayúsculas o minúsculas. Los guiones son los únicos símbolos admitidos.
+
+Hay dos controles complementarios:
+
+- **Al escribir o pegar:** se permiten letras ASCII, cifras y guiones, hasta 13 caracteres, para poder construir el identificador progresivamente.
+- **Antes de operar:** se exige el formato completo. Un ID incompleto no se envía.
+
+### Nombres y apellidos
+
+Admiten letras Unicode, marcas de acentuación y espacios, con un máximo de **200 caracteres por campo**. Nombre y apellidos son obligatorios en alta y actualización.
+
+No admiten números, apóstrofos, guiones ni otros símbolos. El filtro también se aplica al pegar. La búsqueda por nombre usa el filtro de caracteres, pero puede dejarse vacía.
+
+### Otros campos
+
+- **Casa:** hasta 80 caracteres al guardar; en el alta se mantiene `Central`.
+- **Nacimiento:** opcional, elegido con calendario; no puede ser posterior al día actual.
+- **Límite de resultados:** entero de 1 a 100.
+
+**Por qué:** se detectan errores antes de hacer peticiones innecesarias. Esto no sustituye la validación del servidor. Si otro sistema devuelve un ID con un formato diferente, la regla actual de la interfaz requeriría una adaptación para operarlo.
+
+## 7. Comunicación con la API
+
+| Operación | Método | Ruta predeterminada |
+| --- | --- | --- |
+| Consulta por ID | `GET` | `/estudiantes/{student_id}` |
+| Búsqueda por datos | `GET` | `/estudiantes` |
+| Creación | `POST` | `/matriculas` |
+| Actualización | `PUT` | `/matriculas/{student_id}` |
+| Eliminación | `DELETE` | `/matriculas/{student_id}` |
+
+`ApiClient` utiliza `HttpClient` y Jackson. Añade `Accept: application/json`, `X-API-Key` y, al enviar un cuerpo, el tipo de contenido JSON. Codifica identificadores y filtros para construir las URLs.
+
+Las búsquedas envían `name`, `house` y `limit`, según corresponda. La consulta por ID acepta un objeto o una lista; la búsqueda por datos espera una lista.
+
+### Tareas en segundo plano
+
+`StudentController` utiliza `Task` y un hilo de trabajo para las llamadas de red. Mientras una operación está en marcha, deshabilita el panel de operación y muestra el estado de conexión.
+
+**Por qué:** la espera de red no debe bloquear el hilo de la interfaz ni permitir envíos repetidos desde ese panel durante la petición.
+
+El cliente establece un tiempo de conexión de **8 segundos** y un tiempo máximo de petición de **20 segundos**. Ante un error HTTP intenta mostrar el código y el detalle del servidor. Si detecta la clave en ese mensaje de error, la sustituye por un texto de ocultación.
+
+## 8. Idiomas, tooltips y ayuda
+
+El selector permite cambiar entre **español, inglés y euskera**. `I18n` mantiene el idioma activo y carga los archivos `messages_es.properties`, `messages_en.properties` y `messages_eu.properties`.
+
+Los textos vinculados al idioma cambian sin reiniciar: etiquetas, títulos, mensajes, columnas y ayudas de los controles preparados para ello.
+
+- **Círculo `?`:** explica la sección abierta al pasar el ratón.
+- **Círculo `©`:** presenta los créditos y el propósito mediante un tooltip.
+- **Botones:** incluyen ayudas para consultar, cargar, crear, actualizar, seleccionar, confirmar o cancelar.
+
+Los tooltips envuelven el texto y se muestran tras una espera breve de unos 200 milisegundos.
+
+**Por qué:** separar traducciones de la lógica facilita añadir o corregir textos y mantener ayudas coherentes con la sección visible.
+
+### Cambiar los autores
+
+En el código revisado, la constante `AUTHORS` de `MainController` contiene `Dumblewindows`. Para poner otros nombres, cambia esa constante. La explicación que rodea a los autores se mantiene en la clave traducida `help.credits`.
+
+## 9. Diseño visual
+
+`estilos/app.css` centraliza la apariencia. El fondo utiliza `imagenes/hogwarts-background.jpg`, centrado, sin repetición y con ajuste `cover`: cubre el área disponible y puede recortar los bordes según la proporción de la ventana.
+
+El menú oscuro y los formularios claros semitransparentes mantienen contraste sobre el fondo. La imagen está incluida como recurso y no necesita descargarse al arrancar.
+
+Los tamaños de letra se expresan en **`em`**, relativos al tamaño tipográfico de referencia. Esto conserva proporciones entre títulos y textos. **Usar `em` no adapta por sí solo toda la interfaz a cualquier pantalla**: también influyen la escala del sistema, los contenedores y sus restricciones.
+
+La ventana revisada comienza en **1100 × 700** y establece esas mismas dimensiones como mínimo.
+
+## 10. Ejecución y compilación
+
+### Requisitos
+
+- JDK 21 configurado para el proyecto.
+- Acceso al servidor de la API y una clave válida.
+- Conexión para descargar dependencias si aún no están disponibles localmente.
+
+### Desde IntelliJ IDEA
+
+1. Abre el proyecto y configura el SDK de Java 21.
+2. Importa o recarga Maven.
+3. Selecciona la raíz `JavaFX` como directorio de trabajo de la ejecución.
+4. Ejecuta `alain.holamundo.dumblefx.Launcher`.
+5. Completa el formulario inicial si falta configuración.
+
+### Desde Windows
+
+Desde una terminal situada en la raíz del proyecto:
+
+```powershell
+.\mvnw.cmd javafx:run
+```
+
+Para compilar y empaquetar:
+
+```powershell
+.\mvnw.cmd clean package
+```
+
+Si Maven no encuentra Java, revisa el JDK y `JAVA_HOME`. Estos comandos documentan el uso del proyecto: preparar este README no incluye una compilación nueva ni una prueba visual.
+
+## 11. Problemas habituales
+
+| Problema | Qué revisar |
+| --- | --- |
+| Reaparece el formulario inicial | Directorio de trabajo, ubicación del archivo y opción `dumblefx.config`. |
+| No se guarda la configuración | Permisos de escritura y ruta de destino. |
+| No conecta con la API | URL, red, disponibilidad del servidor y clave. |
+| Falla una URL específica por ID | Presencia literal de `{student_id}`. |
+| Se rechaza un ID | Estructura de dos, tres y tres letras, con sufijo opcional de dos cifras. |
+| No deja actualizar o borrar | Haber cargado y seleccionado el mismo ID del campo. |
+| Hay varias coincidencias | Elegir el registro concreto en el diálogo. |
+| Falla un FXML | Ruta, controlador, `fx:id` e importaciones de controles como `Tooltip`. |
+| Falta una traducción | Misma clave presente en los tres archivos de idioma. |
+| No aparece el fondo | Ruta e inclusión de la imagen como recurso. |
+
+## 12. Dónde realizar cambios
+
+| Cambio deseado | Parte correspondiente |
+| --- | --- |
+| Distribución de una pantalla | Su archivo FXML. |
+| Colores, fuentes y fondo | `app.css` y recursos de imagen. |
+| Textos y tooltips | Archivos de traducción y sus vínculos. |
+| Reglas de nombres e IDs | `InputValidation` y comprobaciones de `StudentController`. |
+| Vista previa del ID | `StudentIdPreview`. |
+| Contrato HTTP | `ApiClient`, `Alumno` y `Matricula`. |
+| Lectura y ubicación de configuración | `ApiConfig` y `ConfigDialog`. |
+| Autores de los créditos | Constante `AUTHORS` de `MainController`. |
+
+Antes de distribuir, comprueba las cinco pantallas, los tres idiomas, el arranque sin configuración, las selecciones con varias coincidencias y las confirmaciones. Mantén claves y datos personales fuera de la documentación pública.
+
+---
+
+Documentación preparada a partir de los archivos revisados del proyecto el **15 de octubre de 2026**. Describe el cliente JavaFX; no certifica la implementación interna ni la disponibilidad del servidor de la API.
