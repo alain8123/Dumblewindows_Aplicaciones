@@ -391,6 +391,23 @@ class MainActivity : AppCompatActivity() {
         val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
         val casa   = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
 
+        // --- VALIDACIÓN DE NOMBRE (letras, espacios y apóstrofo) ---
+        val regexNombre = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s']+$")
+        if (nombre.isNotEmpty() && !regexNombre.matches(nombre)) {
+            Toast.makeText(this,
+                getString(R.string.el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // --- VALIDACIÓN DE CASA (solo letras y espacios, sin apóstrofo) ---
+        val regexCasa = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")
+        if (casa.isNotEmpty() && !regexCasa.matches(casa)) {
+            Toast.makeText(this,
+                getString(R.string.la_casa_solo_puede_contener_letras_y_espacios), Toast.LENGTH_SHORT).show()
+            return
+        }
+        // -----------------------------------------------------------
+
         // Validación: al menos uno de los dos campos debe estar relleno.
         if (nombre.isEmpty() && casa.isEmpty()) {
             Toast.makeText(this, getString(R.string.rellena_al_menos_un_campo), Toast.LENGTH_SHORT).show()
@@ -601,8 +618,8 @@ class MainActivity : AppCompatActivity() {
                 "GR-HAR-POT" + "\n" + "\n" +
                 getString(R.string.estudiante_con_id_repetido)
 
-        val miDialogo = MiDialogoFragment(titulo, texto)
-        miDialogo.show(supportFragmentManager, "mi Dialogo")
+        MiDialogoFragment.newInstance(titulo, texto)
+            .show(supportFragmentManager, "miDialogo")
     }
 
     fun boton_ayuda_datos(view : View){
@@ -614,8 +631,8 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.al_buscar_ivan_te_muestra) + "\n" + "\n" +
                     "Medb O'Sullivan, Sillivan Fawley, ..."
 
-        val miDialogo = MiDialogoFragment(titulo, texto)
-        miDialogo.show(supportFragmentManager, "mi Dialogo")
+        MiDialogoFragment.newInstance(titulo, texto)
+            .show(supportFragmentManager, "miDialogo")
     }
 
     // ==========================================================
