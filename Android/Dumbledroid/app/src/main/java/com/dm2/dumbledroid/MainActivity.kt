@@ -1,8 +1,8 @@
 package com.dm2.dumbledroid
 
 // -------------------- IMPORTS --------------------
-import android.content.res.Configuration                    // Info de configuración (orientación, tamaño, etc.)
 import android.os.Bundle                                   // Contenedor de estado de la Activity
+import android.util.Log
 import android.view.View                                   // Clase base de las vistas (para callbacks de click)
 import android.widget.AdapterView                          // Eventos de selección en Spinners
 import android.widget.EditText                             // Campo de texto editable
@@ -19,8 +19,8 @@ import androidx.recyclerview.widget.RecyclerView           // Lista eficiente pa
 import coil.load                                           // Extensión de Coil para cargar imágenes desde URL
 import coil.size.Size                                      // Enum para definir el tamaño de imagen
 import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding del layout principal
+import com.dm2.dumbledroid.repository.EstudianteRepository
 import com.google.gson.Gson                                // Serialización JSON para guardar el estado
-import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken                   // Tipo genérico para deserializar listas
 import kotlinx.coroutines.Dispatchers                      // Hilos (IO, Main, etc.)
 import kotlinx.coroutines.launch                           // Lanza una corrutina
@@ -38,11 +38,8 @@ import retrofit2.converter.gson.GsonConverterFactory       // Convertidor JSON <
  *  - Mostrar listas de resultados y detalles de cada estudiante.
  *  - Configurar Retrofit para consumir la API.
  *  - Permitir el cambio de idioma desde un Spinner.
- *  - **Mantener el estado (pantalla y datos) al girar el dispositivo.**
- *
- * Para que la restauración funcione correctamente, en el `AndroidManifest.xml`
- * debe estar declarado `android:configChanges` con al menos
- * `orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden`.
+ *  - Mantener el estado (pantalla y datos) al girar el dispositivo.
+ *  - Usar caché SQLite (24h) para búsquedas offline.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -50,99 +47,77 @@ class MainActivity : AppCompatActivity() {
     //                       PROPIEDADES
     // ==========================================================
 
-    /** Binding del layout `activity_main.xml` para acceder a las vistas sin findViewById. */
+    /** Binding del layout `activity_main.xml`. */
     private lateinit var binding: ActivityMainBinding
 
-    /** Servicio Retrofit que define los endpoints de la API. */
+    /** Servicio Retrofit con los endpoints de la API. */
     private lateinit var service: ApiService_id
 
-    /** Adaptador que vincula la lista de estudiantes con el RecyclerView. */
+    /** Adaptador de la lista de estudiantes. */
     private lateinit var adapter: EstudianteListAdapter
 
-    /**
-     * Indica en qué pantalla estamos ahora mismo.
-     * Valores posibles: "menu", "buscar_id", "buscar_datos", "lista", "detalle".
-     * Se usa para restaurar la pantalla tras una recreación.
-     */
+    /** Repositorio con caché SQLite. */
+    private lateinit var repository: EstudianteRepository
+
+    /** Pantalla actual: "menu", "buscar_id", "buscar_datos", "lista", "detalle". */
     private var pantallaActual: String = "menu"
 
-    /** Estudiante mostrado en la pantalla de detalle (para restaurarlo al recrear la Activity). */
+    /** Estudiante mostrado en la pantalla de detalle (para restaurar tras recrear). */
     private var estudianteActual: Estudiante? = null
 
-    /** Lista de estudiantes mostrada en la pantalla de lista (para restaurarla al recrear). */
+    /** Lista mostrada en la pantalla de lista (para restaurar tras recrear). */
     private var listaActual: List<Estudiante> = emptyList()
 
-    /** Valores de formato de id*/
-
-    //formato de id unico
+    /** Formato de ID único: XX-XXX-XXX. */
     private val REGEX_ID = Regex("^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}$")
 
-    //formato de id duplicado
+    /** Formato de ID duplicado: XX-XXX-XXX-NN. */
     private val REGEX_ID_DUPE = Regex("^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}-[0-9]{2}$")
-
-
 
     // ==========================================================
     //                    CICLO DE VIDA
     // ==========================================================
 
-    /**
-     * Método del ciclo de vida que se ejecuta al crear la Activity.
-     * Inicializa binding, adaptador, idioma y Retrofit; y restaura el estado si procede.
-     *
-     * @param savedInstanceState Estado previo guardado (si la Activity se recrea).
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Habilita el diseño "edge to edge" (contenido detrás de las barras del sistema).
         enableEdgeToEdge()
 
-        // Infla el layout principal usando ViewBinding.
         binding = ActivityMainBinding.inflate(layoutInflater)
-
-        // Establece la vista raíz como contenido de la Activity.
         setContentView(binding.root)
 
-        // Crea el adaptador pasándole un callback para cuando se pulse un elemento.
+        // Adaptador con callback al pulsar un elemento.
         adapter = EstudianteListAdapter { estudiante ->
             mostrarDetalleAlumno(estudiante)
         }
 
-        // Configura el Spinner para el cambio de idioma.
+        // Configuración inicial.
         configurarSpinnerIdioma()
-
-        // Configura Retrofit con la API Key y la URL base.
         setupRetrofit()
 
-        //    Si venimos de una recreación (giro, cambio de idioma, etc.),
-        //    reconstruimos la pantalla donde estábamos con sus datos.
+        // Repositorio con caché SQLite.
+        repository = EstudianteRepository(this, service)
+        repository.limpiarCacheCaducada()
+
+        // Restaurar estado si venimos de una recreación.
         savedInstanceState?.let { restaurarEstado(it) }
+
+        // Refresca el botón "último consultado" por si ya hay algo en caché.
+        actualizarBotonUltimoConsultado()
     }
 
-    /**
-     * Se llama antes de que la Activity sea destruida para guardar su estado.
-     * Guarda la pantalla actual, el estudiante, la lista y el texto de los EditText.
-     *
-     * @param outState Bundle donde se almacena el estado.
-     */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        // 1. Guardamos en qué pantalla estamos.
         outState.putString(KEY_PANTALLA, pantallaActual)
 
-        // 2. Guardamos el estudiante actual (si lo hay) serializado a JSON.
         estudianteActual?.let {
             outState.putString(KEY_ESTUDIANTE, Gson().toJson(it))
         }
-
-        // 3. Guardamos la lista actual (si no está vacía) serializada a JSON.
         if (listaActual.isNotEmpty()) {
             outState.putString(KEY_LISTA, Gson().toJson(listaActual))
         }
 
-        // 4. Guardamos el texto que el usuario haya escrito en los EditText visibles.
         findViewById<EditText>(R.id.et_estudiante)?.let {
             outState.putString(KEY_TXT_ID, it.text.toString())
         }
@@ -158,19 +133,9 @@ class MainActivity : AppCompatActivity() {
     //                 RESTAURACIÓN DE ESTADO
     // ==========================================================
 
-    /**
-     * Reconstruye la pantalla y los datos guardados en [onSaveInstanceState].
-     *
-     * Se llama desde [onCreate] cuando `savedInstanceState` no es nulo, es decir,
-     * cuando la Activity se ha recreado (por ejemplo, tras girar el dispositivo).
-     *
-     * @param state Bundle con el estado previamente guardado.
-     */
     private fun restaurarEstado(state: Bundle) {
-        // Leemos en qué pantalla estábamos (por defecto, "menu").
         val pantalla = state.getString(KEY_PANTALLA, "menu")
 
-        // Recuperamos el estudiante y la lista desde JSON (si existen).
         state.getString(KEY_ESTUDIANTE)?.let {
             estudianteActual = Gson().fromJson(it, Estudiante::class.java)
         }
@@ -179,21 +144,17 @@ class MainActivity : AppCompatActivity() {
             listaActual = Gson().fromJson(json, tipo) ?: emptyList()
         }
 
-        // Reconstruimos la pantalla correspondiente.
         when (pantalla) {
             "buscar_id" -> {
                 pantallaActual = "buscar_id"
                 setContentView(R.layout.buscar_id)
-                // Restauramos el texto introducido en el campo ID.
                 state.getString(KEY_TXT_ID)?.let {
                     findViewById<EditText>(R.id.et_estudiante).setText(it)
                 }
             }
-
             "buscar_datos" -> {
                 pantallaActual = "buscar_datos"
                 setContentView(R.layout.buscar_datos)
-                // Restauramos los textos introducidos en nombre y casa.
                 state.getString(KEY_TXT_NOMBRE)?.let {
                     findViewById<EditText>(R.id.et_Nombre).setText(it)
                 }
@@ -201,21 +162,9 @@ class MainActivity : AppCompatActivity() {
                     findViewById<EditText>(R.id.et_Casa).setText(it)
                 }
             }
-
-            "lista" -> {
-                // Vuelve a pintar la lista con los mismos datos.
-                mostrarListaAlumnos(listaActual)
-            }
-
-            "detalle" -> {
-                // Vuelve a pintar el detalle del estudiante.
-                estudianteActual?.let { mostrarDetalleAlumno(it) }
-            }
-
-            else -> {
-                // "menu" u otro caso: no hay nada que restaurar, ya estamos en el menú.
-                pantallaActual = "menu"
-            }
+            "lista" -> mostrarListaAlumnos(listaActual)
+            "detalle" -> estudianteActual?.let { mostrarDetalleAlumno(it) }
+            else -> pantallaActual = "menu"
         }
     }
 
@@ -223,110 +172,60 @@ class MainActivity : AppCompatActivity() {
     //                       NAVEGACIÓN
     // ==========================================================
 
-    /**
-     * Muestra la pantalla de búsqueda por ID.
-     *
-     * @param view Vista que dispara el evento.
-     */
     fun mostrar_busqueda_id(view: View) {
         pantallaActual = "buscar_id"
         setContentView(R.layout.buscar_id)
     }
 
-    /**
-     * Muestra la pantalla de búsqueda por datos (nombre y casa).
-     *
-     * @param view Vista que dispara el evento.
-     */
     fun mostrar_busqueda_datos(view: View) {
         pantallaActual = "buscar_datos"
         setContentView(R.layout.buscar_datos)
     }
 
     /**
-     * Vuelve al menú principal restaurando el layout raíz (`activity_main.xml`).
-     *
-     * @param view Vista que dispara el evento.
+     * Vuelve al menú principal y refresca el botón "último consultado".
      */
     fun mostrar_menu(view: View) {
         pantallaActual = "menu"
         setContentView(binding.root)
+        actualizarBotonUltimoConsultado()
     }
 
     // ==========================================================
     //                   BUSCAR POR ID
     // ==========================================================
 
-    /**
-     * Recoge el ID introducido por el usuario y lanza la búsqueda.
-     *
-     * @param view Vista que dispara el evento (botón buscar).
-     */
     fun buscar_estudiante_id(view: View) {
-        // Obtiene el texto del campo `et_estudiante` y elimina espacios sobrantes.
         val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim().uppercase()
 
-        // Validación: si el campo está vacío, muestra un aviso y sale.
         if (id.isEmpty()) {
             Toast.makeText(this, getString(R.string.escribe_un_id), Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Validacion que el id del estudiante cumpla con el formato
-        if (verificar_formato_id(id)){
-            // Informa al usuario de que la búsqueda ha comenzado.
+        if (verificar_formato_id(id)) {
             Toast.makeText(this, getString(R.string.buscando), Toast.LENGTH_SHORT).show()
-
-            // Lanza la petición a la API.
             getEstudiantesPorId(id)
-
-        }else{
-            // Informa al usuario de que el id no cumple el formato.
-            Toast.makeText(this,
-                getString(R.string.el_id_no_cumple_el_formato), Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                this,
+                getString(R.string.el_id_no_cumple_el_formato),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    /**
-     * Verifica el formato del id pasado como parametro.
-     *
-     * @return Boolean. True si el id tiene el formato correcto y false si no lo tiene.
-     * @param id Identificador a comprobar el formato.
-     */
     private fun verificar_formato_id(id: String): Boolean {
-        if (REGEX_ID.matches(id.trim())){
-            return true
-        }else{
-            if (REGEX_ID_DUPE.matches(id.trim())){
-                return true
-            }else{
-                return false
-            }
-        }
+        return REGEX_ID.matches(id.trim()) || REGEX_ID_DUPE.matches(id.trim())
     }
 
-    /**
-     * Realiza la petición a la API para obtener estudiantes por su ID.
-     *
-     * La API puede devolver un array (varios) o un objeto (uno solo),
-     * así que la respuesta se normaliza siempre a una lista y luego se decide igual
-     * que en [getEstudiantePorDatos]:
-     *  - 0 resultados → Toast "sin resultados".
-     *  - 1 resultado  → detalle directo.
-     *  - varios       → pantalla de lista.
-     *
-     * @param id Identificador introducido por el usuario (con o sin sufijo).
-     */
     private fun getEstudiantesPorId(id: String) {
+        val base = idBase(id)
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // 1. Llamada a la API (respuesta cruda: array u objeto).
-                val json = service.getEstudianteRaw(id)
+                val lista = repository.getEstudiantesPorId(base, id)
 
-                // 2. Normalizamos la respuesta a una lista de estudiantes.
-                val lista: List<Estudiante> = normalizarRespuesta(json)
-
-                // 3. Decidimos qué mostrar (idéntico a getEstudiantePorDatos).
                 withContext(Dispatchers.Main) {
                     when {
                         lista.isEmpty() -> Toast.makeText(
@@ -352,29 +251,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Normaliza la respuesta de la API a una lista de estudiantes.
-     *
-     * La API puede devolver:
-     *  - Un array JSON  → se parsea como List<Estudiante>.
-     *  - Un objeto JSON → se envuelve en una lista de un solo elemento.
-     *  - Cualquier otra cosa → lista vacía.
-     *
-     * @param json Respuesta cruda devuelta por Retrofit.
-     * @return Lista de estudiantes (nunca null, posiblemente vacía).
-     */
-    private fun normalizarRespuesta(json: JsonElement): List<Estudiante> {
-        val gson = Gson()
-        return when {
-            json.isJsonArray -> {
-                val tipo = object : TypeToken<List<Estudiante>>() {}.type
-                gson.fromJson(json, tipo) ?: emptyList()
-            }
-            json.isJsonObject -> {
-                val unico = gson.fromJson(json, Estudiante::class.java)
-                listOfNotNull(unico)
-            }
-            else -> emptyList()
+    private fun idBase(id: String): String {
+        val partes = id.split("-")
+        return if (partes.size == 4 && partes[3].length == 2 && partes[3].all { it.isDigit() }) {
+            partes.take(3).joinToString("-")
+        } else {
+            id
         }
     }
 
@@ -382,57 +264,49 @@ class MainActivity : AppCompatActivity() {
     //                   BUSCAR POR DATOS
     // ==========================================================
 
-    /**
-     * Recoge los datos (nombre y/o casa) y lanza la búsqueda.
-     *
-     * @param view Vista que dispara el evento (botón buscar).
-     */
     fun buscar_estudiante_datos(view: View) {
         val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
-        val casa   = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
+        val casa = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
 
-        // --- VALIDACIÓN DE NOMBRE (letras, espacios y apóstrofo) ---
+        // Validación de nombre: letras, espacios y apóstrofos.
         val regexNombre = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s']+$")
         if (nombre.isNotEmpty() && !regexNombre.matches(nombre)) {
-            Toast.makeText(this,
-                getString(R.string.el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                getString(R.string.el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
-        // --- VALIDACIÓN DE CASA (solo letras y espacios, sin apóstrofo) ---
+        // Validación de casa: solo letras y espacios.
         val regexCasa = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")
         if (casa.isNotEmpty() && !regexCasa.matches(casa)) {
-            Toast.makeText(this,
-                getString(R.string.la_casa_solo_puede_contener_letras_y_espacios), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                getString(R.string.la_casa_solo_puede_contener_letras_y_espacios),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
-        // -----------------------------------------------------------
 
-        // Validación: al menos uno de los dos campos debe estar relleno.
         if (nombre.isEmpty() && casa.isEmpty()) {
-            Toast.makeText(this, getString(R.string.rellena_al_menos_un_campo), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                getString(R.string.rellena_al_menos_un_campo),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
-        // Informa al usuario de que la búsqueda ha comenzado.
         Toast.makeText(this, R.string.buscando, Toast.LENGTH_SHORT).show()
-
-        // Lanza la petición a la API.
         getEstudiantePorDatos(nombre, casa)
     }
 
-    /**
-     * Muestra una lista de alumnos en un RecyclerView dentro del layout `alumno.xml`.
-     * Guarda la lista en [listaActual] para poder restaurarla tras una recreación.
-     *
-     * @param lista Lista de estudiantes a mostrar.
-     */
     private fun mostrarListaAlumnos(lista: List<Estudiante>) {
-        // Guardamos la pantalla y los datos para poder restaurarlos.
         pantallaActual = "lista"
         listaActual = lista
 
-        // Cargamos el layout de lista.
         setContentView(R.layout.alumno)
 
         val rv = findViewById<RecyclerView>(R.id.recycler_resultados)
@@ -441,43 +315,22 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(lista)
     }
 
-    /**
-     * Realiza la petición a la API para obtener estudiantes filtrando por nombre y/o casa.
-     * Según el número de resultados:
-     *  - 0 resultados: muestra un Toast de "Sin resultados".
-     *  - 1 resultado: va directo a la pantalla de detalle.
-     *  - Varios resultados: muestra la lista en `alumno.xml`.
-     *
-     * @param nombre Nombre del estudiante (puede ser vacío).
-     * @param casa   Casa a la que pertenece (puede ser vacío).
-     */
     private fun getEstudiantePorDatos(nombre: String, casa: String) {
-        // Lanza corrutina en hilo de IO.
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Llama al endpoint pasando nombre y casa como filtros.
-                val lista = service.getEstudiantesPorDatos(
-                    name = nombre,
-                    house = casa
-                )
+                val lista = repository.getEstudiantesPorDatos(nombre, casa)
 
                 withContext(Dispatchers.Main) {
                     when {
-                        lista.isEmpty() -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                getString(R.string.sin_resultados),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        // Caso 2: un único resultado → detalle directo.
-                        lista.size == 1 -> {
-                            mostrarDetalleAlumno(lista.first())
-                        }
-                        // Caso 3: varios resultados → mostrar lista.
-                        else -> {
-                            mostrarListaAlumnos(lista)
-                        }
+                        lista.isEmpty() -> Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.sin_resultados),
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        lista.size == 1 -> mostrarDetalleAlumno(lista.first())
+
+                        else -> mostrarListaAlumnos(lista)
                     }
                 }
             } catch (e: Exception) {
@@ -487,6 +340,7 @@ class MainActivity : AppCompatActivity() {
                         getString(R.string.error, e.message),
                         Toast.LENGTH_LONG
                     ).show()
+                    Log.d("Error busqueda por datos", e.message.toString())
                 }
             }
         }
@@ -497,64 +351,67 @@ class MainActivity : AppCompatActivity() {
     // ==========================================================
 
     /**
-     * Muestra la pantalla de detalle de un estudiante concreto.
-     * Carga la imagen desde la URL y rellena todos los campos de texto.
-     * Guarda el estudiante en [estudianteActual] para poder restaurarlo al recrear.
+     * Muestra la pantalla de detalle de un estudiante.
      *
-     * @param e Objeto [Estudiante] con los datos a mostrar.
+     * Además, marca este estudiante como "el último consultado" en la caché,
+     * para que el botón del menú principal lo muestre al volver.
+     *
+     * @param e Estudiante a mostrar.
      */
     private fun mostrarDetalleAlumno(e: Estudiante) {
-        // Guardamos la pantalla y el estudiante para poder restaurarlos.
         pantallaActual = "detalle"
         estudianteActual = e
 
-        // Cargamos el layout de detalle.
+        // ✅ Marca este estudiante como el último consultado.
+        // Esto actualiza su timestamp en SQLite y hace que el botón
+        // "Último: ..." del menú principal lo muestre al volver.
+        repository.marcarComoConsultado(e)
+        Log.d("Dumbledroid", "Marcado como consultado: ${e.id}")
+
         setContentView(R.layout.mostrar_alumno)
 
-        // Carga la imagen desde la URL que devuelve la API usando Coil.
-        findViewById<ImageView>(R.id.detalle_imagen).load(e.imagen) {
-            crossfade(true)                 // Animación de transición suave.
-            placeholder(R.mipmap.ejemplo)   // Imagen mientras carga.
-            error(R.mipmap.ejemplo)         // Imagen si falla la carga.
-            size(Size.ORIGINAL)             // Usa el tamaño original de la imagen.
+        // Imagen (si es null, Coil mostrará el placeholder/error).
+        findViewById<ImageView>(R.id.detalle_imagen).load(e.imagen.orEmpty()) {
+            crossfade(true)
+            placeholder(R.mipmap.ejemplo)
+            error(R.mipmap.ejemplo)
+            size(Size.ORIGINAL)
         }
 
-        // Rellena cada TextView con su dato correspondiente del estudiante.
-        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre + " " + e.apellido
-        findViewById<TextView>(R.id.detalle_alias).text             = e.alias
-        findViewById<TextView>(R.id.detalle_casa).text              = e.casa
-        findViewById<TextView>(R.id.detalle_especie).text           = e.especie
-        findViewById<TextView>(R.id.detalle_genero).text            = e.genero
-        findViewById<TextView>(R.id.detalle_fecha_nacimiento).text  = e.fecha_nacimiento
-        findViewById<TextView>(R.id.detalle_patronus).text          = e.patronus
-        findViewById<TextView>(R.id.detalle_nacionalidad).text      = e.nacionalidad
+        // Nombre completo (nombre + apellido), tratados con orEmpty().
+        val nombreCompleto = listOfNotNull(e.nombre, e.apellido)
+            .joinToString(" ")
+            .trim()
+
+        findViewById<TextView>(R.id.detalle_nombre).text           = e.nombre + " " + e.apellido
+        findViewById<TextView>(R.id.detalle_alias).text            = e.alias.orEmpty()
+        findViewById<TextView>(R.id.detalle_casa).text             = e.casa.orEmpty()
+        findViewById<TextView>(R.id.detalle_especie).text          = e.especie.orEmpty()
+        findViewById<TextView>(R.id.detalle_genero).text           = e.genero.orEmpty()
+        findViewById<TextView>(R.id.detalle_fecha_nacimiento).text = e.fecha_nacimiento.orEmpty()
+        findViewById<TextView>(R.id.detalle_patronus).text         = e.patronus.orEmpty()
+        findViewById<TextView>(R.id.detalle_nacionalidad).text     = e.nacionalidad.orEmpty()
     }
 
     // ==========================================================
     //               CONFIGURACIÓN DE RETROFIT
     // ==========================================================
 
-    /**
-     * Configura el cliente Retrofit con:
-     *  - Un interceptor que añade la API Key y la cabecera `accept`.
-     *  - La URL base definida en [Constantes.Base_URL].
-     *  - El convertidor Gson para parsear JSON.
-     */
     private fun setupRetrofit() {
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .addHeader("X-API-Key", BuildConfig.API_KEY) // Autenticación con la API.
-                    .addHeader("accept", "*/*")                  // Acepta cualquier tipo de respuesta.
+                    .addHeader("X-API-Key", BuildConfig.API_KEY)
+                    .addHeader("accept", "*/*")
                     .build()
                 chain.proceed(request)
             }
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(Constantes.Base_URL)                          // URL base de la API.
-            .client(client)                                        // Cliente OkHttp configurado.
-            .addConverterFactory(GsonConverterFactory.create())    // Conversor JSON <-> Kotlin.
+            .baseUrl(Constantes.Base_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         service = retrofit.create(ApiService_id::class.java)
@@ -607,7 +464,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun boton_ayuda_id(view : View){
+    fun boton_ayuda_id(view: View) {
         val titulo = getString(R.string.ayuda_formato_del_id)
         val texto = getString(R.string.el_formato_del_id_es) + "\n" +
                 "XX-XXX-XXX" + "\n" +
@@ -622,7 +479,7 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, "miDialogo")
     }
 
-    fun boton_ayuda_datos(view : View){
+    fun boton_ayuda_datos(view: View) {
         val titulo = getString(R.string.ayuda_de_busqueda_por_datos)
         val texto =
             getString(R.string.al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional) + "\n" +
@@ -636,13 +493,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ==========================================================
+    //                       ÚLTIMO CONSULTADO
+    // ==========================================================
+
+    override fun onResume() {
+        super.onResume()
+        if (pantallaActual == "menu") {
+            actualizarBotonUltimoConsultado()
+        }
+    }
+
+    /**
+     * Refresca el botón "último consultado". Usa `orEmpty()` para no mostrar "null".
+     */
+    private fun actualizarBotonUltimoConsultado() {
+        val btn = binding.btMenuUltimo
+        val ultimo = repository.getUltimoEstudiante()
+
+        if (ultimo != null) {
+            btn.visibility = View.VISIBLE
+            val nombre = listOfNotNull(ultimo.nombre, ultimo.apellido)
+                .joinToString(" ")
+                .trim()
+            btn.text = "Último: $nombre"
+            Log.d("Dumbledroid", "Último consultado: ${ultimo.id} - $nombre")
+        } else {
+            btn.visibility = View.GONE
+            Log.d("Dumbledroid", "No hay último consultado en caché")
+        }
+    }
+
+    fun abrirUltimoConsultado(view: View) {
+        val ultimo = repository.getUltimoEstudiante()
+        if (ultimo != null) {
+            mostrarDetalleAlumno(ultimo)
+        } else {
+            Toast.makeText(this, "No hay ningún estudiante reciente", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ==========================================================
     //                       CONSTANTES
     // ==========================================================
 
-    /**
-     * Claves usadas para guardar y restaurar el estado de la Activity.
-     * Se agrupan aquí para evitar errores tipográficos al escribir strings sueltos.
-     */
     private companion object {
         const val KEY_PANTALLA   = "pantalla_actual"
         const val KEY_ESTUDIANTE = "estudiante_json"

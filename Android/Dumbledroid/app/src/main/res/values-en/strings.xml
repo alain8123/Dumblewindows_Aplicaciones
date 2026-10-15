@@ -32,4 +32,5 @@
     <string name="al_buscar_ivan_te_muestra">When searching ivan shows you:</string>
     <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">The name can only contain letters, spaces and apostrophes</string>
     <string name="la_casa_solo_puede_contener_letras_y_espacios">The house can only contain letters and spaces</string>
+    <string name="ultimo_consultado">Último consultado</string>
 </resources>
