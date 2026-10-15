@@ -31,15 +31,15 @@ public class PopupSeleccionAlumno : PopupBase
         int cantidad = 0;
         foreach (RespuestaApi alumno in alumnos)
         {
-            if (alumno == null || string.IsNullOrWhiteSpace(alumno.id)) continue;
+            if (alumno == null) continue;
             Button opcion = Instantiate(plantillaOpcion, contenido, false);
-            opcion.gameObject.name = "Alumno_" + alumno.id;
+            opcion.gameObject.name = "Alumno_" + cantidad;
             TMP_Text etiqueta = opcion.GetComponentInChildren<TMP_Text>(true);
             if (etiqueta)
             {
                 etiqueta.richText = false;
                 string nombre = (alumno.nombre + " " + alumno.apellido).Trim();
-                etiqueta.text = (string.IsNullOrEmpty(nombre) ? "Estudiante" : nombre) + "\n" + alumno.id;
+                etiqueta.text = string.IsNullOrEmpty(nombre) ? "Estudiante" : nombre;
             }
             opcion.onClick.RemoveAllListeners();
             RespuestaApi candidato = alumno;

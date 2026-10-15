@@ -7,13 +7,11 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Serialization;
 
 // Modelo parcial: solo el campo que nos interesa del JSON del estudiante
 [Serializable]
 public class RespuestaApi
 {
-    public string id;
     public string nombre;
     public string apellido;
     public string patronus; // nombre exacto de la clave en el JSON
@@ -32,7 +30,6 @@ public class AnimacionPorValor
 public class ConsultaAlumno : MonoBehaviour
 {
     [Header("UI")]
-    [FormerlySerializedAs("inputId")]
     [SerializeField] private TMP_InputField inputNombre;
     [SerializeField] private TMP_Text textoEstado;       // opcional: texto "Buscando..."
     [SerializeField] private PopupAlumno popup;          // muestra la animación del patronus
@@ -41,8 +38,8 @@ public class ConsultaAlumno : MonoBehaviour
     [SerializeField] private PopupSeleccionAlumno popupSeleccion; // se carga de Resources si no se asigna
 
     [Header("API")]
-    // Dirección de la colección de estudiantes; la búsqueda utiliza el parámetro name.
-    [SerializeField] private string urlBase = "https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/";
+    // Dirección de la colección de estudiantes (se indica en el inspector); la búsqueda utiliza el parámetro name.
+    [SerializeField] private string urlBase = "";
     
     // Admite nombres internacionales y compuestos, sin números ni separadores aislados.
     private static readonly Regex NombreRegex = new Regex(
@@ -76,16 +73,6 @@ public class ConsultaAlumno : MonoBehaviour
         inputNombre.characterLimit = 0;
         inputNombre.onValidateInput += ValidarCaracterNombre;
         inputNombre.onValueChanged.AddListener(ActualizarNombreEnMayusculas);
-        if (inputNombre.placeholder is TMP_Text indicacion)
-            indicacion.text = "Introduce el nombre del alumno…";
-        Canvas lienzo = inputNombre.GetComponentInParent<Canvas>();
-        if (lienzo)
-        {
-            foreach (TMP_Text etiqueta in lienzo.GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (etiqueta.text == "IDENTIFICADOR DEL ALUMNO") etiqueta.text = "NOMBRE DEL ALUMNO";
-            }
-        }
         ActualizarNombreEnMayusculas(inputNombre.text);
     }
 
@@ -159,8 +146,12 @@ public class ConsultaAlumno : MonoBehaviour
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(urlBase) ||
-            !Uri.TryCreate(urlBase, UriKind.Absolute, out Uri direccionBase) ||
+        if (string.IsNullOrWhiteSpace(urlBase))
+        {
+            Avisar("Configuración incorrecta", "Falta la dirección de la API en el inspector.");
+            return;
+        }
+        if (!Uri.TryCreate(urlBase, UriKind.Absolute, out Uri direccionBase) ||
             (direccionBase.Scheme != Uri.UriSchemeHttp && direccionBase.Scheme != Uri.UriSchemeHttps))
         {
             Avisar("Configuración incorrecta", "La dirección del servidor no es válida.");
@@ -307,8 +298,8 @@ public class ConsultaAlumno : MonoBehaviour
 
     void SeleccionarAlumno(RespuestaApi alumno)
     {
-        if (consultando || alumno == null || string.IsNullOrWhiteSpace(alumno.id)) return;
-        // La lista ya incluye el Patronus: no es necesaria otra consulta por ID.
+        if (consultando || alumno == null) return;
+        // La lista ya incluye el Patronus: no es necesaria otra consulta.
         MostrarAlumno(alumno);
     }
 
@@ -332,8 +323,7 @@ public class ConsultaAlumno : MonoBehaviour
             return;
         }
 
-        // Si trae varios (ej. "Jack Rabbit (c. 1986), Wolf (1995-1998)") nos quedamos con el último
-        patronus = ExtraerPatronusActual(patronus);
+        patronus = patronus.Trim();
 
         if (!popup)
         {
@@ -355,21 +345,6 @@ public class ConsultaAlumno : MonoBehaviour
             animacion != null && animacion.prefab &&
             !string.IsNullOrEmpty(animacion.valor) &&
             PatronusSpriteAnimation.NormalizarNombre(animacion.valor) == buscado)?.prefab;
-    }
-
-    // "Jack Rabbit (c. 1986), Wolf (1995-1998)" -> "Wolf"   |   "Stag" -> "Stag"
-    static string ExtraerPatronusActual(string valor)
-    {
-        string ultimoPatronus = valor.Substring(valor.LastIndexOf(',') + 1); // lo que va tras la última coma
-        var nombreSinFechas = new StringBuilder(ultimoPatronus.Length);
-        int profundidadParentesis = 0; // profundidad de paréntesis: se descarta todo lo que hay dentro
-        foreach (char caracter in ultimoPatronus)
-        {
-            if (caracter == '(') profundidadParentesis++;
-            else if (caracter == ')') profundidadParentesis = Math.Max(0, profundidadParentesis - 1);
-            else if (profundidadParentesis == 0) nombreSinFechas.Append(caracter);
-        }
-        return nombreSinFechas.ToString().Trim();
     }
 
     // Muestra un aviso en el popup (o en el texto de estado si no hay popup)

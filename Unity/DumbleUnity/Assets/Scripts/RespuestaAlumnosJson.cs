@@ -21,21 +21,9 @@ public static class RespuestaAlumnosJson
         if (json.StartsWith("{"))
         {
             RespuestaApi alumno = JsonUtility.FromJson<RespuestaApi>(json);
-            if (alumno != null && (!string.IsNullOrWhiteSpace(alumno.id) || !string.IsNullOrWhiteSpace(alumno.patronus)))
+            if (alumno != null && (!string.IsNullOrWhiteSpace(alumno.nombre) || !string.IsNullOrWhiteSpace(alumno.patronus)))
                 return new[] { alumno };
         }
         throw new ArgumentException("La respuesta no contiene alumnos válidos.");
-    }
-
-    // La búsqueda por nombre puede devolver otros familiares: el ID debe coincidir entero.
-    public static RespuestaApi BuscarPorId(RespuestaApi[] alumnos, string id)
-    {
-        if (alumnos == null || string.IsNullOrWhiteSpace(id)) return null;
-        foreach (RespuestaApi alumno in alumnos)
-        {
-            if (alumno != null && string.Equals(alumno.id, id, StringComparison.OrdinalIgnoreCase))
-                return alumno;
-        }
-        return null;
     }
 }
