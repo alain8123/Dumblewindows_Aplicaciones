@@ -158,6 +158,8 @@ public final class StudentController {
         ButtonType cancel = new ButtonType(I18n.text("action.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         ButtonType confirm = new ButtonType(I18n.text("action.confirm"), ButtonBar.ButtonData.OK_DONE);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "", cancel, confirm);
+        I18n.tooltip((Button) alert.getDialogPane().lookupButton(cancel), "tooltip.cancelDelete");
+        I18n.tooltip((Button) alert.getDialogPane().lookupButton(confirm), "tooltip.confirmDelete");
         I18n.message(alert.titleProperty(), "delete.header");
         I18n.message(alert.headerTextProperty(), "delete.header");
         I18n.message(alert.contentTextProperty(), "delete.confirm", id);
@@ -229,6 +231,8 @@ public final class StudentController {
         ButtonType choose = new ButtonType(I18n.text("action.select"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancel = new ButtonType(I18n.text("action.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(choose, cancel);
+        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(choose), "tooltip.select");
+        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(cancel), "tooltip.cancelSelection");
         dialog.getDialogPane().lookupButton(choose).disableProperty()
                 .bind(choices.getSelectionModel().selectedItemProperty().isNull());
         dialog.setResizable(false);

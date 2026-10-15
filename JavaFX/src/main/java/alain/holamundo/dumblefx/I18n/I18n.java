@@ -8,6 +8,9 @@ import javafx.beans.property.Property;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Labeled;
+import javafx.scene.control.Control;
+import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputControl;
@@ -59,8 +62,29 @@ public final class I18n {
         for (TableColumn<?, ?> child : column.getColumns()) bindColumn(child);
     }
 
+    public static void tooltip(Control control, String key) {
+        Tooltip tooltip = new Tooltip();
+        message(tooltip.textProperty(), key);
+        configureTooltip(tooltip);
+        control.setTooltip(tooltip);
+    }
+
+    private static void configureTooltip(Tooltip tooltip) {
+        tooltip.setWrapText(true);
+        tooltip.setMaxWidth(420);
+        tooltip.setShowDelay(Duration.millis(200));
+        tooltip.setShowDuration(Duration.INDEFINITE);
+        if (!tooltip.getStyleClass().contains("info-tooltip")) {
+            tooltip.getStyleClass().add("info-tooltip");
+        }
+    }
+
     public static void bindView(Node node) {
         bindStatic(node.accessibleTextProperty());
+        if (node instanceof Control control && control.getTooltip() != null) {
+            bindStatic(control.getTooltip().textProperty());
+            configureTooltip(control.getTooltip());
+        }
         if (node instanceof Labeled labeled) bindStatic(labeled.textProperty());
         if (node instanceof TextInputControl input) bindStatic(input.promptTextProperty());
         if (node instanceof TableView<?> table) {

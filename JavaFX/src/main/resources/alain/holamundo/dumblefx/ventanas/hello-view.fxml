@@ -18,21 +18,27 @@
       <Label text="DumbleFX" styleClass="brand" />
       <Label fx:id="lbl_SideText" text="%sidebar.heading" styleClass="eyebrow" />
       <Separator />
-      <Button fx:id="idButton" text="%nav.id" onAction="#id" maxWidth="Infinity" styleClass="nav-button" />
-      <Button fx:id="dataButton" text="%nav.data" onAction="#data" maxWidth="Infinity" styleClass="nav-button" />
-      <Button fx:id="createButton" text="%nav.create" onAction="#create" maxWidth="Infinity" styleClass="nav-button" />
-      <Button fx:id="deleteButton" text="%nav.delete" onAction="#delete" maxWidth="Infinity" styleClass="nav-button" />
-      <Button fx:id="updateButton" text="%nav.update" onAction="#update" maxWidth="Infinity" styleClass="nav-button" />
+      <Button fx:id="idButton" text="%nav.id" onAction="#id" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navId" /></tooltip></Button>
+      <Button fx:id="dataButton" text="%nav.data" onAction="#data" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navData" /></tooltip></Button>
+      <Button fx:id="createButton" text="%nav.create" onAction="#create" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navCreate" /></tooltip></Button>
+      <Button fx:id="deleteButton" text="%nav.delete" onAction="#delete" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navDelete" /></tooltip></Button>
+      <Button fx:id="updateButton" text="%nav.update" onAction="#update" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navUpdate" /></tooltip></Button>
       <Region VBox.vgrow="ALWAYS" />
       <Label fx:id="lbl_SideNote" text="%sidebar.note" styleClass="side-note" />
+      <HBox alignment="CENTER_RIGHT">
+        <Label fx:id="creditsIcon" text="©" styleClass="info-icon" />
+      </HBox>
     </VBox>
   </left>
   <center>
     <VBox spacing="20" styleClass="workspace">
-      <VBox spacing="4">
-        <Label fx:id="lbl_PaneText" text="%panel.title" styleClass="overline" />
-        <Label fx:id="sectionTitle" text="%nav.id" styleClass="page-title" />
-      </VBox>
+      <HBox alignment="TOP_RIGHT" spacing="16">
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+          <Label fx:id="lbl_PaneText" text="%panel.title" styleClass="overline" />
+          <Label fx:id="sectionTitle" text="%nav.id" styleClass="page-title" />
+        </VBox>
+        <Label fx:id="helpIcon" text="?" styleClass="info-icon" />
+      </HBox>
       <StackPane fx:id="content" VBox.vgrow="ALWAYS" />
     </VBox>
   </center>

@@ -1,6 +1,8 @@
 package alain.holamundo.dumblefx;
 
 import alain.holamundo.dumblefx.API.ApiConfig;
+import alain.holamundo.dumblefx.I18n.I18n;
+import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBar;
@@ -32,6 +34,8 @@ public final class ConfigDialog {
         dialog.setHeaderText("No existe config.properties. Introduce los datos de conexión.");
         ButtonType save = new ButtonType("Guardar y continuar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(save), "tooltip.saveConfig");
+        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL), "tooltip.cancelConfig");
 
         GridPane form = new GridPane();
         form.setPadding(new Insets(15));
