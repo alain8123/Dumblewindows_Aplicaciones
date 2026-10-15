@@ -13,6 +13,9 @@ using UnityEngine.Serialization;
 [Serializable]
 public class RespuestaApi
 {
+    public string id;
+    public string nombre;
+    public string apellido;
     public string patronus; // nombre exacto de la clave en el JSON
 }
 
@@ -33,6 +36,8 @@ public class ConsultaAlumno : MonoBehaviour
     [SerializeField] private TMP_Text textoEstado;       // opcional: texto "Buscando..."
     [SerializeField] private PopupAlumno popup;          // muestra la animación del patronus
     [SerializeField] private PopupAviso popupAviso;      // avisos de error
+
+    [SerializeField] private PopupSeleccionAlumno popupSeleccion; // se carga de Resources si no se asigna
 
     [Header("API")]
     // Debe terminar en "/" y SIN llaves. El ID escrito en el campo se añade al final.
@@ -64,6 +69,28 @@ public class ConsultaAlumno : MonoBehaviour
     [SerializeField] private bool mostrarLogs = true;
 
     private bool consultando; // evita lanzar dos consultas a la vez
+
+    // Convierte el texto visible al escribir o pegar sin generar eventos recursivos.
+    private void OnEnable()
+    {
+        if (!inputId) return;
+        inputId.onValueChanged.AddListener(ActualizarIdEnMayusculas);
+        ActualizarIdEnMayusculas(inputId.text);
+    }
+
+    private void ActualizarIdEnMayusculas(string texto)
+    {
+        if (!inputId) return;
+
+        string textoEnMayusculas = (texto ?? string.Empty).ToUpperInvariant();
+        if (inputId.text == textoEnMayusculas) return;
+
+        int inicioSeleccion = inputId.selectionStringAnchorPosition;
+        int finSeleccion = inputId.selectionStringFocusPosition;
+        inputId.SetTextWithoutNotify(textoEnMayusculas);
+        inputId.selectionStringAnchorPosition = Mathf.Clamp(inicioSeleccion, 0, textoEnMayusculas.Length);
+        inputId.selectionStringFocusPosition = Mathf.Clamp(finSeleccion, 0, textoEnMayusculas.Length);
+    }
 
     // Asígnalo al OnClick del botón Buscar
     public void AlPulsarBuscar()
@@ -106,7 +133,7 @@ public class ConsultaAlumno : MonoBehaviour
     }
 
     // Petición GET a la API y reacción según el código HTTP de la respuesta
-    IEnumerator Consultar(string id)
+    IEnumerator Consultar(string id, RespuestaApi seleccionado = null)
     {
         consultando = true;
         Mostrar("Buscando...");
@@ -114,10 +141,10 @@ public class ConsultaAlumno : MonoBehaviour
         // El finally restablece el estado aunque falle la petición o el procesamiento.
         try
         {
-            using (UnityWebRequest request = CrearPeticion(id))
+            using (UnityWebRequest request = CrearPeticion(id, seleccionado))
             {
                 yield return request.SendWebRequest();
-                GestionarRespuesta(request);
+                GestionarRespuesta(request, seleccionado);
             }
         }
         finally
@@ -128,9 +155,16 @@ public class ConsultaAlumno : MonoBehaviour
     }
 
     // Centraliza la URL, el tiempo de espera y las cabeceras; no registra credenciales.
-    UnityWebRequest CrearPeticion(string id)
+    UnityWebRequest CrearPeticion(string id, RespuestaApi seleccionado = null)
     {
         string url = urlBase.TrimEnd('/') + "/" + UnityWebRequest.EscapeURL(id);
+        // El ID base ambiguo vuelve a producir una lista. La búsqueda por nombre permite
+        // recuperar el detalle y después seleccionar exclusivamente el ID elegido.
+        if (seleccionado != null && !Regex.IsMatch(id, @"-[0-9]{2}$"))
+        {
+            string nombreCompleto = (seleccionado.nombre + " " + seleccionado.apellido).Trim();
+            url = urlBase.TrimEnd('/') + "?name=" + UnityWebRequest.EscapeURL(nombreCompleto) + "&limit=100";
+        }
         UnityWebRequest request = UnityWebRequest.Get(url);
         try
         {
@@ -152,12 +186,12 @@ public class ConsultaAlumno : MonoBehaviour
     }
 
     // Distingue una respuesta válida de errores de formato, acceso o conexión.
-    void GestionarRespuesta(UnityWebRequest request)
+    void GestionarRespuesta(UnityWebRequest request, RespuestaApi seleccionado)
     {
         if (mostrarLogs) Debug.Log($"[ConsultaAlumno] HTTP {request.responseCode}", this);
         if (request.result == UnityWebRequest.Result.Success)
         {
-            ProcesarRespuesta(request.downloadHandler?.text ?? string.Empty);
+            ProcesarRespuesta(request.downloadHandler?.text ?? string.Empty, seleccionado);
             return;
         }
 
@@ -183,36 +217,82 @@ public class ConsultaAlumno : MonoBehaviour
     // Una desactivación cancela la consulta y permite volver a buscar al reactivar.
     void OnDisable()
     {
+        if (inputId) inputId.onValueChanged.RemoveListener(ActualizarIdEnMayusculas);
         StopAllCoroutines();
         consultando = false;
         Mostrar("");
     }
 
-    // Lee el JSON, decide qué patronus mostrar y abre el popup
-    void ProcesarRespuesta(string texto)
+    // Una respuesta puede ser un detalle o una lista de candidatos sin Patronus.
+    void ProcesarRespuesta(string texto, RespuestaApi seleccionado)
     {
-        string limpio = (texto ?? string.Empty).TrimStart();
-
-        // Si la URL fuese incorrecta, el servidor podría devolver HTML en vez de JSON
-        if (!limpio.StartsWith("{"))
-        {
-            Avisar("Error", "La respuesta del servidor no es válida.");
-            Debug.LogError("[ConsultaAlumno] La respuesta no es un objeto JSON. Revisa la URL base.");
-            return;
-        }
-
-        RespuestaApi datos;
+        RespuestaApi[] alumnos;
         try
         {
-            datos = JsonUtility.FromJson<RespuestaApi>(limpio);
+            alumnos = RespuestaAlumnosJson.Leer(texto);
         }
-        catch (ArgumentException e)
+        catch (ArgumentException)
         {
-            Avisar("Error", "No se ha podido leer la respuesta del servidor.");
-            Debug.LogError("[ConsultaAlumno] Error al leer el JSON: " + e.Message);
+            Avisar("Respuesta incorrecta", "No se ha podido leer la respuesta del servidor.");
             return;
         }
 
+        if (alumnos.Length == 0)
+        {
+            Avisar("Alumno no encontrado", "No existe ningún estudiante con ese ID.");
+            return;
+        }
+
+        if (seleccionado != null)
+        {
+            // Nunca mostramos otro alumno aunque la búsqueda por nombre sea aproximada.
+            RespuestaApi detalle = RespuestaAlumnosJson.BuscarPorId(alumnos, seleccionado.id);
+            if (detalle == null)
+            {
+                Avisar("Alumno no encontrado", "La API no ha devuelto el detalle del alumno seleccionado.");
+                return;
+            }
+            MostrarAlumno(detalle);
+            return;
+        }
+
+        if ((texto ?? string.Empty).TrimStart().StartsWith("["))
+        {
+            MostrarSeleccion(alumnos);
+            return;
+        }
+
+        MostrarAlumno(alumnos[0]);
+    }
+
+    // El selector es un prefab independiente: no modifica los popups ni botones existentes.
+    void MostrarSeleccion(RespuestaApi[] alumnos)
+    {
+        if (!popupSeleccion)
+        {
+            PopupSeleccionAlumno plantilla = Resources.Load<PopupSeleccionAlumno>("UI/PopupSeleccionAlumno");
+            Transform contenedor = popupAviso ? popupAviso.transform.parent : popup ? popup.transform.parent : null;
+            if (!plantilla || !contenedor)
+            {
+                Avisar("Configuración incorrecta", "Falta el prefab del selector de alumnos o el contenedor de ventanas.");
+                return;
+            }
+            popupSeleccion = Instantiate(plantilla, contenedor, false);
+            popupSeleccion.ConfigurarFondoComo(popupAviso ? (PopupBase)popupAviso : popup);
+        }
+        Mostrar("");
+        popupSeleccion.Open(alumnos, SeleccionarAlumno);
+    }
+
+    void SeleccionarAlumno(RespuestaApi alumno)
+    {
+        if (consultando || alumno == null || string.IsNullOrWhiteSpace(alumno.id)) return;
+        StartCoroutine(Consultar(alumno.id, alumno));
+    }
+
+    // Se conserva el tratamiento de los Patronus y de las animaciones personalizadas.
+    void MostrarAlumno(RespuestaApi datos)
+    {
         string patronus = datos?.patronus;
 
         // El estudiante existe pero no tiene patronus (campo ausente, null o vacío)

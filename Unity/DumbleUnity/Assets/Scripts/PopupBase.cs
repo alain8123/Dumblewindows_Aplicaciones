@@ -17,6 +17,14 @@ public abstract class PopupBase : MonoBehaviour
 
     protected virtual void Awake() => grupo = GetComponent<CanvasGroup>();
 
+    // Las ventanas creadas desde un prefab comparten el bloqueo y atenuación del menú.
+    public void ConfigurarFondoComo(PopupBase referencia)
+    {
+        if (!referencia) return;
+        menuDetras = referencia.menuDetras;
+        alphaMenuDetras = referencia.alphaMenuDetras;
+    }
+
     // Muestra el popup (llamado desde Open de cada popup)
     protected void Abrir()
     {
