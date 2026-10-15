@@ -90,7 +90,10 @@ public final class StudentController {
         Matricula value = form(null);
         if (value == null) return;
         run(() -> api.create(value), created -> {
-            nameField.clear(); surnameField.clear(); houseField.setText("Central"); birthDatePicker.setValue(null);
+            nameField.clear();
+            surnameField.clear();
+            houseField.setText("Central");
+            birthDatePicker.setValue(null);
             idField.setText(created.studentId());
             I18n.message(status.textProperty(), "status.created", created.studentId());
         });
@@ -135,12 +138,23 @@ public final class StudentController {
 
     @FXML private void loadForDelete() {
         String id = parsedId();
-        if (id != null) run(() -> api.get(id), alumno -> describe(alumno));
+        loadedId = null;
+        result.textProperty().unbind();
+        result.setText("");
+        if (id != null) run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.delete", alumno -> {
+            loadedId = alumno.getId();
+            idField.setText(loadedId);
+            describe(alumno);
+        }));
     }
 
     @FXML private void delete() {
         String id = parsedId();
         if (id == null) return;
+        if (!id.equals(loadedId)) {
+            I18n.message(status.textProperty(), "validation.loadDelete");
+            return;
+        }
         ButtonType cancel = new ButtonType(I18n.text("action.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         ButtonType confirm = new ButtonType(I18n.text("action.confirm"), ButtonBar.ButtonData.OK_DONE);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "", cancel, confirm);
@@ -150,6 +164,7 @@ public final class StudentController {
         alert.initOwner(operationPane.getScene().getWindow());
         if (alert.showAndWait().orElse(cancel) != confirm) return;
         run(() -> { api.delete(id); return null; }, ignored -> {
+            loadedId = null;
             result.textProperty().unbind(); result.setText(""); I18n.message(status.textProperty(), "status.deleted");
         });
     }
