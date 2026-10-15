@@ -30,4 +30,6 @@
     <string name="buscara_la_coincidencia_de_los_caracteres">Izen-eremua derrigorrezkoa da eta ikasleen lehen eta abizena duten pertsonaien parekatzea bilatuko da</string>
     <string name="ejemplo">Adibidea:</string>
     <string name="al_buscar_ivan_te_muestra">ivan bilatzean erakusten zaitu:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">Izenak letrak, espazioak eta apostoluak bakarrik izan ditzake</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">Etxeak gutunak eta espazioak baino ezin ditu</string>
 </resources>

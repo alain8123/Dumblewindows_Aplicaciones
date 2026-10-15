@@ -30,4 +30,6 @@
     <string name="buscara_la_coincidencia_de_los_caracteres">The Name field is mandatory and the matching of the characters in the students first and last name will be sought</string>
     <string name="ejemplo">Example:</string>
     <string name="al_buscar_ivan_te_muestra">When searching ivan shows you:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">The name can only contain letters, spaces and apostrophes</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">The house can only contain letters and spaces</string>
 </resources>

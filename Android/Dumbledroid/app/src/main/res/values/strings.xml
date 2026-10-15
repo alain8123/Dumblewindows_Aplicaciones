@@ -30,4 +30,6 @@
     <string name="buscara_la_coincidencia_de_los_caracteres">El campo de Nombre es obligatorio y se buscara la coincidencia de los caracteres en el nombre y apellido de los estudiantes</string>
     <string name="ejemplo">"Ejemplo: "</string>
     <string name="al_buscar_ivan_te_muestra">Al buscar ivan te muestra:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">El nombre solo puede contener letras, espacios y apóstrofos</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">La casa solo puede contener letras y espacios</string>
 </resources>
