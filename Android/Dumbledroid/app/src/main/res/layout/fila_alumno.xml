@@ -25,6 +25,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/fila_apellido"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="@color/plata"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fila_nombre" />
+
+    <TextView
         android:id="@+id/fila_alias"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -34,7 +46,7 @@
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/fila_nombre" />
+        app:layout_constraintTop_toBottomOf="@id/fila_apellido" />
 
     <TextView
         android:id="@+id/fila_casa"

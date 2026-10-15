@@ -23,12 +23,14 @@ class EstudianteListAdapter(
 
  class VH(v: View) : RecyclerView.ViewHolder(v) {
   val n: TextView = v.findViewById(R.id.fila_nombre)
-  val a: TextView = v.findViewById(R.id.fila_alias)
+  val ap: TextView = v.findViewById(R.id.fila_apellido)
+  val al: TextView = v.findViewById(R.id.fila_alias)
   val c: TextView = v.findViewById(R.id.fila_casa)
 
   fun bind(e: Estudiante) {
    n.text = e.nombre
-   a.text = e.alias
+   ap.text = e.apellido
+   al.text = e.alias
    c.text = e.casa
   }
  }
