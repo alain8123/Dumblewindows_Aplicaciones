@@ -89,25 +89,26 @@ class EstudianteRepository(
 
     /**
      * Marca un estudiante como "el último consultado".
+     * Se llama cuando el usuario abre la pantalla de detalle.
      *
-     * Se llama cuando el usuario abre la pantalla de detalle de un estudiante,
-     * sin importar de dónde venga (búsqueda por ID, por datos, botón "último
-     * consultado", etc.).
-     *
-     * Al guardarlo de nuevo, se actualiza su timestamp y pasa a ser el más
-     * reciente en la caché, por lo que el botón "último consultado" del menú
-     * mostrará este estudiante.
+     * Guarda el ID en SharedPreferences para que el botón del menú principal
+     * muestre exactamente este estudiante, sin depender del timestamp.
      *
      * @param estudiante Estudiante que el usuario acaba de abrir.
      */
-    // ✅ NUEVO MÉTODO
     fun marcarComoConsultado(estudiante: Estudiante) {
-        dao.guardar(estudiante)
+        dao.marcarUltimoConsultado(estudiante.id)
     }
 
     /**
-     * Devuelve el último estudiante consultado (que aún no haya caducado).
+     * Devuelve el último estudiante consultado (marcado explícitamente).
      * Se usa para el botón del menú principal.
+     */
+    fun getUltimoConsultado(): Estudiante? = dao.obtenerUltimoConsultado()
+
+    /**
+     * Devuelve el último estudiante guardado en la caché (por timestamp).
+     * Ya NO se usa para el botón principal, pero puede servir para depuración.
      */
     fun getUltimoEstudiante(): Estudiante? = dao.obtenerUltimo()
 

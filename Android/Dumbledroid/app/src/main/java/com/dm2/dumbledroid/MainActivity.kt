@@ -362,7 +362,7 @@ class MainActivity : AppCompatActivity() {
         pantallaActual = "detalle"
         estudianteActual = e
 
-        // ✅ Marca este estudiante como el último consultado.
+        // Marca este estudiante como el último consultado.
         // Esto actualiza su timestamp en SQLite y hace que el botón
         // "Último: ..." del menú principal lo muestre al volver.
         repository.marcarComoConsultado(e)
@@ -504,11 +504,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Refresca el botón "último consultado". Usa `orEmpty()` para no mostrar "null".
+     * Refresca el botón "último consultado".
+     * Ahora usa el ID marcado explícitamente en vez del timestamp.
      */
     private fun actualizarBotonUltimoConsultado() {
         val btn = binding.btMenuUltimo
-        val ultimo = repository.getUltimoEstudiante()
+        val ultimo = repository.getUltimoConsultado()
 
         if (ultimo != null) {
             btn.visibility = View.VISIBLE
@@ -519,12 +520,12 @@ class MainActivity : AppCompatActivity() {
             Log.d("Dumbledroid", "Último consultado: ${ultimo.id} - $nombre")
         } else {
             btn.visibility = View.GONE
-            Log.d("Dumbledroid", "No hay último consultado en caché")
+            Log.d("Dumbledroid", "No hay último consultado")
         }
     }
 
     fun abrirUltimoConsultado(view: View) {
-        val ultimo = repository.getUltimoEstudiante()
+        val ultimo = repository.getUltimoConsultado()
         if (ultimo != null) {
             mostrarDetalleAlumno(ultimo)
         } else {

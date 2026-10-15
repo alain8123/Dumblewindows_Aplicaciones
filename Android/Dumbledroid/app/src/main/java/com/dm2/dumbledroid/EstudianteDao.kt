@@ -18,6 +18,11 @@ class EstudianteDao(context: Context) {
 
     private val dbHelper = DbHelper(context)
     private val gson = Gson()
+    private val prefs = context.getSharedPreferences("dumbledroid_prefs", Context.MODE_PRIVATE)
+
+    private companion object {
+        const val KEY_ULTIMO_ID = "ultimo_consultado_id"
+    }
 
     /** Tiempo de vida de la caché: 24 horas en milisegundos. */
     private val TTL_MS = 24 * 60 * 60 * 1000L
@@ -180,10 +185,10 @@ class EstudianteDao(context: Context) {
 
             val e = gson.fromJson(json, Estudiante::class.java)
 
-            // ✅ Usamos orEmpty() para tratar los null como cadenas vacías.
+            // Usamos orEmpty() para tratar los null como cadenas vacías.
             val coincideNombre = nombre.isEmpty() ||
                     e.nombre.orEmpty().contains(nombre, ignoreCase = true) ||
-                    e.alias.orEmpty().contains(nombre, ignoreCase = true)
+                    e.apellido.orEmpty().contains(nombre, ignoreCase = true)
             val coincideCasa = casa.isEmpty() ||
                     e.casa.orEmpty().equals(casa, ignoreCase = true)
 
@@ -226,5 +231,33 @@ class EstudianteDao(context: Context) {
             arrayOf(limite.toString())
         )
         db.close()
+    }
+
+    // ==========================================================
+    //                  ÚLTIMO CONSULTADO
+    // ==========================================================
+
+    /**
+     * Marca explícitamente un estudiante como "el último consultado".
+     *
+     * A diferencia del timestamp (que se actualiza cada vez que se guarda
+     * cualquier estudiante), este método guarda el ID en SharedPreferences,
+     * por lo que solo cambia cuando el usuario abre un detalle.
+     *
+     * @param id ID del estudiante que el usuario acaba de consultar.
+     */
+    fun marcarUltimoConsultado(id: String) {
+        prefs.edit().putString(KEY_ULTIMO_ID, id).apply()
+    }
+
+    /**
+     * Devuelve el estudiante marcado como "último consultado", o `null`
+     * si no hay ninguno o si el ID guardado ya no existe en la caché.
+     *
+     * @return El último [Estudiante] consultado, o `null`.
+     */
+    fun obtenerUltimoConsultado(): Estudiante? {
+        val id = prefs.getString(KEY_ULTIMO_ID, null) ?: return null
+        return obtenerPorId(id)
     }
 }
