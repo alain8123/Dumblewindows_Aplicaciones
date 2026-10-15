@@ -1,6 +1,6 @@
 .root {
     -fx-font-family: "Segoe UI", Arial, sans-serif;
-    -fx-font-size: 14px;
+    -fx-font-size: 1em;
     -fx-background-color: #f3f6fb;
 }
 .sidebar {
@@ -9,17 +9,17 @@
 }
 .brand {
     -fx-text-fill: white;
-    -fx-font-size: 28px;
+    -fx-font-size: 2em;
     -fx-font-weight: bold;
 }
 .eyebrow {
     -fx-text-fill: #9fb3cc;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.714286em;
     -fx-font-weight: bold;
 }
 .side-note {
     -fx-text-fill: #9fb3cc;
-    -fx-font-size: 12px;
+    -fx-font-size: 0.857143em;
 }
 
 #lbl_SideText,#lbl_PaneText,#lbl_SideNote{
@@ -36,20 +36,36 @@
     -fx-padding: 13 14;
     -fx-cursor: hand;
 }
-.nav-button:hover, .nav-button:focused {
+.nav-button:hover {
     -fx-background-color: #575759;
+}
+.nav-button:focused {
+    -fx-border-color: #f1d48b;
+    -fx-border-radius: 10;
+}
+.nav-button {
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+.nav-button:selected {
+    -fx-background-color: #858592;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.nav-button:selected:hover {
+    -fx-background-color: #9696a3;
 }
 .workspace {
     -fx-padding: 34;
 }
 .overline {
     -fx-text-fill: #61748c;
-    -fx-font-size: 12px;
+    -fx-font-size: 0.857143em;
     -fx-font-weight: bold;
 }
 .page-title {
     -fx-text-fill: #162b48;
-    -fx-font-size: 27px;
+    -fx-font-size: 1.928571em;
     -fx-font-weight: bold;
 }
 .card { -fx-padding: 28;
@@ -60,7 +76,7 @@
 }
 .card-title {
     -fx-text-fill: #223956;
-    -fx-font-size: 19px;
+    -fx-font-size: 1.357143em;
     -fx-font-weight: bold;
 }
 .hint {
@@ -107,7 +123,7 @@
 }
 .status {
     -fx-text-fill: #385775;
-    -fx-font-size: 12px;
+    -fx-font-size: 0.857143em;
 }
 .result {
     -fx-padding: 18;
