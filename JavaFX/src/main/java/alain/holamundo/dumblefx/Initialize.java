@@ -2,6 +2,8 @@ package alain.holamundo.dumblefx;
 
 import alain.holamundo.dumblefx.I18n.I18n;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -11,6 +13,21 @@ public class Initialize extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        try {
+            if (!ConfigDialog.ensureConfiguration(stage)) {
+                Platform.exit();
+                return;
+            }
+        } catch (Exception failure) {
+            System.getLogger(Initialize.class.getName()).log(System.Logger.Level.ERROR,
+                    "No se pudo preparar la configuración inicial", failure);
+            Alert alert = new Alert(Alert.AlertType.ERROR,
+                    "No se pudo preparar la configuración inicial. Consulta el detalle del error en la consola.");
+            alert.setHeaderText("Error de configuración");
+            alert.showAndWait();
+            Platform.exit();
+            return;
+        }
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/alain/holamundo/dumblefx/ventanas/hello-view.fxml"), I18n.bundle());
         javafx.scene.Parent root = loader.load();
         I18n.bindView(root);

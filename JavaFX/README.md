@@ -4,8 +4,25 @@ Cliente JavaFX adaptado al contrato OpenAPI de la API DumbleWindows.
 
 ## Configuración
 
-En desarrollo se lee `src/main/resources/config.properties`. Si existe un
-`config.properties` en el directorio de trabajo, tiene prioridad. Puedes elegir
+Si no existe ningún archivo de configuración, antes de abrir la ventana principal
+aparece un formulario de configuración inicial. Introduce la URL base y la clave
+de la API; las cinco URLs de operación son opcionales y, si se dejan vacías, se
+calculan a partir de la URL base. La clave se muestra oculta en el formulario,
+pero se guarda en texto plano en el archivo. Las URLs se validan antes de guardar;
+esto no comprueba la disponibilidad del servidor ni la validez de la clave.
+
+Al pulsar **Guardar y continuar**, se crea
+`src/main/resources/alain/holamundo/dumblefx/config.properties`, relativo a la raíz
+del proyecto (o en la ruta indicada por `-Ddumblefx.config`), y continúa el arranque.
+Las cinco variables opcionales siempre se escriben, aunque su valor esté vacío;
+los textos de ejemplo del formulario se incluyen como comentarios, no como URLs.
+Si falla el guardado, el formulario permanece abierto. Cancelar o cerrar el
+formulario termina la aplicación sin crear el archivo. Si el archivo ya existe,
+no se muestra el formulario ni se sobrescribe la configuración.
+
+En desarrollo se lee `src/main/resources/alain/holamundo/dumblefx/config.properties`.
+El archivo de la raíz y `src/main/resources/config.properties` ya no se buscan.
+Puedes elegir
 un archivo externo con `-Ddumblefx.config=C:\ruta\config.properties` en las
 opciones de la JVM de IntelliJ. Las variables de entorno del mismo nombre
 prevalecen sobre el archivo. Reinicia la aplicación después de cambiarlo.
