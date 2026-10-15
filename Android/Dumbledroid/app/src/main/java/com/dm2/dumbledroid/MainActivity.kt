@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Verifica el formato del id pasado como parametro.
      *
-     * @return Boolean True si el id tiene el formato correcto y false si no lo tiene.
+     * @return Boolean. True si el id tiene el formato correcto y false si no lo tiene.
      * @param id Identificador a comprobar el formato.
      */
     private fun verificar_formato_id(id: String): Boolean {
@@ -375,16 +375,6 @@ class MainActivity : AppCompatActivity() {
                 listOfNotNull(unico)
             }
             else -> emptyList()
-        }
-    }
-
-    private fun idBase(id: String): String {
-        val partes = id.split("-")
-        // Si hay 4 partes y la última son 2 dígitos, es un duplicado
-        return if (partes.size == 4 && partes[3].length == 2 && partes[3].all { it.isDigit() }) {
-            partes.take(3).joinToString("-")
-        } else {
-            id
         }
     }
 
@@ -598,6 +588,34 @@ class MainActivity : AppCompatActivity() {
             // Se ejecuta si no hay nada seleccionado. No necesitamos hacer nada aquí.
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
+    }
+
+    fun boton_ayuda_id(view : View){
+        val titulo = getString(R.string.ayuda_formato_del_id)
+        val texto = getString(R.string.el_formato_del_id_es) + "\n" +
+                "XX-XXX-XXX" + "\n" +
+                getString(R.string.las_2_primeras_x_son_las_iniciales_de_la_casa) + "\n" +
+                getString(R.string.las_3_primeras_x_son_las_iniciales_del_nombre) + "\n" +
+                getString(R.string.las_3_ultimas_x_son_las_iniciales_del_apellido) + "\n" +
+                getString(R.string.por_ejemplo_el_estudiante_harry_james_potter_seria) + "\n" +
+                "GR-HAR-POT" + "\n" + "\n" +
+                getString(R.string.estudiante_con_id_repetido)
+
+        val miDialogo = MiDialogoFragment(titulo, texto)
+        miDialogo.show(supportFragmentManager, "mi Dialogo")
+    }
+
+    fun boton_ayuda_datos(view : View){
+        val titulo = getString(R.string.ayuda_de_busqueda_por_datos)
+        val texto =
+            getString(R.string.al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional) + "\n" +
+                    getString(R.string.buscara_la_coincidencia_de_los_caracteres) + "\n" + "\n" +
+                    getString(R.string.ejemplo) + "\n" + "\n" +
+                    getString(R.string.al_buscar_ivan_te_muestra) + "\n" + "\n" +
+                    "Medb O'Sullivan, Sillivan Fawley, ..."
+
+        val miDialogo = MiDialogoFragment(titulo, texto)
+        miDialogo.show(supportFragmentManager, "mi Dialogo")
     }
 
     // ==========================================================

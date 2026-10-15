@@ -17,4 +17,17 @@
     <string name="rellena_al_menos_un_campo">Rellena al menos un campo</string>
     <string name="sin_resultados">Sin resultados</string>
     <string name="el_id_no_cumple_el_formato">El ID no cumple el formato</string>
+    <string name="boton_ayuda_formato_id">Boton ayuda formato id</string>
+    <string name="ayuda_formato_del_id">Ayuda formato del ID</string>
+    <string name="el_formato_del_id_es">El formato del ID es:</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">" Las 2 primeras X son las iniciales de la casa"</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Las 3 primeras X son las iniciales del nombre</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">" Las 3 ultimas X son las iniciales del apellido "</string>
+    <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Por ejemplo, el estudiante Harry James Potter seria:</string>
+    <string name="estudiante_con_id_repetido">En caso de haber estudiantes con ID repetido estos tendran es su ID un prefijo como \'-01\' pero si los buscas sin prefijo saldra un listado con todos los que comparten el ID</string>
+    <string name="ayuda_de_busqueda_por_datos">Ayuda de busqueda por datos</string>
+    <string name="al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional">Al buscar por datos introducir el campo de la Casa es opcional</string>
+    <string name="buscara_la_coincidencia_de_los_caracteres">El campo de Nombre es obligatorio y se buscara la coincidencia de los caracteres en el nombre y apellido de los estudiantes</string>
+    <string name="ejemplo">"Ejemplo: "</string>
+    <string name="al_buscar_ivan_te_muestra">Al buscar ivan te muestra:</string>
 </resources>

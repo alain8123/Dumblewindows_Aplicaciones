@@ -17,4 +17,17 @@
     <string name="rellena_al_menos_un_campo">Bete gutxienez eremu bat</string>
     <string name="sin_resultados">Emaitzarik ez</string>
     <string name="el_id_no_cumple_el_formato">IDak ez du formatua betetzen</string>
+    <string name="boton_ayuda_formato_id">Laguntza botoiaren formatua id</string>
+    <string name="ayuda_formato_del_id">Laguntza ID formatua</string>
+    <string name="el_formato_del_id_es">ID formatua hau da:</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">Lehenengo 2 Xak etxeko hasierakoak dira</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Lehenengo 3 Xak izenaren hasierakoak dira</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">Azken 3 Xak abizenaren hasierakoak dira</string>
+    <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Adibidez, Harry James Potter ikaslea hau izango litzateke:</string>
+    <string name="estudiante_con_id_repetido">Behin eta berriz NANa duten ikasleak badaude, \'-01 \' bezalako aurrizkia izango dute NANean, baina aurrizkirik gabe bilatzen badituzu, zerrenda bat agertuko da IDa partekatzen duten guztiekin.</string>
+    <string name="ayuda_de_busqueda_por_datos">Datuak bilatzeko laguntza</string>
+    <string name="al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional">Datuak bilatzean, Ganberaren eremuan sartzea aukerakoa da</string>
+    <string name="buscara_la_coincidencia_de_los_caracteres">Izen-eremua derrigorrezkoa da eta ikasleen lehen eta abizena duten pertsonaien parekatzea bilatuko da</string>
+    <string name="ejemplo">Adibidea:</string>
+    <string name="al_buscar_ivan_te_muestra">ivan bilatzean erakusten zaitu:</string>
 </resources>

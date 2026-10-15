@@ -14,7 +14,7 @@
         android:layout_marginTop="30dp"
         android:background="@drawable/bg_boton_plata"
         android:contentDescription="@string/flecha_menu"
-        android:onClick="mostrar_busqueda_datos"
+        android:onClick="mostrar_menu"
         android:padding="12dp"
         android:src="@android:drawable/ic_menu_revert"
         app:tint="@color/plata_clara"

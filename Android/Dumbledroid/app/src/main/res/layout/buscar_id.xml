@@ -24,6 +24,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/boton_ayuda"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/bg_boton_plata"
+        android:contentDescription="@string/boton_ayuda_formato_id"
+        android:onClick="boton_ayuda_id"
+        android:padding="12dp"
+        android:src="@android:drawable/ic_menu_help"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/plata_clara" />
+
     <EditText
         android:id="@+id/et_estudiante"
         style="@style/InputPlata"
