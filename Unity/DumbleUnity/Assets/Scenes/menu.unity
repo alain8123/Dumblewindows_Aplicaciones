@@ -1710,7 +1710,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Introduce el ID del alumno\u2026"
+  m_text: "Introduce el nombre del alumno\u2026"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2226,13 +2226,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9c3a8de0ecc3c4397c5dba2fabd597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsultaAlumno
-  inputId: {fileID: 327286189}
+  inputNombre: {fileID: 327286189}
   textoEstado: {fileID: 0}
   popup: {fileID: 275144341}
   popupAviso: {fileID: 2020609044592249866}
   popupSeleccion: {fileID: 0}
   urlBase: https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/
-  validarFormatoId: 1
   nombreCabecera: X-API-Key
   apiKey: 
   usarBearer: 0

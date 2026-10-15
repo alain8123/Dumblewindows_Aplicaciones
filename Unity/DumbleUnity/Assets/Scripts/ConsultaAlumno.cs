@@ -27,12 +27,13 @@ public class AnimacionPorValor
     public GameObject prefab; // prefab de UI (Image + Animator, etc.) que sustituye al spritesheet
 }
 
-// Controlador de consulta: consulta la API con el ID escrito y muestra el patronus del estudiante en PopupAlumno,
+// Controlador de consulta: busca por nombre y muestra el patronus del estudiante elegido en PopupAlumno,
 // o un aviso en PopupAviso si algo falla.
 public class ConsultaAlumno : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private TMP_InputField inputId;
+    [FormerlySerializedAs("inputId")]
+    [SerializeField] private TMP_InputField inputNombre;
     [SerializeField] private TMP_Text textoEstado;       // opcional: texto "Buscando..."
     [SerializeField] private PopupAlumno popup;          // muestra la animación del patronus
     [SerializeField] private PopupAviso popupAviso;      // avisos de error
@@ -40,18 +41,14 @@ public class ConsultaAlumno : MonoBehaviour
     [SerializeField] private PopupSeleccionAlumno popupSeleccion; // se carga de Resources si no se asigna
 
     [Header("API")]
-    // Debe terminar en "/" y SIN llaves. El ID escrito en el campo se añade al final.
+    // Dirección de la colección de estudiantes; la búsqueda utiliza el parámetro name.
     [SerializeField] private string urlBase = "https://dumblewindows-api.tail6bccfa.ts.net/estudiantes/";
     
-    // Conserva la configuración guardada en escenas y prefabs al renombrar el campo.
-    [FormerlySerializedAs("validarFormatoUuid")]
-    [SerializeField] private bool validarFormatoId = true;
-
-    // Dos letras, dos grupos de tres letras y un sufijo opcional de dos dígitos.
-    private static readonly Regex IdRegex = new Regex(
-        @"^[A-Z]{2}-[A-Z]{3}-[A-Z]{3}(-[0-9]{2})?$",
-        RegexOptions.Compiled
-    );
+    // Admite nombres internacionales y compuestos, sin números ni separadores aislados.
+    private static readonly Regex NombreRegex = new Regex(
+        @"\A(?!.*[\u00AA\u00BA])\p{L}[\p{L}\p{M}]*(?:[ '\u2019]\p{L}[\p{L}\p{M}]*)*\z",
+        RegexOptions.Compiled);
+    private const string AvisoCaracter = "Carácter no válido: usa letras, espacios o apóstrofos.";
 
     [Header("Autenticación")]
     [SerializeField] private string nombreCabecera = "X-API-Key"; // el nombre que indique Swagger (botón Authorize)
@@ -73,23 +70,71 @@ public class ConsultaAlumno : MonoBehaviour
     // Convierte el texto visible al escribir o pegar sin generar eventos recursivos.
     private void OnEnable()
     {
-        if (!inputId) return;
-        inputId.onValueChanged.AddListener(ActualizarIdEnMayusculas);
-        ActualizarIdEnMayusculas(inputId.text);
+        if (!inputNombre) return;
+        inputNombre.contentType = TMP_InputField.ContentType.Standard;
+        inputNombre.lineType = TMP_InputField.LineType.SingleLine;
+        inputNombre.characterLimit = 0;
+        inputNombre.onValidateInput += ValidarCaracterNombre;
+        inputNombre.onValueChanged.AddListener(ActualizarNombreEnMayusculas);
+        if (inputNombre.placeholder is TMP_Text indicacion)
+            indicacion.text = "Introduce el nombre del alumno…";
+        Canvas lienzo = inputNombre.GetComponentInParent<Canvas>();
+        if (lienzo)
+        {
+            foreach (TMP_Text etiqueta in lienzo.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (etiqueta.text == "IDENTIFICADOR DEL ALUMNO") etiqueta.text = "NOMBRE DEL ALUMNO";
+            }
+        }
+        ActualizarNombreEnMayusculas(inputNombre.text);
     }
 
-    private void ActualizarIdEnMayusculas(string texto)
+    // Se aplica al teclear; la limpieza posterior cubre también el pegado y cambios externos.
+    private char ValidarCaracterNombre(string texto, int posicion, char caracter)
     {
-        if (!inputId) return;
+        if (EsCaracterNombre(caracter)) return char.ToUpperInvariant(caracter);
+        if (!consultando) Mostrar(AvisoCaracter);
+        return '\0';
+    }
 
-        string textoEnMayusculas = (texto ?? string.Empty).ToUpperInvariant();
-        if (inputId.text == textoEnMayusculas) return;
+    private static bool EsCaracterNombre(char caracter)
+    {
+        // Unicode considera letras los indicadores ordinales; no forman parte de un nombre.
+        if (caracter == '\u00AA' || caracter == '\u00BA') return false;
+        System.Globalization.UnicodeCategory categoria = char.GetUnicodeCategory(caracter);
+        return char.IsLetter(caracter) || categoria == System.Globalization.UnicodeCategory.NonSpacingMark ||
+            categoria == System.Globalization.UnicodeCategory.SpacingCombiningMark ||
+            caracter == ' ' || caracter == '\'' || caracter == '\u2019';
+    }
 
-        int inicioSeleccion = inputId.selectionStringAnchorPosition;
-        int finSeleccion = inputId.selectionStringFocusPosition;
-        inputId.SetTextWithoutNotify(textoEnMayusculas);
-        inputId.selectionStringAnchorPosition = Mathf.Clamp(inicioSeleccion, 0, textoEnMayusculas.Length);
-        inputId.selectionStringFocusPosition = Mathf.Clamp(finSeleccion, 0, textoEnMayusculas.Length);
+    private void ActualizarNombreEnMayusculas(string texto)
+    {
+        if (!inputNombre) return;
+        string original = texto ?? string.Empty;
+        var permitido = new StringBuilder(original.Length);
+        int inicioSeleccion = inputNombre.selectionStringAnchorPosition;
+        int finSeleccion = inputNombre.selectionStringFocusPosition;
+        int nuevoInicio = 0;
+        int nuevoFin = 0;
+        for (int indice = 0; indice < original.Length; indice++)
+        {
+            if (!EsCaracterNombre(original[indice])) continue;
+            permitido.Append(char.ToUpperInvariant(original[indice]));
+            if (indice < inicioSeleccion) nuevoInicio++;
+            if (indice < finSeleccion) nuevoFin++;
+        }
+        if (permitido.Length != original.Length && !consultando) Mostrar(AvisoCaracter);
+        string normalizado = permitido.ToString();
+        if (inputNombre.text == normalizado) return;
+        inputNombre.SetTextWithoutNotify(normalizado);
+        inputNombre.selectionStringAnchorPosition = nuevoInicio;
+        inputNombre.selectionStringFocusPosition = nuevoFin;
+    }
+
+    // La validación final también protege las consultas iniciadas desde otros scripts.
+    public static bool EsNombreValido(string nombre)
+    {
+        return !string.IsNullOrWhiteSpace(nombre) && NombreRegex.IsMatch(nombre);
     }
 
     // Asígnalo al OnClick del botón Buscar
@@ -97,21 +142,19 @@ public class ConsultaAlumno : MonoBehaviour
     {
         if (consultando) return;
 
-        string id = inputId ? (inputId.text ?? string.Empty).Trim() : "";
-        if (string.IsNullOrEmpty(id))
+        string nombre = inputNombre ? (inputNombre.text ?? string.Empty).Trim().Normalize().ToUpperInvariant() : "";
+        if (string.IsNullOrEmpty(nombre))
         {
-            Avisar("ID no válido", "Escribe el ID del estudiante.");
+            Avisar("Nombre vacío", "Escribe el nombre del estudiante.");
             return;
         }
 
-        // Normaliza el identificador antes de validarlo y enviarlo a la API.
-        id = (id ?? string.Empty).Trim().ToUpperInvariant();
-
-        if (validarFormatoId && !IdRegex.IsMatch(id))
+        nombre = Regex.Replace(nombre, " +", " ");
+        if (!EsNombreValido(nombre))
         {
             Avisar(
-                "ID no válido",
-                "El ID no tiene un formato correcto (AA-BBB-CCC o AA-BBB-CCC-00)."
+                "Nombre no válido",
+                "Usa letras y separa los nombres con espacios o apóstrofos. No se admiten números ni otros símbolos."
             );
             return;
         }
@@ -129,11 +172,11 @@ public class ConsultaAlumno : MonoBehaviour
             return;
         }
 
-        StartCoroutine(Consultar(id));
+        StartCoroutine(Consultar(nombre));
     }
 
     // Petición GET a la API y reacción según el código HTTP de la respuesta
-    IEnumerator Consultar(string id, RespuestaApi seleccionado = null)
+    IEnumerator Consultar(string nombre)
     {
         consultando = true;
         Mostrar("Buscando...");
@@ -141,10 +184,10 @@ public class ConsultaAlumno : MonoBehaviour
         // El finally restablece el estado aunque falle la petición o el procesamiento.
         try
         {
-            using (UnityWebRequest request = CrearPeticion(id, seleccionado))
+            using (UnityWebRequest request = CrearPeticion(nombre))
             {
                 yield return request.SendWebRequest();
-                GestionarRespuesta(request, seleccionado);
+                GestionarRespuesta(request);
             }
         }
         finally
@@ -155,16 +198,9 @@ public class ConsultaAlumno : MonoBehaviour
     }
 
     // Centraliza la URL, el tiempo de espera y las cabeceras; no registra credenciales.
-    UnityWebRequest CrearPeticion(string id, RespuestaApi seleccionado = null)
+    UnityWebRequest CrearPeticion(string nombre)
     {
-        string url = urlBase.TrimEnd('/') + "/" + UnityWebRequest.EscapeURL(id);
-        // El ID base ambiguo vuelve a producir una lista. La búsqueda por nombre permite
-        // recuperar el detalle y después seleccionar exclusivamente el ID elegido.
-        if (seleccionado != null && !Regex.IsMatch(id, @"-[0-9]{2}$"))
-        {
-            string nombreCompleto = (seleccionado.nombre + " " + seleccionado.apellido).Trim();
-            url = urlBase.TrimEnd('/') + "?name=" + UnityWebRequest.EscapeURL(nombreCompleto) + "&limit=100";
-        }
+        string url = urlBase.TrimEnd('/') + "?name=" + UnityWebRequest.EscapeURL(nombre) + "&limit=100";
         UnityWebRequest request = UnityWebRequest.Get(url);
         try
         {
@@ -186,23 +222,23 @@ public class ConsultaAlumno : MonoBehaviour
     }
 
     // Distingue una respuesta válida de errores de formato, acceso o conexión.
-    void GestionarRespuesta(UnityWebRequest request, RespuestaApi seleccionado)
+    void GestionarRespuesta(UnityWebRequest request)
     {
         if (mostrarLogs) Debug.Log($"[ConsultaAlumno] HTTP {request.responseCode}", this);
         if (request.result == UnityWebRequest.Result.Success)
         {
-            ProcesarRespuesta(request.downloadHandler?.text ?? string.Empty, seleccionado);
+            ProcesarRespuesta(request.downloadHandler?.text ?? string.Empty);
             return;
         }
 
         switch (request.responseCode)
         {
             case 404:
-                Avisar("Alumno no encontrado", "No existe ningún estudiante con ese ID.");
+                Avisar("Alumno no encontrado", "No se han encontrado estudiantes con ese nombre.");
                 break;
             case 400:
             case 422:
-                Avisar("ID no válido", "La API ha rechazado ese ID.");
+                Avisar("Nombre no válido", "La API ha rechazado la búsqueda por nombre.");
                 break;
             case 401:
             case 403:
@@ -217,14 +253,18 @@ public class ConsultaAlumno : MonoBehaviour
     // Una desactivación cancela la consulta y permite volver a buscar al reactivar.
     void OnDisable()
     {
-        if (inputId) inputId.onValueChanged.RemoveListener(ActualizarIdEnMayusculas);
+        if (inputNombre)
+        {
+            inputNombre.onValidateInput -= ValidarCaracterNombre;
+            inputNombre.onValueChanged.RemoveListener(ActualizarNombreEnMayusculas);
+        }
         StopAllCoroutines();
         consultando = false;
         Mostrar("");
     }
 
-    // Una respuesta puede ser un detalle o una lista de candidatos sin Patronus.
-    void ProcesarRespuesta(string texto, RespuestaApi seleccionado)
+    // Cualquier coincidencia pasa por el selector, incluso si solo hay un estudiante.
+    void ProcesarRespuesta(string texto)
     {
         RespuestaApi[] alumnos;
         try
@@ -239,30 +279,11 @@ public class ConsultaAlumno : MonoBehaviour
 
         if (alumnos.Length == 0)
         {
-            Avisar("Alumno no encontrado", "No existe ningún estudiante con ese ID.");
+            Avisar("Alumno no encontrado", "No se han encontrado estudiantes con ese nombre.");
             return;
         }
 
-        if (seleccionado != null)
-        {
-            // Nunca mostramos otro alumno aunque la búsqueda por nombre sea aproximada.
-            RespuestaApi detalle = RespuestaAlumnosJson.BuscarPorId(alumnos, seleccionado.id);
-            if (detalle == null)
-            {
-                Avisar("Alumno no encontrado", "La API no ha devuelto el detalle del alumno seleccionado.");
-                return;
-            }
-            MostrarAlumno(detalle);
-            return;
-        }
-
-        if ((texto ?? string.Empty).TrimStart().StartsWith("["))
-        {
-            MostrarSeleccion(alumnos);
-            return;
-        }
-
-        MostrarAlumno(alumnos[0]);
+        MostrarSeleccion(alumnos);
     }
 
     // El selector es un prefab independiente: no modifica los popups ni botones existentes.
@@ -287,7 +308,8 @@ public class ConsultaAlumno : MonoBehaviour
     void SeleccionarAlumno(RespuestaApi alumno)
     {
         if (consultando || alumno == null || string.IsNullOrWhiteSpace(alumno.id)) return;
-        StartCoroutine(Consultar(alumno.id, alumno));
+        // La lista ya incluye el Patronus: no es necesaria otra consulta por ID.
+        MostrarAlumno(alumno);
     }
 
     // Se conserva el tratamiento de los Patronus y de las animaciones personalizadas.

@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-// Ventana emergente de aviso (ID no válida, no encontrada, sin patronus...).
+// Ventana emergente de aviso (Nombre no encontrado, sin patronus...).
 // Se cierra con el botón Aceptar (Close, heredado de PopupBase).
 public class PopupAviso : PopupBase
 {
