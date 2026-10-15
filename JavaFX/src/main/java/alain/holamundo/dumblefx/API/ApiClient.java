@@ -57,6 +57,12 @@ public final class ApiClient {
         return mapper.treeToValue(request("GET", studentUrl("DUMBLEFX_API_URL_CONSULTA_ID", "/estudiantes/{student_id}", id), null), Alumno.class);
     }
 
+    public List<Alumno> findById(String id) throws Exception {
+        JsonNode result = request("GET", studentUrl("DUMBLEFX_API_URL_CONSULTA_ID", "/estudiantes/{student_id}", id), null);
+        if (result.isArray()) return mapper.convertValue(result, new TypeReference<List<Alumno>>() { });
+        return List.of(mapper.treeToValue(result, Alumno.class));
+    }
+
     public List<Alumno> search(String name, String house, int limit) throws Exception {
         if (limit < 1 || limit > 100) throw new IllegalArgumentException(I18n.text("validation.limit"));
         String url = ApiConfig.endpoint("DUMBLEFX_API_URL_CONSULTA_DATOS", "/estudiantes");

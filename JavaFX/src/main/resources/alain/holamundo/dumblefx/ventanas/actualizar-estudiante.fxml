@@ -9,7 +9,7 @@
     <Label text="%field.nameRequired" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0" /><Label text="%field.house" styleClass="field-label" GridPane.columnIndex="1" GridPane.rowIndex="0" />
     <TextField fx:id="nameField" promptText="%field.namePrompt" GridPane.columnIndex="0" GridPane.rowIndex="1" /><TextField fx:id="houseField" promptText="%field.houseOptional" GridPane.columnIndex="1" GridPane.rowIndex="1" />
     <Label text="%field.birthDate" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-    <TextField fx:id="birthDateField" promptText="%field.datePrompt" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <DatePicker fx:id="birthDatePicker" editable="false" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="3" />
   </GridPane>
   <Button text="%action.save" onAction="#update" styleClass="primary" />
   <Label fx:id="status" text="%status.required" styleClass="status" />

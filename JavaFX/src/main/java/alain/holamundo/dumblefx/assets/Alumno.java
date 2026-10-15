@@ -2,11 +2,13 @@ package alain.holamundo.dumblefx.assets;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Alumno {
     private String id;
     private String nombre;
+    @JsonAlias("apellido")
     private String apellidos;
     private String casa;
     private String nacimiento;

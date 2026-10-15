@@ -13,23 +13,36 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public final class StudentController {
     @FXML private VBox operationPane;
-    @FXML private TextField idField, searchField, houseFilterField, limitField, nameField, surnameField, houseField, birthDateField;
+    @FXML private TextField idField, searchField, houseFilterField, limitField, nameField, surnameField, houseField;
+    @FXML private DatePicker birthDatePicker;
     @FXML private Label status, result;
     @FXML private TableView<Alumno> table;
-    @FXML private TableColumn<Alumno, String> idColumn, nameColumn, houseColumn, birthColumn;
+    @FXML private TableColumn<Alumno, String> idColumn, nameColumn, surnameColumn, houseColumn, birthColumn;
     private final ApiClient api = new ApiClient();
     private String loadedId;
     private String loadedSurname;
 
     @FXML private void initialize() {
+        if (birthDatePicker != null) {
+            birthDatePicker.setEditable(false);
+            birthDatePicker.setDayCellFactory(picker -> new DateCell() {
+                @Override public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || date == null || date.isAfter(LocalDate.now()));
+                }
+            });
+        }
         if (surnameField != null) {
             houseField.setText("Central");
             idField.setEditable(false);
+            houseField.setText("Central");
+
             nameField.textProperty().addListener((observable, previous, current) -> previewId());
             surnameField.textProperty().addListener((observable, previous, current) -> previewId());
             houseField.textProperty().addListener((observable, previous, current) -> previewId());
@@ -38,6 +51,7 @@ public final class StudentController {
         if (table == null) return;
         idColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getId()));
         nameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNombre()));
+        surnameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getApellidos()));
         houseColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCasa()));
         birthColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNacimiento()));
         Label placeholder = new Label();
@@ -51,7 +65,7 @@ public final class StudentController {
 
     @FXML private void findId() {
         String id = parsedId();
-        if (id != null) run(() -> api.get(id), alumno -> describe(alumno));
+        if (id != null) run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.view", this::describe));
     }
 
     @FXML private void search() {
@@ -75,7 +89,7 @@ public final class StudentController {
         Matricula value = form(null);
         if (value == null) return;
         run(() -> api.create(value), created -> {
-            nameField.clear(); surnameField.clear(); houseField.setText("Central"); birthDateField.clear();
+            nameField.clear(); surnameField.clear(); houseField.setText("Central"); birthDatePicker.setValue(null);
             idField.setText(created.studentId());
             I18n.message(status.textProperty(), "status.created", created.studentId());
         });
@@ -86,13 +100,21 @@ public final class StudentController {
         if (id == null) return;
         loadedId = null;
         loadedSurname = null;
-        run(() -> api.get(id), alumno -> {
+        run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.update", alumno -> {
             nameField.setText(alumno.getNombre()); houseField.setText(alumno.getCasa());
-            birthDateField.setText(alumno.getNacimiento());
-            loadedId = id;
+            String birth = alumno.getNacimiento();
+            try {
+                birthDatePicker.setValue(birth == null || birth.isBlank() ? null : LocalDate.parse(birth));
+            } catch (DateTimeParseException error) {
+                birthDatePicker.setValue(null);
+                I18n.message(status.textProperty(), "validation.date");
+                return;
+            }
+            loadedId = alumno.getId();
+            idField.setText(loadedId);
             loadedSurname = alumno.getApellidos();
             I18n.message(status.textProperty(), "status.loaded");
-        });
+        }));
     }
 
     @FXML private void update() {
@@ -103,7 +125,11 @@ public final class StudentController {
             return;
         }
         Matricula value = form(id);
-        if (value != null) run(() -> api.update(id, value), updated -> I18n.message(status.textProperty(), "status.updated", updated.studentId()));
+        if (value != null) run(() -> api.update(id, value), updated -> {
+            loadedId = updated.studentId();
+            idField.setText(loadedId);
+            I18n.message(status.textProperty(), "status.updated", updated.studentId());
+        });
     }
 
     @FXML private void loadForDelete() {
@@ -145,26 +171,61 @@ public final class StudentController {
             I18n.message(status.textProperty(), "validation.surname");
             return null;
         }
-        String birth = birthDateField.getText().trim();
+        LocalDate birth = birthDatePicker.getValue();
         if (name.isBlank() || name.length() > 200 || house.length() > 80) {
             I18n.message(status.textProperty(), "validation.name");
             return null;
         }
-        try {
-            if (!birth.isBlank()) {
-                if (!birth.matches("\\d{4}-\\d{2}-\\d{2}")) throw new IllegalArgumentException();
-                LocalDate.parse(birth);
-            }
-        } catch (DateTimeParseException | IllegalArgumentException error) {
-            I18n.message(status.textProperty(), "validation.date");
+        if (birth != null && birth.isAfter(LocalDate.now())) {
+            I18n.message(status.textProperty(), "validation.dateFuture");
             return null;
         }
-        return new Matricula(id, name, surname, house.isBlank() ? null : house, birth.isBlank() ? null : birth);
+        return new Matricula(id, name, surname, house.isBlank() ? null : house, birth == null ? null : birth.toString());
     }
 
     private void describe(Alumno alumno) {
         I18n.message(result.textProperty(), "result.details", alumno.getId(), text(alumno.getNombre()),
-                text(alumno.getCasa()), text(alumno.getNacimiento()));
+                text(alumno.getApellidos()), text(alumno.getCasa()), text(alumno.getNacimiento()));
+    }
+
+    private void selectStudent(List<Alumno> alumnos, String headerKey, Consumer<Alumno> selected) {
+        if (alumnos.isEmpty()) {
+            I18n.message(status.textProperty(), "status.empty");
+            return;
+        }
+        if (alumnos.size() == 1) {
+            selected.accept(alumnos.get(0));
+            return;
+        }
+        Dialog<Alumno> dialog = new Dialog<>();
+        dialog.initOwner(operationPane.getScene().getWindow());
+        I18n.message(dialog.titleProperty(), "selection.title");
+        I18n.message(dialog.headerTextProperty(), headerKey);
+        TableView<Alumno> choices = new TableView<>(FXCollections.observableArrayList(alumnos));
+        choices.getColumns().add(selectionColumn("field.id", Alumno::getId));
+        choices.getColumns().add(selectionColumn("field.name", Alumno::getNombre));
+        choices.getColumns().add(selectionColumn("field.surname", Alumno::getApellidos));
+        choices.getColumns().add(selectionColumn("field.house", Alumno::getCasa));
+        choices.getColumns().add(selectionColumn("field.birth", Alumno::getNacimiento));
+        choices.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        choices.setPrefSize(780, 300);
+        dialog.getDialogPane().setContent(choices);
+        ButtonType choose = new ButtonType(I18n.text("action.select"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancel = new ButtonType(I18n.text("action.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(choose, cancel);
+        dialog.getDialogPane().lookupButton(choose).disableProperty()
+                .bind(choices.getSelectionModel().selectedItemProperty().isNull());
+        dialog.setResizable(false);
+        dialog.setResultConverter(button -> button == choose ? choices.getSelectionModel().getSelectedItem() : null);
+        dialog.showAndWait().ifPresentOrElse(selected,
+                () -> I18n.message(status.textProperty(), "status.cancelled"));
+    }
+
+    private TableColumn<Alumno, String> selectionColumn(String key, java.util.function.Function<Alumno, String> value) {
+        TableColumn<Alumno, String> column = new TableColumn<>();
+        I18n.message(column.textProperty(), key);
+        column.setCellValueFactory(cell -> new SimpleStringProperty(text(value.apply(cell.getValue()))));
+        return column;
     }
 
     private static String text(String value) { return value == null || value.isBlank() ? "—" : value; }

@@ -41,10 +41,13 @@ usuario ni protección contra la reutilización de una clave robada.
 | Eliminar estudiante | DELETE | `/matriculas/{student_id}` | Sin cuerpo |
 
 Las búsquedas envían los filtros a la API, no filtran una lista local.
-Las respuestas de consulta usan `id`, `nombre`, `casa`, `nacimiento` o
+Las respuestas de consulta usan `id`, `nombre`, `apellido`, `casa`, `nacimiento` o
 `fecha_nacimiento`, y `origen`; los IDs pueden ser UUID o texto.
 
-Al crear una matrícula, nombre y apellidos se introducen por separado. La casa
+Al crear una matrícula, nombre y apellidos se introducen por separado, con los
+apellidos a la derecha del nombre. La fecha opcional se elige con un DatePicker
+y se envía en formato `AAAA-MM-DD`. La tabla de búsqueda también muestra los
+apellidos a la derecha del nombre. La casa
 aparece como `Central` y, si se deja vacía, también se usa `Central`.
 El ID es de solo lectura y se muestra mientras se rellenan los datos:
 `CC-NNN-AAA` (dos letras de la casa, tres del nombre y tres del primer apellido),
@@ -58,7 +61,7 @@ Ejemplo de alta:
 ```json
 {
   "full_name": "Harry",
-  "apellidos": "Potter Evans",
+  "apellido": "Potter Evans",
   "house": "Central",
   "birth_date": "2000-01-31"
 }
@@ -73,14 +76,19 @@ que la API (`de`, `del`, `van`, etc.).
 En la actualización se conservan y envían los apellidos obtenidos al cargar
 la matrícula, junto con el nombre, la casa, la fecha y el ID de consulta.
 La API puede generar otro ID si cambia la identidad; se muestra el ID devuelto.
-La respuesta de matrícula incluye `student_id`, `full_name`, `apellidos`,
+La respuesta de matrícula incluye `student_id`, `full_name`, `apellido`,
 `house`, `birth_date` y un `id` numérico interno, que no se usa como ID de consulta.
 Eliminar devuelve un objeto de confirmación, no una ficha de estudiante.
 
-**Límite de la API:** la búsqueda por datos consulta estudiantes históricos y
-no incluye matrículas nuevas. Las escrituras afectan únicamente a las matrículas
-de MariaDB; no permiten modificar ni eliminar datos históricos. Una matrícula
-nueva se puede comprobar usando la consulta por su `student_id`.
+La consulta por ID acepta un objeto o una lista. Cuando un ID base coincide con
+varios estudiantes, la consulta y la carga para actualizar abren un diálogo con
+ID, nombre, apellidos, casa y fecha para elegir uno. Cancelar no carga ni modifica
+ningún estudiante. La actualización utiliza el ID completo del elegido, incluido
+su sufijo, y conserva el nuevo ID si la API lo cambia al guardar.
+
+La búsqueda por datos incluye matrículas nuevas e históricos. Las escrituras
+afectan únicamente a las matrículas de MariaDB; no permiten modificar ni eliminar
+datos históricos.
 
 ## Ejecutar
 
