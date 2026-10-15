@@ -10,6 +10,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 public record Matricula(
         @JsonProperty("student_id") String studentId,
         @JsonProperty("full_name") String fullName,
-        @JsonProperty("apellido") @JsonAlias("apellidos") String apellidos,
+        @JsonProperty("apellido") @JsonAlias("apellido") String apellidos,
         String house,
         @JsonProperty("birth_date") String birthDate) { }

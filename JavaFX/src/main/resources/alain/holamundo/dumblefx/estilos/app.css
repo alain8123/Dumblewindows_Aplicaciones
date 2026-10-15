@@ -21,6 +21,11 @@
     -fx-text-fill: #9fb3cc;
     -fx-font-size: 12px;
 }
+
+#lbl_SideText,#lbl_PaneText,#lbl_SideNote{
+    -fx-text-fill: #75682c;
+}
+
 .sidebar .separator .line {
     -fx-border-color: #5f5f60;
 }

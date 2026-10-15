@@ -41,6 +41,7 @@ public final class StudentController {
         if (surnameField != null) {
             houseField.setText("Central");
             idField.setEditable(false);
+            idField.setDisable(true);
             houseField.setText("Central");
 
             nameField.textProperty().addListener((observable, previous, current) -> previewId());

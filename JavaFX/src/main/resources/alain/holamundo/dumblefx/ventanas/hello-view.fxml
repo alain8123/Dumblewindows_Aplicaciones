@@ -16,7 +16,7 @@
         </items>
       </ComboBox>
       <Label text="DumbleFX" styleClass="brand" />
-      <Label text="%sidebar.heading" styleClass="eyebrow" />
+      <Label fx:id="lbl_SideText" text="%sidebar.heading" styleClass="eyebrow" />
       <Separator />
       <Button text="%nav.id" onAction="#id" maxWidth="Infinity" styleClass="nav-button" />
       <Button text="%nav.data" onAction="#data" maxWidth="Infinity" styleClass="nav-button" />
@@ -24,13 +24,13 @@
       <Button text="%nav.delete" onAction="#delete" maxWidth="Infinity" styleClass="nav-button" />
       <Button text="%nav.update" onAction="#update" maxWidth="Infinity" styleClass="nav-button" />
       <Region VBox.vgrow="ALWAYS" />
-      <Label text="%sidebar.note" styleClass="side-note" />
+      <Label fx:id="lbl_SideNote" text="%sidebar.note" styleClass="side-note" />
     </VBox>
   </left>
   <center>
     <VBox spacing="20" styleClass="workspace">
       <VBox spacing="4">
-        <Label text="%panel.title" styleClass="overline" />
+        <Label fx:id="lbl_PaneText" text="%panel.title" styleClass="overline" />
         <Label fx:id="sectionTitle" text="%nav.id" styleClass="page-title" />
       </VBox>
       <StackPane fx:id="content" VBox.vgrow="ALWAYS" />
