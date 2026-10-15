@@ -14,7 +14,7 @@ import javafx.util.Duration;
 
 public final class MainController {
     private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
-    private static final String AUTHORS = "nombre 1, nombre 2 y nombre 3";
+    private static final String AUTHORS = "Dumblewindows";
     @FXML private StackPane content;
     @FXML private Label sectionTitle;
     @FXML private ComboBox<String> languageSelector;

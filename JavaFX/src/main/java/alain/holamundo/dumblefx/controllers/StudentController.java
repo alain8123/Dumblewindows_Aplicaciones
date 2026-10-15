@@ -5,6 +5,7 @@ import alain.holamundo.dumblefx.I18n.I18n;
 import alain.holamundo.dumblefx.assets.Alumno;
 import alain.holamundo.dumblefx.assets.Matricula;
 import alain.holamundo.dumblefx.assets.StudentIdPreview;
+import alain.holamundo.dumblefx.assets.InputValidation;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -26,9 +27,12 @@ public final class StudentController {
     @FXML private TableColumn<Alumno, String> idColumn, nameColumn, surnameColumn, houseColumn, birthColumn;
     private final ApiClient api = new ApiClient();
     private String loadedId;
-    private String loadedSurname;
 
     @FXML private void initialize() {
+        validateInput(nameField, false);
+        validateInput(surnameField, false);
+        validateInput(searchField, false);
+        if (idField != null && idField.isEditable()) validateInput(idField, true);
         if (birthDatePicker != null) {
             birthDatePicker.setEditable(false);
             birthDatePicker.setDayCellFactory(picker -> new DateCell() {
@@ -38,8 +42,7 @@ public final class StudentController {
                 }
             });
         }
-        if (surnameField != null) {
-            houseField.setText("Central");
+        if (surnameField != null && !idField.isEditable()) {
             idField.setEditable(false);
             idField.setDisable(true);
             houseField.setText("Central");
@@ -58,6 +61,17 @@ public final class StudentController {
         Label placeholder = new Label();
         I18n.message(placeholder.textProperty(), "status.empty");
         table.setPlaceholder(placeholder);
+    }
+
+    private void validateInput(TextField field, boolean identifier) {
+        if (field == null) return;
+        field.setTextFormatter(new TextFormatter<String>(change -> {
+            String value = change.getControlNewText();
+            boolean valid = identifier ? InputValidation.allowsIdInput(value) : InputValidation.allowsNameInput(value);
+            if (valid) return change;
+            I18n.message(status.textProperty(), identifier ? "validation.id" : "validation.nameCharacters");
+            return null;
+        }));
     }
 
     private void previewId() {
@@ -79,6 +93,10 @@ public final class StudentController {
             return;
         }
         String name = searchField.getText().trim();
+        if (!name.isEmpty() && !InputValidation.isName(name)) {
+            I18n.message(status.textProperty(), "validation.nameCharacters");
+            return;
+        }
         String house = houseFilterField.getText().trim();
         run(() -> api.search(name, house, limit), alumnos -> {
             table.setItems(FXCollections.observableArrayList(alumnos));
@@ -103,9 +121,10 @@ public final class StudentController {
         String id = parsedId();
         if (id == null) return;
         loadedId = null;
-        loadedSurname = null;
         run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.update", alumno -> {
-            nameField.setText(alumno.getNombre()); houseField.setText(alumno.getCasa());
+            nameField.setText(alumno.getNombre());
+            surnameField.setText(alumno.getApellidos());
+            houseField.setText(alumno.getCasa());
             String birth = alumno.getNacimiento();
             try {
                 birthDatePicker.setValue(birth == null || birth.isBlank() ? null : LocalDate.parse(birth));
@@ -116,7 +135,6 @@ public final class StudentController {
             }
             loadedId = alumno.getId();
             idField.setText(loadedId);
-            loadedSurname = alumno.getApellidos();
             I18n.message(status.textProperty(), "status.loaded");
         }));
     }
@@ -173,7 +191,7 @@ public final class StudentController {
 
     private String parsedId() {
         String id = idField.getText().trim();
-        if (id.isBlank() || id.length() > 64) {
+        if (!InputValidation.isId(id)) {
             I18n.message(status.textProperty(), "validation.id");
             return null;
         }
@@ -182,16 +200,20 @@ public final class StudentController {
 
     private Matricula form(String id) {
         String name = nameField.getText().trim();
-        String surname = surnameField == null ? loadedSurname : surnameField.getText().trim();
+        String surname = surnameField.getText().trim();
         String house = houseField.getText().trim();
-        if (surnameField != null && house.isBlank()) house = "Central";
-        if (surname == null || surname.isBlank() || surname.length() > 200) {
+        if (id == null && house.isBlank()) house = "Central";
+        if (!InputValidation.isName(surname)) {
             I18n.message(status.textProperty(), "validation.surname");
             return null;
         }
         LocalDate birth = birthDatePicker.getValue();
-        if (name.isBlank() || name.length() > 200 || house.length() > 80) {
+        if (!InputValidation.isName(name)) {
             I18n.message(status.textProperty(), "validation.name");
+            return null;
+        }
+        if (house.length() > 80) {
+            I18n.message(status.textProperty(), "validation.house");
             return null;
         }
         if (birth != null && birth.isAfter(LocalDate.now())) {
