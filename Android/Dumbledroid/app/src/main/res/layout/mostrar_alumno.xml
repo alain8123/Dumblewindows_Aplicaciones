@@ -102,6 +102,7 @@
             android:layout_height="wrap_content"
             style="@style/BotonPlata"
             android:layout_marginTop="32dp"
+            android:layout_marginBottom="30dp"
             android:onClick="mostrar_menu"
             android:text="@string/volver" />
 

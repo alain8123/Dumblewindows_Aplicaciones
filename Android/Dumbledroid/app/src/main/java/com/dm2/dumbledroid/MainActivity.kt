@@ -20,6 +20,7 @@ import coil.load                                           // Extensión de Coil
 import coil.size.Size                                      // Enum para definir el tamaño de imagen
 import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding del layout principal
 import com.google.gson.Gson                                // Serialización JSON para guardar el estado
+import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken                   // Tipo genérico para deserializar listas
 import kotlinx.coroutines.Dispatchers                      // Hilos (IO, Main, etc.)
 import kotlinx.coroutines.launch                           // Lanza una corrutina
@@ -263,7 +264,7 @@ class MainActivity : AppCompatActivity() {
      */
     fun buscar_estudiante_id(view: View) {
         // Obtiene el texto del campo `et_estudiante` y elimina espacios sobrantes.
-        val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim()
+        val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim().uppercase()
 
         // Validación: si el campo está vacío, muestra un aviso y sale.
         if (id.isEmpty()) {
@@ -305,35 +306,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Realiza la petición a la API para obtener un estudiante por su ID.
-     * Se ejecuta en un hilo de IO y devuelve el resultado al hilo principal.
+     * Realiza la petición a la API para obtener estudiantes por su ID.
      *
-     * @param id Identificador del estudiante a buscar.
+     * La API puede devolver un array (varios) o un objeto (uno solo),
+     * así que la respuesta se normaliza siempre a una lista y luego se decide igual
+     * que en [getEstudiantePorDatos]:
+     *  - 0 resultados → Toast "sin resultados".
+     *  - 1 resultado  → detalle directo.
+     *  - varios       → pantalla de lista.
+     *
+     * @param id Identificador introducido por el usuario (con o sin sufijo).
      */
     private fun getEstudiantesPorId(id: String) {
-        val base = idBase(id)
-
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val lista = service.getEstudiantesPorId(base)
+                // 1. Llamada a la API (respuesta cruda: array u objeto).
+                val json = service.getEstudianteRaw(id)
 
+                // 2. Normalizamos la respuesta a una lista de estudiantes.
+                val lista: List<Estudiante> = normalizarRespuesta(json)
+
+                // 3. Decidimos qué mostrar (idéntico a getEstudiantePorDatos).
                 withContext(Dispatchers.Main) {
                     when {
-                        lista.isEmpty() -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                getString(R.string.sin_resultados),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        lista.size == 1 -> {
-                            // Solo hay uno -> detalle directo
-                            mostrarDetalleAlumno(lista.first())
-                        }
-                        else -> {
-                            // Varios con el mismo ID base -> lista
-                            mostrarListaAlumnos(lista)
-                        }
+                        lista.isEmpty() -> Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.sin_resultados),
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        lista.size == 1 -> mostrarDetalleAlumno(lista.first())
+
+                        else -> mostrarListaAlumnos(lista)
                     }
                 }
             } catch (e: Exception) {
@@ -345,6 +349,32 @@ class MainActivity : AppCompatActivity() {
                     ).show()
                 }
             }
+        }
+    }
+
+    /**
+     * Normaliza la respuesta de la API a una lista de estudiantes.
+     *
+     * La API puede devolver:
+     *  - Un array JSON  → se parsea como List<Estudiante>.
+     *  - Un objeto JSON → se envuelve en una lista de un solo elemento.
+     *  - Cualquier otra cosa → lista vacía.
+     *
+     * @param json Respuesta cruda devuelta por Retrofit.
+     * @return Lista de estudiantes (nunca null, posiblemente vacía).
+     */
+    private fun normalizarRespuesta(json: JsonElement): List<Estudiante> {
+        val gson = Gson()
+        return when {
+            json.isJsonArray -> {
+                val tipo = object : TypeToken<List<Estudiante>>() {}.type
+                gson.fromJson(json, tipo) ?: emptyList()
+            }
+            json.isJsonObject -> {
+                val unico = gson.fromJson(json, Estudiante::class.java)
+                listOfNotNull(unico)
+            }
+            else -> emptyList()
         }
     }
 
@@ -483,7 +513,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Rellena cada TextView con su dato correspondiente del estudiante.
-        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre + " " + e.apellidos
+        findViewById<TextView>(R.id.detalle_nombre).text            = e.nombre + " " + e.apellido
         findViewById<TextView>(R.id.detalle_alias).text             = e.alias
         findViewById<TextView>(R.id.detalle_casa).text              = e.casa
         findViewById<TextView>(R.id.detalle_especie).text           = e.especie
