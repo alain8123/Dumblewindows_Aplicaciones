@@ -19,7 +19,8 @@
         android:src="@android:drawable/ic_menu_revert"
         app:tint="@color/plata_clara"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:tooltipText="@string/volver"/>
 
     <TextView
         android:id="@+id/titulo_resultados"

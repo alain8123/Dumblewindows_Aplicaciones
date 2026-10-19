@@ -32,5 +32,19 @@
     <string name="al_buscar_ivan_te_muestra">When searching ivan shows you:</string>
     <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">The name can only contain letters, spaces and apostrophes</string>
     <string name="la_casa_solo_puede_contener_letras_y_espacios">The house can only contain letters and spaces</string>
-    <string name="ultimo_consultado">Último consultado</string>
+    <string name="ultimo_consultado">Last consultation</string>
+    <string name="nombre_y_apellido">First and last name</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Species</string>
+    <string name="genero">Gender</string>
+    <string name="fecha_de_nacimiento">Date of birth</string>
+    <string name="patronus">Patronus</string>
+    <string name="nacionalidad">Nationality</string>
+    <string name="bloque_informacion_estudiante">Student information block</string>
+    <string name="boton_de_busqueda">Search button</string>
+    <string name="insertar_id">Insert id</string>
+    <string name="insertar_nombre">Insert name</string>
+    <string name="insertar_casa">Insert house</string>
+    <string name="mostrado_de_cache">Cache display</string>
+    <string name="mostrado_de_internet">Internet Show</string>
 </resources>

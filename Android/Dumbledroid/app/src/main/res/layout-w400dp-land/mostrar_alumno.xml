@@ -27,9 +27,22 @@
             tools:ignore="Suspicious0dp" />
 
         <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/nombre_y_apellido"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_nombre"
+            app:layout_constraintStart_toStartOf="@+id/detalle_nombre"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
             android:id="@+id/detalle_nombre"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
             android:letterSpacing="0.03"
             android:textColor="@color/plata_brillo"
             android:textSize="32sp"
@@ -40,10 +53,21 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/alias"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_alias"
+            app:layout_constraintStart_toStartOf="@+id/detalle_alias" />
+
+        <TextView
             android:id="@+id/detalle_alias"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:layout_marginBottom="7dp"
             android:textColor="@color/plata"
             android:textSize="18sp"
             android:textStyle="italic"
@@ -52,11 +76,21 @@
             app:layout_constraintTop_toBottomOf="@id/detalle_nombre" />
 
         <TextView
+            android:id="@+id/textView3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/casa"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_casa"
+            app:layout_constraintStart_toStartOf="@+id/detalle_casa" />
+
+        <TextView
             android:id="@+id/detalle_casa"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="7dp"
             android:letterSpacing="0.1"
             android:paddingBottom="12dp"
             android:textAllCaps="true"
@@ -68,9 +102,20 @@
             app:layout_constraintTop_toBottomOf="@id/detalle_alias" />
 
         <TextView
+            android:id="@+id/textView4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/especie"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_especie"
+            app:layout_constraintStart_toStartOf="@+id/detalle_especie" />
+
+        <TextView
             android:id="@+id/detalle_especie"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
             android:paddingVertical="8dp"
             android:textColor="@color/plata_clara"
             android:textSize="16sp"
@@ -79,9 +124,20 @@
             app:layout_constraintTop_toBottomOf="@id/detalle_casa" />
 
         <TextView
+            android:id="@+id/textView5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/genero"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_genero"
+            app:layout_constraintStart_toStartOf="@+id/detalle_genero" />
+
+        <TextView
             android:id="@+id/detalle_genero"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
             android:paddingVertical="8dp"
             android:textColor="@color/plata_clara"
             android:textSize="16sp"
@@ -90,9 +146,20 @@
             app:layout_constraintTop_toBottomOf="@id/detalle_especie" />
 
         <TextView
+            android:id="@+id/textView6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/fecha_de_nacimiento"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_fecha_nacimiento"
+            app:layout_constraintStart_toStartOf="@+id/detalle_fecha_nacimiento" />
+
+        <TextView
             android:id="@+id/detalle_fecha_nacimiento"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
             android:paddingVertical="8dp"
             android:textColor="@color/plata_clara"
             android:textSize="16sp"
@@ -101,9 +168,20 @@
             app:layout_constraintTop_toBottomOf="@id/detalle_genero" />
 
         <TextView
+            android:id="@+id/textView7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/patronus"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_patronus"
+            app:layout_constraintStart_toStartOf="@+id/detalle_patronus" />
+
+        <TextView
             android:id="@+id/detalle_patronus"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
             android:paddingVertical="8dp"
             android:textColor="@color/plata_clara"
             android:textSize="16sp"
@@ -111,10 +189,22 @@
             app:layout_constraintStart_toStartOf="@+id/detalle_fecha_nacimiento"
             app:layout_constraintTop_toBottomOf="@id/detalle_fecha_nacimiento" />
 
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/nacionalidad"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/detalle_nacionalidad"
+            app:layout_constraintStart_toStartOf="@+id/detalle_nacionalidad" />
+
         <TextView
             android:id="@+id/detalle_nacionalidad"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:paddingVertical="8dp"
             android:textColor="@color/plata_clara"
             android:textSize="16sp"
@@ -132,7 +222,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/detalle_imagen"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/detalle_imagen" />
+            app:layout_constraintTop_toBottomOf="@+id/detalle_imagen"
+            android:tooltipText="@string/volver"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

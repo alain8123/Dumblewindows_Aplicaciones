@@ -32,5 +32,19 @@
     <string name="al_buscar_ivan_te_muestra">ivan bilatzean erakusten zaitu:</string>
     <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">Izenak letrak, espazioak eta apostoluak bakarrik izan ditzake</string>
     <string name="la_casa_solo_puede_contener_letras_y_espacios">Etxeak gutunak eta espazioak baino ezin ditu</string>
-    <string name="ultimo_consultado">Último consultado</string>
+    <string name="ultimo_consultado">Azken kontsulta</string>
+    <string name="nombre_y_apellido">Izen abizena eta abizena</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Espezieak</string>
+    <string name="genero">Generoa</string>
+    <string name="fecha_de_nacimiento">Jaiotze data</string>
+    <string name="patronus">Patronoa</string>
+    <string name="nacionalidad">Nazionalitatea</string>
+    <string name="bloque_informacion_estudiante">Ikasleen informazio blokea</string>
+    <string name="boton_de_busqueda">Bilatu botoia</string>
+    <string name="insertar_id">Txertatu id</string>
+    <string name="insertar_nombre">Txertatu izena</string>
+    <string name="insertar_casa">Txertatu etxea</string>
+    <string name="mostrado_de_cache">Cache pantaila</string>
+    <string name="mostrado_de_internet">Internet Show</string>
 </resources>

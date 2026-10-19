@@ -1,12 +1,16 @@
 package com.dm2.dumbledroid.repository
 
 import android.content.Context
+import android.widget.Toast
 import com.dm2.dumbledroid.ApiService_id
 import com.dm2.dumbledroid.Estudiante
 import com.dm2.dumbledroid.db.EstudianteDao
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
+import android.os.Handler
+import android.os.Looper
+import com.dm2.dumbledroid.R
 
 /**
  * Repositorio de estudiantes con caché SQLite.
@@ -20,7 +24,7 @@ import com.google.gson.reflect.TypeToken
  * La app es de SOLO CONSULTA: nunca se modifica ni borra la caché salvo por caducidad.
  */
 class EstudianteRepository(
-    context: Context,
+    private val context: Context,
     private val api: ApiService_id
 ) {
 
@@ -72,7 +76,10 @@ class EstudianteRepository(
     suspend fun getEstudiantesPorDatos(nombre: String, casa: String): List<Estudiante> {
         // 1. Caché.
         val enCache = dao.buscarPorDatos(nombre, casa)
-        if (enCache.isNotEmpty()) return enCache
+        if (enCache.isNotEmpty()){
+            info_import(context.getString(R.string.mostrado_de_cache))
+            return enCache
+        }
 
         // 2. API.
         val deApi = api.getEstudiantesPorDatos(name = nombre, house = casa)
@@ -80,7 +87,14 @@ class EstudianteRepository(
         // 3. Guardar en caché.
         dao.guardarTodos(deApi)
 
+        info_import(context.getString(R.string.mostrado_de_internet))
         return deApi
+    }
+
+    fun info_import(mensaje: String) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+        }
     }
 
     // ==========================================================

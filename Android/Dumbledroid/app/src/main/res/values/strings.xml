@@ -33,4 +33,18 @@
     <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">El nombre solo puede contener letras, espacios y apóstrofos</string>
     <string name="la_casa_solo_puede_contener_letras_y_espacios">La casa solo puede contener letras y espacios</string>
     <string name="ultimo_consultado">Último consultado</string>
+    <string name="nombre_y_apellido">Nombre y apellido</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Especie</string>
+    <string name="genero">Genero</string>
+    <string name="fecha_de_nacimiento">Fecha de nacimiento</string>
+    <string name="patronus">Patronus</string>
+    <string name="nacionalidad">Nacionalidad</string>
+    <string name="bloque_informacion_estudiante">Bloque informacion estudiante</string>
+    <string name="boton_de_busqueda">Boton de busqueda</string>
+    <string name="insertar_id">Insertar id</string>
+    <string name="insertar_nombre">Insertar nombre</string>
+    <string name="insertar_casa">Insertar casa</string>
+    <string name="mostrado_de_cache">Mostrado de cache</string>
+    <string name="mostrado_de_internet">Mostrado de Internet</string>
 </resources>

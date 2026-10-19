@@ -10,7 +10,8 @@
     android:layout_marginBottom="8dp"
     android:background="@drawable/bg_fila_alumno"
     android:elevation="4dp"
-    android:padding="18dp">
+    android:padding="18dp"
+    android:tooltipText="@string/bloque_informacion_estudiante">
 
     <TextView
         android:id="@+id/fila_nombre"
