@@ -47,4 +47,10 @@
     <string name="insertar_casa">Insertar casa</string>
     <string name="mostrado_de_cache">Mostrado de cache</string>
     <string name="mostrado_de_internet">Mostrado de Internet</string>
+    <string name="error_sin_conexion">No hay conexión a Internet. Comprueba tu red e inténtalo de nuevo</string>
+    <string name="error_timeout">El servidor tarda demasiado en responder. Inténtalo de nuevo en unos segundos</string>
+    <string name="error_no_encontrado">No se ha encontrado el recurso solicitado en el servidor</string>
+    <string name="error_servidor">El servidor está teniendo problemas. Inténtalo más tarde</string>
+    <string name="error_datos">Error al procesar los datos recibidos del servidor</string>
+    <string name="error_desconocido">Ha ocurrido un error inesperado. Inténtalo de nuevo</string>
 </resources>

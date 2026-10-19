@@ -20,6 +20,7 @@ import coil.load                                           // Extensión de Coil
 import coil.size.Size                                      // Enum para definir el tamaño de imagen
 import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding del layout principal
 import com.dm2.dumbledroid.repository.EstudianteRepository
+import com.dm2.dumbledroid.utils.ErrorUtils
 import com.google.gson.Gson                                // Serialización JSON para guardar el estado
 import com.google.gson.reflect.TypeToken                   // Tipo genérico para deserializar listas
 import kotlinx.coroutines.Dispatchers                      // Hilos (IO, Main, etc.)
@@ -222,6 +223,8 @@ class MainActivity : AppCompatActivity() {
     private fun getEstudiantesPorId(id: String) {
         val base = idBase(id)
 
+        mostrarCargando()
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val lista = repository.getEstudiantesPorId(base, id)
@@ -241,11 +244,19 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+
+                    ocultarCargando()
+
+                    // Mensaje amigable en lugar del e.message crudo
+                    val mensaje = ErrorUtils.mensajeAmigable(this@MainActivity, e)
+
                     Toast.makeText(
                         this@MainActivity,
-                        getString(R.string.error, e.message),
+                        mensaje,
                         Toast.LENGTH_LONG
                     ).show()
+
+                    Log.d("Error busqueda por id", e.message.toString())
                 }
             }
         }
@@ -316,6 +327,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getEstudiantePorDatos(nombre: String, casa: String) {
+
+        mostrarCargando()
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val lista = repository.getEstudiantesPorDatos(nombre, casa)
@@ -335,11 +349,18 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+
+                    // Mensaje amigable en lugar del e.message crudo
+                    val mensaje = ErrorUtils.mensajeAmigable(this@MainActivity, e)
+
                     Toast.makeText(
                         this@MainActivity,
-                        getString(R.string.error, e.message),
+                        mensaje,
                         Toast.LENGTH_LONG
                     ).show()
+
+                    ocultarCargando()
+
                     Log.d("Error busqueda por datos", e.message.toString())
                 }
             }
@@ -531,6 +552,29 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "No hay ningún estudiante reciente", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // ==========================================================
+    //                       PANTALLA DE CARGA
+    // ==========================================================
+
+    /**
+     * Muestra el indicador de carga en la pantalla actual.
+     * El ProgressBar se busca por ID en el layout visible; si no existe,
+     * simplemente no hace nada (para pantallas sin ProgressBar).
+     */
+    private fun mostrarCargando() {
+        findViewById<android.widget.ProgressBar>(R.id.progress_cargando)?.visibility = View.VISIBLE
+        // Deshabilita el botón de buscar mientras carga.
+        findViewById<View>(R.id.bt_Buscar)?.isEnabled = false
+    }
+
+    /**
+     * Oculta el indicador de carga en la pantalla actual.
+     */
+    private fun ocultarCargando() {
+        findViewById<android.widget.ProgressBar>(R.id.progress_cargando)?.visibility = View.GONE
+        findViewById<View>(R.id.bt_Buscar)?.isEnabled = true
     }
 
     // ==========================================================

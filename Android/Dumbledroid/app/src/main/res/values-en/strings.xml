@@ -47,4 +47,10 @@
     <string name="insertar_casa">Insert house</string>
     <string name="mostrado_de_cache">Cache display</string>
     <string name="mostrado_de_internet">Internet Show</string>
+    <string name="error_sin_conexion">There is no Internet connection. Check your network and try again</string>
+    <string name="error_timeout">The server takes too long to respond. Please try again in a few seconds</string>
+    <string name="error_no_encontrado">The requested resource was not found on the server</string>
+    <string name="error_servidor">The server is having problems. Try again later</string>
+    <string name="error_datos">Error processing data received from the server</string>
+    <string name="error_desconocido">An unexpected error has occurred. Try again</string>
 </resources>

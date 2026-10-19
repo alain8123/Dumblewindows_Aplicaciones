@@ -73,4 +73,15 @@
         app:layout_constraintStart_toStartOf="parent"
         android:tooltipText="@string/buscar_por_id"/>
 
+    <ProgressBar
+        android:id="@+id/progress_cargando"
+        style="@color/plata_brillo"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

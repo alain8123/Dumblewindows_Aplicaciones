@@ -47,4 +47,10 @@
     <string name="insertar_casa">Txertatu etxea</string>
     <string name="mostrado_de_cache">Cache pantaila</string>
     <string name="mostrado_de_internet">Internet Show</string>
+    <string name="error_sin_conexion">Ez dago Interneteko konexiorik. Begiratu zure sarea eta saiatu berriro</string>
+    <string name="error_timeout">Zerbitzariak denbora gehiegi behar du erantzuteko. Mesedez, saiatu berriro segundo batzuetan</string>
+    <string name="error_no_encontrado">Eskatutako baliabidea ez zen zerbitzarian aurkitu</string>
+    <string name="error_servidor">Zerbitzariak arazoak ditu. Saiatu berriro geroago</string>
+    <string name="error_datos">Zerbitzariak jasotako akatsak tratatzeko datuak</string>
+    <string name="error_desconocido">Ustekabeko akats bat gertatu da. Saiatu berriro</string>
 </resources>
