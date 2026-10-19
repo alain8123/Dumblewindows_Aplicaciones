@@ -127,7 +127,7 @@ public final class StudentController {
         run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.update", alumno -> {
             nameField.setText(alumno.getNombre());
             surnameField.setText(alumno.getApellidos());
-            houseField.setText(alumno.getCasa());
+            houseField.setText("Central");
             String birth = alumno.getNacimiento();
             try {
                 birthDatePicker.setValue(birth == null || birth.isBlank() ? null : LocalDate.parse(birth));
