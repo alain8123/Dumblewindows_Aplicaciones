@@ -1,7 +1,7 @@
 package alain.holamundo.dumblefx.API;
 
-import alain.holamundo.dumblefx.assets.Alumno;
-import alain.holamundo.dumblefx.assets.Matricula;
+import alain.holamundo.dumblefx.Modelos.Alumno;
+import alain.holamundo.dumblefx.Modelos.Matricula;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

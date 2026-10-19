@@ -2,8 +2,8 @@ package alain.holamundo.dumblefx.controllers;
 
 import alain.holamundo.dumblefx.API.ApiClient;
 import alain.holamundo.dumblefx.I18n.I18n;
-import alain.holamundo.dumblefx.assets.Alumno;
-import alain.holamundo.dumblefx.assets.Matricula;
+import alain.holamundo.dumblefx.Modelos.Alumno;
+import alain.holamundo.dumblefx.Modelos.Matricula;
 import alain.holamundo.dumblefx.assets.StudentIdPreview;
 import alain.holamundo.dumblefx.assets.InputValidation;
 import javafx.beans.property.SimpleStringProperty;
@@ -66,6 +66,9 @@ public final class StudentController {
     private void validateInput(TextField field, boolean identifier) {
         if (field == null) return;
         field.setTextFormatter(new TextFormatter<String>(change -> {
+            if (identifier && change.isContentChange()) {
+                change.setText(change.getText().toUpperCase(java.util.Locale.ROOT));
+            }
             String value = change.getControlNewText();
             boolean valid = identifier ? InputValidation.allowsIdInput(value) : InputValidation.allowsNameInput(value);
             if (valid) return change;

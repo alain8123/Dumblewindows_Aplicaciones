@@ -1,4 +1,4 @@
-package alain.holamundo.dumblefx.assets;
+package alain.holamundo.dumblefx.Modelos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
