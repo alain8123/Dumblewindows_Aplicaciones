@@ -28,6 +28,10 @@ import com.google.gson.reflect.TypeToken
  * La caché puede ser parcial y no asegura resultados completos ni recién actualizados.
  * Offline solo funciona si la consulta encuentra datos vigentes ya guardados.
  * MainActivity llama estas búsquedas desde Dispatchers.IO porque el DAO es síncrono.
+ *
+ * @param context Contexto de la aplicación.
+ * @param api     Servicio Retrofit ya configurado.
+ * @author Kenneth Alvarez
  */
 class EstudianteRepository(
     private val context: Context,
@@ -52,6 +56,7 @@ class EstudianteRepository(
      * @param base Prefijo del ID (ej. "GR-JAM-POT", sin sufijo -02).
      * @param id   ID completo normalizado a mayúsculas por la Activity; se usa en la API.
      * @return Lista de estudiantes encontrados.
+     * @author Kenneth Alvarez
      */
     suspend fun getEstudiantesPorId(base: String, id: String): List<Estudiante> {
         // 1. Caché.
@@ -86,6 +91,7 @@ class EstudianteRepository(
      * @param nombre Texto de nombre (en caché, también apellido); puede estar vacío.
      * @param casa   Casa a buscar (puede estar vacía).
      * @return Lista de estudiantes.
+     * @author Kenneth Alvarez
      */
     suspend fun getEstudiantesPorDatos(nombre: String, casa: String): List<Estudiante> {
         // 1. Caché.
@@ -109,6 +115,9 @@ class EstudianteRepository(
      * Publica un aviso de procedencia de datos (caché o Internet).
      * Las consultas llegan desde IO: Handler envía el Toast al hilo principal
      * mediante su Looper, para no manipular la interfaz desde el hilo de trabajo.
+     *
+     * @param mensaje Texto a mostrar.
+     * @author Kenneth Alvarez
      */
     fun info_import(mensaje: String) {
         Handler(Looper.getMainLooper()).post {
@@ -128,6 +137,7 @@ class EstudianteRepository(
      * muestre exactamente este estudiante, sin depender del timestamp.
      *
      * @param estudiante Estudiante que el usuario acaba de abrir.
+     * @author Kenneth Alvarez
      */
     fun marcarComoConsultado(estudiante: Estudiante) {
         dao.marcarUltimoConsultado(estudiante.id)
@@ -136,18 +146,26 @@ class EstudianteRepository(
     /**
      * Devuelve el último estudiante consultado (marcado explícitamente).
      * Se usa para el botón del menú principal.
+     *
+     * @return Último estudiante consultado o null.
+     * @author Kenneth Alvarez
      */
     fun getUltimoConsultado(): Estudiante? = dao.obtenerUltimoConsultado()
 
     /**
      * Devuelve el último estudiante guardado en la caché (por timestamp).
      * Ya NO se usa para el botón principal, pero puede servir para depuración.
+     *
+     * @return Último estudiante guardado o null.
+     * @author Kenneth Alvarez
      */
     fun getUltimoEstudiante(): Estudiante? = dao.obtenerUltimo()
 
     /**
      * Limpia las entradas caducadas (> 24h) de la caché.
      * Conviene llamarlo en `onCreate` de la Activity.
+     *
+     * @author Kenneth Alvarez
      */
     fun limpiarCacheCaducada() = dao.limpiarCaducados()
 
@@ -159,11 +177,13 @@ class EstudianteRepository(
      * Normaliza la respuesta de la API a una lista de estudiantes.
      * La API puede devolver array u objeto según el caso.
      *
-     * @param json Respuesta cruda de Retrofit.
      * Un array se convierte con TypeToken para conservar su tipo genérico;
      * un objeto se envuelve en una lista de un elemento. Otros tipos de JSON
      * producen una lista vacía; errores de deserialización se propagan al llamador.
+     *
+     * @param json Respuesta cruda de Retrofit.
      * @return Lista de estudiantes (posiblemente vacía, nunca null).
+     * @author Kenneth Alvarez
      */
     private fun normalizarRespuesta(json: JsonElement): List<Estudiante> {
         val gson = Gson()

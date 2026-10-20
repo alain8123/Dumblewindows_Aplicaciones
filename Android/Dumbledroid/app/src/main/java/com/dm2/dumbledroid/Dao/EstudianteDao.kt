@@ -19,6 +19,9 @@ import com.google.gson.Gson
  *  - Guardar estudiantes (al recibir datos de la API).
  *  - Buscar por ID, por datos y obtener el último consultado.
  *  - Borrar entradas caducadas automáticamente.
+ *
+ * @param context Contexto usado para abrir la base y SharedPreferences.
+ * @author Kenneth Alvarez
  */
 class EstudianteDao(context: Context) {
 
@@ -42,6 +45,7 @@ class EstudianteDao(context: Context) {
      * Si ya existía (mismo ID), se reemplaza y se actualiza el timestamp.
      *
      * @param estudiante Estudiante recibido de la API.
+     * @author Kenneth Alvarez
      */
     fun guardar(estudiante: Estudiante) {
         val db = dbHelper.writableDatabase
@@ -63,6 +67,7 @@ class EstudianteDao(context: Context) {
      * Guarda una lista completa de estudiantes (por ejemplo, resultados de una búsqueda).
      *
      * @param lista Estudiantes a guardar.
+     * @author Kenneth Alvarez
      */
     fun guardarTodos(lista: List<Estudiante>) {
         lista.forEach { guardar(it) }
@@ -77,6 +82,7 @@ class EstudianteDao(context: Context) {
      *
      * @param id Identificador exacto del estudiante.
      * @return El [Estudiante] encontrado, o `null` si no existe o caducó.
+     * @author Kenneth Alvarez
      */
     fun obtenerPorId(id: String): Estudiante? {
         val db = dbHelper.readableDatabase
@@ -110,6 +116,7 @@ class EstudianteDao(context: Context) {
      *
      * @param base Prefijo del ID (ej. "GR-JAM-POT").
      * @return Lista de estudiantes vigentes que comienzan por [base].
+     * @author Kenneth Alvarez
      */
     fun buscarPorIdBase(base: String): List<Estudiante> {
         val db = dbHelper.readableDatabase
@@ -140,7 +147,9 @@ class EstudianteDao(context: Context) {
      * siempre que siga vigente (< 24h).
      *
      * No equivale al último detalle abierto: para eso está obtenerUltimoConsultado.
+     *
      * @return El último [Estudiante] guardado o `null`.
+     * @author Kenneth Alvarez
      */
     fun obtenerUltimo(): Estudiante? {
         val db = dbHelper.readableDatabase
@@ -177,6 +186,7 @@ class EstudianteDao(context: Context) {
      * @param nombre Texto a buscar en nombre/apellido (puede estar vacío).
      * @param casa   Casa a buscar (puede estar vacía).
      * @return Lista de estudiantes que coinciden y siguen vigentes.
+     * @author Kenneth Alvarez
      */
     fun buscarPorDatos(nombre: String, casa: String): List<Estudiante> {
         val db = dbHelper.readableDatabase
@@ -218,6 +228,7 @@ class EstudianteDao(context: Context) {
      * Borra una entrada concreta (uso interno cuando caduca al leerla).
      *
      * @param id ID del estudiante a borrar.
+     * @author Kenneth Alvarez
      */
     private fun borrar(id: String) {
         val db = dbHelper.writableDatabase
@@ -232,6 +243,8 @@ class EstudianteDao(context: Context) {
     /**
      * Borra todas las entradas caducadas (> 24h).
      * Se llama al arrancar la app para dejar limpia la base.
+     *
+     * @author Kenneth Alvarez
      */
     fun limpiarCaducados() {
         val db = dbHelper.writableDatabase
@@ -256,6 +269,7 @@ class EstudianteDao(context: Context) {
      * por lo que solo cambia cuando el usuario abre un detalle.
      *
      * @param id ID del estudiante que el usuario acaba de consultar.
+     * @author Kenneth Alvarez
      */
     fun marcarUltimoConsultado(id: String) {
         prefs.edit().putString(KEY_ULTIMO_ID, id).apply()
@@ -266,6 +280,7 @@ class EstudianteDao(context: Context) {
      * si no hay ninguno o si el ID guardado ya no existe en la caché.
      *
      * @return El último [Estudiante] consultado, o `null`.
+     * @author Kenneth Alvarez
      */
     fun obtenerUltimoConsultado(): Estudiante? {
         val id = prefs.getString(KEY_ULTIMO_ID, null) ?: return null

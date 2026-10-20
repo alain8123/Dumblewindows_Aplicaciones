@@ -4,7 +4,7 @@ esta carpeta al seleccionar eu. Si falta una clave, se usa el recurso por defect
 -->
 <resources>
     <string name="app_name">Dumbledroid</string>
-    <string name="formato_id">XX-XXX-XXX</string>
+    <string name="formato_id">CC-NNN-AAA</string>
     <string name="hechizo_buscar">Bilatu</string>
     <string name="buscar_por_id">Bilatu ID bidez</string>
     <string name="buscar_por_datos">Bilatu datuen bidez</string>
@@ -24,9 +24,9 @@ esta carpeta al seleccionar eu. Si falta una clave, se usa el recurso por defect
     <string name="boton_ayuda_formato_id">Laguntza botoiaren formatua id</string>
     <string name="ayuda_formato_del_id">Laguntza ID formatua</string>
     <string name="el_formato_del_id_es">ID formatua hau da:</string>
-    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">Lehenengo 2 Xak etxeko hasierakoak dira</string>
-    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Lehenengo 3 Xak izenaren hasierakoak dira</string>
-    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">Azken 3 Xak abizenaren hasierakoak dira</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">2 C letrak etxeko inizialak dira</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">3 N letrak izenaren inizialak dira</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">3 A letrak abizenaren inizialak dira</string>
     <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Adibidez, Harry James Potter ikaslea hau izango litzateke:</string>
     <string name="estudiante_con_id_repetido">Behin eta berriz NANa duten ikasleak badaude, \'-01 \' bezalako aurrizkia izango dute NANean, baina aurrizkirik gabe bilatzen badituzu, zerrenda bat agertuko da IDa partekatzen duten guztiekin.</string>
     <string name="ayuda_de_busqueda_por_datos">Datuak bilatzeko laguntza</string>
@@ -57,4 +57,8 @@ esta carpeta al seleccionar eu. Si falta una clave, se usa el recurso por defect
     <string name="error_servidor">Zerbitzariak arazoak ditu. Saiatu berriro geroago</string>
     <string name="error_datos">Zerbitzariak jasotako akatsak tratatzeko datuak</string>
     <string name="error_desconocido">Ustekabeko akats bat gertatu da. Saiatu berriro</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Ireki kontsultatutako azken ikaslea</string>
+    <string name="busqueda_mediante_datos">Bilatu datuak erabiliz</string>
+    <string name="busqueda_mediante_id">Bilatu IDa erabiliz</string>
+    <string name="selector_de_idioma">Hizkuntza hautatzailea</string>
 </resources>

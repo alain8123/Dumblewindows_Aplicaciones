@@ -6,6 +6,8 @@ package com.dm2.dumbledroid
  * Cambiar una ruta exige revisar la anotación GET y sus parámetros Path/Query.
  * PATH_ID pertenece al método heredado no usado; la consulta activa por ID
  * declara su ruta directamente en getEstudianteRaw.
+ *
+ * @author Kenneth Alvarez
  */
 object Constantes {
     const val Base_URL = "https://dumblewindows-api.tail6bccfa.ts.net"

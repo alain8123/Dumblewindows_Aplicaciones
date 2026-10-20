@@ -5,7 +5,7 @@ Los textos escritos directamente en Kotlin no se traducen con estos recursos.
 -->
 <resources>
     <string name="app_name">Dumbledroid</string>
-    <string name="formato_id">XX-XXX-XXX</string>
+    <string name="formato_id">CC-NNN-AAA</string>
     <string name="hechizo_buscar">Buscar</string>
     <string name="buscar_por_id">Buscar por ID</string>
     <string name="buscar_por_datos">Buscar por Datos</string>
@@ -25,9 +25,9 @@ Los textos escritos directamente en Kotlin no se traducen con estos recursos.
     <string name="boton_ayuda_formato_id">Boton ayuda formato id</string>
     <string name="ayuda_formato_del_id">Ayuda formato del ID</string>
     <string name="el_formato_del_id_es">El formato del ID es:</string>
-    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">" Las 2 primeras X son las iniciales de la casa"</string>
-    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Las 3 primeras X son las iniciales del nombre</string>
-    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">" Las 3 ultimas X son las iniciales del apellido "</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">Las 2 C son las iniciales de la casa</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Las 3 N son las iniciales del nombre</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">Las 3 A son las iniciales del apellido</string>
     <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Por ejemplo, el estudiante Harry James Potter seria:</string>
     <string name="estudiante_con_id_repetido">En caso de haber estudiantes con ID repetido estos tendran es su ID un prefijo como \'-01\' pero si los buscas sin prefijo saldra un listado con todos los que comparten el ID</string>
     <string name="ayuda_de_busqueda_por_datos">Ayuda de busqueda por datos</string>
@@ -58,4 +58,8 @@ Los textos escritos directamente en Kotlin no se traducen con estos recursos.
     <string name="error_servidor">El servidor está teniendo problemas. Inténtalo más tarde</string>
     <string name="error_datos">Error al procesar los datos recibidos del servidor</string>
     <string name="error_desconocido">Ha ocurrido un error inesperado. Inténtalo de nuevo</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Abrir el último estudiante consultado</string>
+    <string name="busqueda_mediante_datos">Busqueda mediante Datos</string>
+    <string name="busqueda_mediante_id">Busqueda mediante ID</string>
+    <string name="selector_de_idioma">Selector de idioma</string>
 </resources>

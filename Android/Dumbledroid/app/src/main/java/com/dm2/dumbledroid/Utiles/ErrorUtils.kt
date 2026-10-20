@@ -20,6 +20,8 @@ import java.net.UnknownHostException
  * El orden importa: UnknownHostException y SocketTimeoutException son IOException
  * y deben comprobarse antes del caso general. HTTP 401/403 usa actualmente
  * error_servidor; no hay un texto específico para una API key incorrecta.
+ *
+ * @author Kenneth Alvarez
  */
 object ErrorUtils {
 
@@ -29,6 +31,7 @@ object ErrorUtils {
      * @param context Contexto para acceder a los recursos de strings.
      * @param e       Excepción capturada.
      * @return Mensaje amigable listo para mostrar en un Toast o AlertDialog.
+     * @author Kenneth Alvarez
      */
     fun mensajeAmigable(context: Context, e: Throwable): String {
         return when (e) {

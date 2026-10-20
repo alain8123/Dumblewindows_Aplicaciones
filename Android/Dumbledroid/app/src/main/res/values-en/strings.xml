@@ -4,7 +4,7 @@ esta carpeta al seleccionar en. Si falta una clave, se usa el recurso por defect
 -->
 <resources>
     <string name="app_name">Dumbledroid</string>
-    <string name="formato_id">XX-XXX-XXX</string>
+    <string name="formato_id">CC-NNN-AAA</string>
     <string name="hechizo_buscar">Search</string>
     <string name="buscar_por_id">Search by ID</string>
     <string name="buscar_por_datos">Search by data</string>
@@ -24,9 +24,9 @@ esta carpeta al seleccionar en. Si falta una clave, se usa el recurso por defect
     <string name="boton_ayuda_formato_id">Help button format id</string>
     <string name="ayuda_formato_del_id">Help ID format</string>
     <string name="el_formato_del_id_es">The ID format is:</string>
-    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">The first 2 Xs are the initials of the house</string>
-    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">The first 3 Xs are the initials of the name</string>
-    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">The last 3 Xs are the initials of the surname</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">The 2 C are the initials of the house</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">The 3 N are the initials of the name</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">The 3 A are the initials of the surname</string>
     <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">For example, student Harry James Potter would be:</string>
     <string name="estudiante_con_id_repetido">If there are students with a repeated ID, they will have a prefix like \'-01\' in their ID, but if you search for them without a prefix, a list will appear with all those who share the ID</string>
     <string name="ayuda_de_busqueda_por_datos">Data search help</string>
@@ -57,4 +57,8 @@ esta carpeta al seleccionar en. Si falta una clave, se usa el recurso por defect
     <string name="error_servidor">The server is having problems. Try again later</string>
     <string name="error_datos">Error processing data received from the server</string>
     <string name="error_desconocido">An unexpected error has occurred. Try again</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Open the last student consulted</string>
+    <string name="busqueda_mediante_datos">Search using Data</string>
+    <string name="busqueda_mediante_id">Search using ID</string>
+    <string name="selector_de_idioma">Language selector</string>
 </resources>

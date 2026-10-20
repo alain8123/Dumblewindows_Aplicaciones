@@ -22,6 +22,7 @@ package com.dm2.dumbledroid.Modelos
  * @property imagen URL que Coil carga; si falla se muestra la imagen de ejemplo.
  * @property wiki Enlace conservado, sin botón de apertura implementado en el detalle.
  * @property origen Origen del registro según la API; no indica si procede de caché.
+ * @author Kenneth Alvarez
  */
 data class Estudiante(
     val id : String,

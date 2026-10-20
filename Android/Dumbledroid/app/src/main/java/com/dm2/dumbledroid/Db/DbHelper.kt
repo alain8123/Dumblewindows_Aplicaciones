@@ -14,6 +14,9 @@ import android.database.sqlite.SQLiteOpenHelper
  *  - `id`        → clave primaria (ID que devuelve la API, ej. "GR-HAR-POT").
  *  - `json`      → el objeto Estudiante serializado a JSON (más flexible que columnas).
  *  - `timestamp` → instante en el que se guardó, para aplicar la expiración de 24h.
+ *
+ * @param context Contexto de la aplicación para abrir/crear el archivo SQLite.
+ * @author Kenneth Alvarez
  */
 class DbHelper(context: Context) : SQLiteOpenHelper(
     context,
@@ -41,6 +44,9 @@ class DbHelper(context: Context) : SQLiteOpenHelper(
     /**
      * Se ejecuta la primera vez que se crea la base de datos.
      * Crea la tabla con las columnas necesarias.
+     *
+     * @param db Base de datos recién creada.
+     * @author Kenneth Alvarez
      */
     override fun onCreate(db: SQLiteDatabase) {
         val crearTabla = """
@@ -58,6 +64,11 @@ class DbHelper(context: Context) : SQLiteOpenHelper(
      * La estrategia actual elimina la tabla y la recrea: se pierden los
      * estudiantes locales. Solo es apropiada porque son una caché recuperable
      * desde la API, no datos únicos del usuario. No es una migración conservadora.
+     *
+     * @param db         Base de datos a actualizar.
+     * @param oldVersion Versión anterior del esquema.
+     * @param newVersion Nueva versión del esquema.
+     * @author Kenneth Alvarez
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLA_ESTUDIANTES")

@@ -55,6 +55,8 @@ import retrofit2.converter.gson.GsonConverterFactory       // Convertidor JSON <
  * Por eso las otras pantallas usan findViewById después de cargar su XML.
  * Los métodos públicos con parámetro View están enlazados con android:onClick.
  * No se deben renombrar sin cambiar también esos enlaces en los layouts.
+ *
+ * @author Kenneth Alvarez
  */
 class MainActivity : AppCompatActivity() {
 
@@ -98,6 +100,9 @@ class MainActivity : AppCompatActivity() {
      * servicio HTTP y repositorio, en ese orden: el repositorio necesita el servicio.
      * Si Android entrega un Bundle, recupera la pantalla y los datos guardados.
      * Un Bundle es un contenedor de pares clave/valor, no una base de datos.
+     *
+     * @param savedInstanceState Estado previo guardado por el sistema.
+     * @author Kenneth Alvarez
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,6 +138,9 @@ class MainActivity : AppCompatActivity() {
      * (texto) para introducirlos en el Bundle. No guarda una petición en curso
      * ni sustituye la caché persistente de SQLite.
      * Las búsquedas de vistas usan ?.let porque cada pantalla tiene IDs distintos.
+     *
+     * @param outState Bundle de salida donde se guarda el estado.
+     * @author Kenneth Alvarez
      */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -166,6 +174,9 @@ class MainActivity : AppCompatActivity() {
      * TypeToken conserva el tipo List<Estudiante> para que Gson sepa qué crear.
      * No repite la consulta HTTP; usa los resultados que estaban guardados.
      * Restaurar el detalle también vuelve a marcarlo como último consultado.
+     *
+     * @param state Bundle recibido en onCreate.
+     * @author Kenneth Alvarez
      */
     private fun restaurarEstado(state: Bundle) {
         val pantalla = state.getString(KEY_PANTALLA, "menu")
@@ -208,7 +219,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Abre buscar_id.xml desde el botón del menú.
+     *
      * @param view Vista que Android entrega al invocar android:onClick; no se usa.
+     * @author Kenneth Alvarez
      */
     fun mostrar_busqueda_id(view: View) {
         pantallaActual = "buscar_id"
@@ -217,7 +230,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Abre buscar_datos.xml para introducir nombre y/o casa.
+     *
      * @param view Botón que origina el evento android:onClick; no se usa.
+     * @author Kenneth Alvarez
      */
     fun mostrar_busqueda_datos(view: View) {
         pantallaActual = "buscar_datos"
@@ -226,6 +241,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Vuelve al menú principal y refresca el botón "último consultado".
+     *
+     * @param view Botón que origina el evento; no se usa.
+     * @author Kenneth Alvarez
      */
     fun mostrar_menu(view: View) {
         pantallaActual = "menu"
@@ -242,7 +260,9 @@ class MainActivity : AppCompatActivity() {
      * espacios exteriores y convierte el ID a mayúsculas antes de validarlo.
      * Si falta el ID o su formato no coincide, muestra un aviso sin consultar.
      * La API key no viene del formulario: setupRetrofit la añade a la cabecera.
+     *
      * @param view Botón pulsado, recibido por el enlace android:onClick.
+     * @author Kenneth Alvarez
      */
     fun buscar_estudiante_id(view: View) {
         val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim().uppercase()
@@ -267,7 +287,10 @@ class MainActivity : AppCompatActivity() {
     /**
      * Acepta XX-XXX-XXX o XX-XXX-XXX-NN (letras mayúsculas y dos cifras).
      * Solo comprueba la forma del texto; no garantiza que exista el estudiante.
+     *
+     * @param id Texto a validar.
      * @return true si el ID cumple cualquiera de las dos expresiones regulares.
+     * @author Kenneth Alvarez
      */
     private fun verificar_formato_id(id: String): Boolean {
         return REGEX_ID.matches(id.trim()) || REGEX_ID_DUPE.matches(id.trim())
@@ -280,6 +303,9 @@ class MainActivity : AppCompatActivity() {
      * Cero resultados: aviso; uno: detalle; varios: lista de selección.
      * lifecycleScope vincula la corrutina a la vida de esta Activity.
      * Los fallos capturados se traducen mediante ErrorUtils.
+     *
+     * @param id ID completo a buscar.
+     * @author Kenneth Alvarez
      */
     private fun getEstudiantesPorId(id: String) {
         val base = idBase(id)
@@ -327,6 +353,10 @@ class MainActivity : AppCompatActivity() {
      * Elimina solo un sufijo final de dos cifras: GR-HAR-POT-02 -> GR-HAR-POT.
      * El prefijo se usa para encontrar variantes guardadas en SQLite; el ID
      * completo se conserva para la petición HTTP si no hay resultados locales.
+     *
+     * @param id ID completo.
+     * @return Prefijo base sin sufijo numérico.
+     * @author Kenneth Alvarez
      */
     private fun idBase(id: String): String {
         val partes = id.split("-")
@@ -346,7 +376,9 @@ class MainActivity : AppCompatActivity() {
      * pero no los dos. Valida caracteres antes de llamar al repositorio.
      * El filtro local busca el texto en nombre/apellido, no en alias; la casa
      * local se compara completa sin distinguir mayúsculas.
+     *
      * @param view Botón Buscar enlazado desde el XML.
+     * @author Kenneth Alvarez
      */
     fun buscar_estudiante_datos(view: View) {
         val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
@@ -393,6 +425,9 @@ class MainActivity : AppCompatActivity() {
      * cada fila desde fila_alumno.xml. submitList entrega los datos a ListAdapter,
      * que calcula qué filas deben actualizarse mediante DiffUtil.
      * Pulsar una fila ejecuta el callback creado en onCreate y abre su detalle.
+     *
+     * @param lista Estudiantes a mostrar en el RecyclerView.
+     * @author Kenneth Alvarez
      */
     private fun mostrarListaAlumnos(lista: List<Estudiante>) {
         pantallaActual = "lista"
@@ -410,6 +445,10 @@ class MainActivity : AppCompatActivity() {
      * Busca por nombre/casa usando el mismo reparto de hilos y pantallas que
      * la búsqueda por ID. El repositorio devuelve caché si encuentra coincidencias;
      * si no, consulta la API con el límite predeterminado del servicio (20).
+     *
+     * @param nombre Texto a buscar en nombre/apellido.
+     * @param casa   Casa a buscar.
+     * @author Kenneth Alvarez
      */
     private fun getEstudiantePorDatos(nombre: String, casa: String) {
 
@@ -463,6 +502,7 @@ class MainActivity : AppCompatActivity() {
      * para que el botón del menú principal lo muestre al volver.
      *
      * @param e Estudiante a mostrar.
+     * @author Kenneth Alvarez
      */
     private fun mostrarDetalleAlumno(e: Estudiante) {
         pantallaActual = "detalle"
@@ -511,6 +551,8 @@ class MainActivity : AppCompatActivity() {
      * BuildConfig.API_KEY se genera al compilar desde secrets.properties; nunca
      * se debe mostrar la clave en mensajes, capturas o registros.
      * Constantes.Base_URL indica el servidor y ApiService.kt define las rutas.
+     *
+     * @author Kenneth Alvarez
      */
     private fun setupRetrofit() {
         val client = OkHttpClient.Builder()
@@ -542,6 +584,8 @@ class MainActivity : AppCompatActivity() {
      * Idiomas soportados (en orden): español (`es`), euskera (`eu`), inglés (`en`).
      * Al seleccionar una opción distinta a la actual, se aplica el nuevo idioma
      * a toda la aplicación usando [AppCompatDelegate.setApplicationLocales].
+     *
+     * @author Kenneth Alvarez
      */
     private fun configurarSpinnerIdioma() {
         // Lista de códigos de idioma. El orden debe coincidir con el del spinner.
@@ -562,19 +606,33 @@ class MainActivity : AppCompatActivity() {
         // Listener para reaccionar al cambio de idioma.
         binding.selectorIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
-            // Se ejecuta cada vez que se selecciona un elemento. "pos" es la posición elegida.
+            /**
+             * Se ejecuta cada vez que se selecciona un elemento.
+             *
+             * @param p   Spinner que disparó el evento.
+             * @param v   Fila visual seleccionada.
+             * @param pos Posición del elemento seleccionado.
+             * @param id  ID de la fila (suele coincidir con pos).
+             * @author Kenneth Alvarez
+             */
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
                 // Solo cambia el idioma si es distinto al actual (evita bucles).
                 if (pos != posicion) {
                     // Aplica el nuevo idioma a toda la app. Android recrea la Activity
                     // y carga los textos del `values-xx` correspondiente.
+                    // AppCompatDelegate sirve para gestionar y aplicar ciertas configuraciones a todas las pantallas a la vez
                     AppCompatDelegate.setApplicationLocales(
                         LocaleListCompat.forLanguageTags(codigos[pos])
                     )
                 }
             }
 
-            // Se ejecuta si no hay nada seleccionado. No necesitamos hacer nada aquí.
+            /**
+             * Se ejecuta si no hay nada seleccionado. No necesitamos hacer nada aquí.
+             *
+             * @param p Spinner que disparó el evento.
+             * @author Kenneth Alvarez
+             */
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
     }
@@ -582,11 +640,14 @@ class MainActivity : AppCompatActivity() {
     /**
      * Compone la explicación del formato del ID con textos traducibles y muestra
      * un MiDialogoFragment. No ejecuta búsquedas ni modifica datos.
+     *
+     * @param view Botón de ayuda pulsado.
+     * @author Kenneth Alvarez
      */
     fun boton_ayuda_id(view: View) {
         val titulo = getString(R.string.ayuda_formato_del_id)
         val texto = getString(R.string.el_formato_del_id_es) + "\n" +
-                "XX-XXX-XXX" + "\n" +
+                getString(R.string.formato_id) + "\n" +
                 getString(R.string.las_2_primeras_x_son_las_iniciales_de_la_casa) + "\n" +
                 getString(R.string.las_3_primeras_x_son_las_iniciales_del_nombre) + "\n" +
                 getString(R.string.las_3_ultimas_x_son_las_iniciales_del_apellido) + "\n" +
@@ -601,6 +662,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * Muestra la ayuda del formulario por nombre/casa en un diálogo reutilizable.
      * El ejemplo es texto explicativo; no se envía automáticamente a la API.
+     *
+     * @param view Botón de ayuda pulsado.
+     * @author Kenneth Alvarez
      */
     fun boton_ayuda_datos(view: View) {
         val titulo = getString(R.string.ayuda_de_busqueda_por_datos)
@@ -622,6 +686,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Al volver a primer plano, refresca el acceso al último alumno solo si
      * la pantalla actual es el menú, para no actuar sobre otra pantalla.
+     *
+     * @author Kenneth Alvarez
      */
     override fun onResume() {
         super.onResume()
@@ -633,6 +699,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Refresca el botón "último consultado".
      * Ahora usa el ID marcado explícitamente en vez del timestamp.
+     *
+     * @author Kenneth Alvarez
      */
     private fun actualizarBotonUltimoConsultado() {
         val btn = binding.btMenuUltimo
@@ -654,6 +722,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * Abre la ficha cuyo ID se guardó al consultar un detalle. Si no existe
      * o su caché ha caducado, informa al usuario; no hace una petición de red.
+     *
+     * @param view Botón pulsado.
+     * @author Kenneth Alvarez
      */
     fun abrirUltimoConsultado(view: View) {
         val ultimo = repository.getUltimoConsultado()
@@ -672,15 +743,18 @@ class MainActivity : AppCompatActivity() {
      * Muestra el indicador de carga en la pantalla actual.
      * El ProgressBar se busca por ID en el layout visible; si no existe,
      * simplemente no hace nada (para pantallas sin ProgressBar).
+     *
+     * @author Kenneth Alvarez
      */
     private fun mostrarCargando() {
         findViewById<android.widget.ProgressBar>(R.id.progress_cargando)?.visibility = View.VISIBLE
-        // Deshabilita el botón de buscar mientras carga.
         findViewById<View>(R.id.bt_Buscar)?.isEnabled = false
     }
 
     /**
      * Oculta el indicador de carga en la pantalla actual.
+     *
+     * @author Kenneth Alvarez
      */
     private fun ocultarCargando() {
         findViewById<android.widget.ProgressBar>(R.id.progress_cargando)?.visibility = View.GONE
@@ -691,7 +765,11 @@ class MainActivity : AppCompatActivity() {
     //                       CONSTANTES
     // ==========================================================
 
-    /** Claves internas del Bundle. Guardar y restaurar deben usar los mismos nombres. */
+    /**
+     * Claves internas del Bundle. Guardar y restaurar deben usar los mismos nombres.
+     *
+     * @author Kenneth Alvarez
+     */
     private companion object {
         const val KEY_PANTALLA   = "pantalla_actual"
         const val KEY_ESTUDIANTE = "estudiante_json"
