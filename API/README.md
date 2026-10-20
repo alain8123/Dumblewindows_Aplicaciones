@@ -82,10 +82,10 @@ Consulta `/docs` para los campos exactos, parámetros y respuestas actuales. La 
 ## Mantenimiento y límites
 
 ```powershell
-docker compose -p api_entregable logs --tail=100 api
-docker compose -p api_entregable stop
-docker compose -p api_entregable start
-docker compose -p api_entregable down
+docker compose -p API logs --tail=100 api
+docker compose -p API stop
+docker compose -p API start
+docker compose -p API down
 ```
 
 `down` conserva los volúmenes. No uses `down -v` salvo que quieras borrar permanentemente las bases y la caché de esta instalación.
