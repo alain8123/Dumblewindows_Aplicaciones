@@ -174,6 +174,12 @@ def format_birth(value: str | None) -> tuple[str | None, str | None]:
     return formatted, formatted
 
 
+def enrollment_to_student(row: Enrollment) -> StudentOut:
+    """Convierte una matrícula de MariaDB al formato común, incluida la fecha ISO."""
+    birth = row.birth_date.isoformat() if row.birth_date else None
+    return StudentOut(id=row.student_id, nombre=row.full_name, apellido=row.apellido, casa=row.house or "",
+                      nacimiento=birth, fecha_nacimiento=birth, origen="mariadb")
+
 def csv_rows(house: str) -> list[dict[str, str]]:
     """Lee el CSV inicial de cada casa para inicialización y listado."""
     path = CSV_DIR / SOURCES[house]["csv"]
@@ -382,7 +388,7 @@ def search_students(name: str | None = Query(default=None), house: str | None = 
         if house:
             query = query.where(Enrollment.house.ilike(house.replace("!", "!!").replace("%", "!%").replace("_", "!_"), escape="!"))
         current = session.scalars(query.order_by(Enrollment.id).limit(limit)).all()
-        result = [StudentOut(id=row.student_id, nombre=row.full_name, apellido=row.apellido, casa=row.house or "", origen="mariadb") for row in current]
+        result = [enrollment_to_student(row) for row in current]
     if len(result) >= limit:
         return result
     key = "search:live:v3:" + json.dumps([name or "", house or "", limit], ensure_ascii=False)
@@ -434,7 +440,7 @@ def get_students_by_base(base: str) -> StudentOut | list[StudentOut]:
         )
         current = session.scalars(query.order_by(Enrollment.student_id)).all()
         result = {
-            row.student_id: StudentOut(id=row.student_id, nombre=row.full_name, apellido=row.apellido, casa=row.house or "", origen="mariadb")
+            row.student_id: enrollment_to_student(row)
             for row in current if matches_student_base(row.student_id, base)
         }
     key = f"student:base:v1:{base}"
@@ -462,7 +468,7 @@ def get_student(student_id: str) -> StudentOut | list[StudentOut]:
     with Session() as session:
         current = session.scalar(select(Enrollment).where(Enrollment.student_id == student_id))
         if current:
-            return StudentOut(id=current.student_id, nombre=current.full_name, apellido=current.apellido, casa=current.house or "", origen="mariadb")
+            return enrollment_to_student(current)
     hit = cached(f"student:v3:{student_id}")
     if hit is not None:
         return StudentOut(**hit)

@@ -221,7 +221,15 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('/matriculas', response.json()['paths'])
         self.assertNotIn('/enrollments', response.json()['paths'])
-
+    
+    def test_consulta_devuelve_fecha_nacimiento(self):
+            student = self.client.post('/matriculas', headers=self.headers, json={**self.payload, 'birth_date': '2001-03-14'}).json()
+            detail = self.client.get('/estudiantes/' + student['student_id'], headers=self.headers).json()
+            detail = detail[0] if isinstance(detail, list) else detail
+            self.assertEqual(detail['nacimiento'], '2001-03-14')
+            self.assertEqual(detail['fecha_nacimiento'], '2001-03-14')
+            found = self.client.get('/estudiantes', headers=self.headers, params={'name': 'Ana'}).json()
+            self.assertIn('2001-03-14', [item['nacimiento'] for item in found])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
