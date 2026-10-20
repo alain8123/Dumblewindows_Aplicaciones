@@ -1,6 +1,6 @@
-package alain.holamundo.dumblefx.API;
+package Dumblewindows.javafx.dumblefx.API;
 
-import alain.holamundo.dumblefx.I18n.I18n;
+import Dumblewindows.javafx.dumblefx.i18n.I18n;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InputStream;
@@ -41,7 +41,7 @@ public final class ApiConfig {
     public static Path configurationFile() {
         String explicit = System.getProperty("dumblefx.config");
         if (explicit != null) return Path.of(explicit).toAbsolutePath();
-        return Path.of("src", "main", "resources", "alain", "holamundo", "dumblefx", "config.properties")
+        return Path.of("src", "main", "resources", "Dumblewindows", "javafx", "dumblefx", "config.properties")
                 .toAbsolutePath();
     }
 
@@ -51,7 +51,7 @@ public final class ApiConfig {
      * @return flujo del recurso encontrado, o null si no existe
      */
     private static InputStream bundledConfiguration() {
-        InputStream resource = ApiConfig.class.getResourceAsStream("/alain/holamundo/dumblefx/config.properties");
+        InputStream resource = ApiConfig.class.getResourceAsStream("/Dumblewindows/javafx/dumblefx/config.properties");
         return resource == null ? ApiConfig.class.getResourceAsStream("/config.properties") : resource;
     }
 

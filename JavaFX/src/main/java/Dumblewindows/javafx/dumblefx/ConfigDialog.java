@@ -1,7 +1,7 @@
-package alain.holamundo.dumblefx;
+package Dumblewindows.javafx.dumblefx;
 
-import alain.holamundo.dumblefx.API.ApiConfig;
-import alain.holamundo.dumblefx.I18n.I18n;
+import Dumblewindows.javafx.dumblefx.API.ApiConfig;
+import Dumblewindows.javafx.dumblefx.i18n.I18n;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;

@@ -1,4 +1,4 @@
-package alain.holamundo.dumblefx.I18n;
+package Dumblewindows.javafx.dumblefx.i18n;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -31,7 +31,7 @@ public final class I18n {
     /**
      * Ruta base de los catálogos de traducción incluidos en recursos.
      */
-    private static final String BASE = "alain.holamundo.dumblefx.i18n.messages";
+    private static final String BASE = "Dumblewindows.javafx.dumblefx.i18n.messages";
 
     /**
      * Impide crear instancias de esta utilidad.

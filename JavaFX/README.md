@@ -334,7 +334,7 @@ La ventana revisada comienza en **1100 × 700** y establece esas mismas dimensio
 1. Abre el proyecto y configura el SDK de Java 21.
 2. Importa o recarga Maven.
 3. Selecciona la raíz `JavaFX` como directorio de trabajo de la ejecución.
-4. Ejecuta `alain.holamundo.dumblefx.Launcher`.
+4. Ejecuta `Dumblewindows.javafx.dumblefx.Launcher`.
 5. Completa el formulario inicial si falta configuración.
 
 ### Desde Windows

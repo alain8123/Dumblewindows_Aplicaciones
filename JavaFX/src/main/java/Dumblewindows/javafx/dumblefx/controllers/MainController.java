@@ -1,6 +1,6 @@
-package alain.holamundo.dumblefx.controllers;
+package Dumblewindows.javafx.dumblefx.controllers;
 
-import alain.holamundo.dumblefx.I18n.I18n;
+import Dumblewindows.javafx.dumblefx.i18n.I18n;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -137,7 +137,7 @@ public final class MainController {
      */
     private void show(String file, String title, Button navigation) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/alain/holamundo/dumblefx/ventanas/" + file), I18n.bundle());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dumblewindows/javafx/dumblefx/ventanas/" + file), I18n.bundle());
             Node view = loader.load();
             I18n.bindView(view);
             content.getChildren().setAll(view);

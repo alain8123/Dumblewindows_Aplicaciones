@@ -1,4 +1,4 @@
-package alain.holamundo.dumblefx.assets;
+package Dumblewindows.javafx.dumblefx.assets;
 
 import java.util.regex.Pattern;
 

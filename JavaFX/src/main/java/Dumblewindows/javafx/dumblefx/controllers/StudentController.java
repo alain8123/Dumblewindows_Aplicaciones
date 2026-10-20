@@ -1,11 +1,11 @@
-package alain.holamundo.dumblefx.controllers;
+package Dumblewindows.javafx.dumblefx.controllers;
 
-import alain.holamundo.dumblefx.API.ApiClient;
-import alain.holamundo.dumblefx.I18n.I18n;
-import alain.holamundo.dumblefx.Modelos.Alumno;
-import alain.holamundo.dumblefx.Modelos.Matricula;
-import alain.holamundo.dumblefx.assets.StudentIdPreview;
-import alain.holamundo.dumblefx.assets.InputValidation;
+import Dumblewindows.javafx.dumblefx.API.ApiClient;
+import Dumblewindows.javafx.dumblefx.i18n.I18n;
+import Dumblewindows.javafx.dumblefx.Modelos.Alumno;
+import Dumblewindows.javafx.dumblefx.Modelos.Matricula;
+import Dumblewindows.javafx.dumblefx.assets.StudentIdPreview;
+import Dumblewindows.javafx.dumblefx.assets.InputValidation;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;

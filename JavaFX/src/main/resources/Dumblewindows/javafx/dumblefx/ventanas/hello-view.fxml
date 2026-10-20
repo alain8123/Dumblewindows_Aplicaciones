@@ -7,7 +7,7 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.MainController" styleClass="app">
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Dumblewindows.javafx.dumblefx.controllers.MainController" styleClass="app">
   <left>
     <VBox spacing="9" styleClass="sidebar" prefWidth="248">
       <ComboBox fx:id="languageSelector" value="Español" maxWidth="Infinity" accessibleText="%language" styleClass="language-selector">
