@@ -4,8 +4,8 @@ Este modulo expone una API FastAPI para consultar estudiantes historicos y
 gestionar matriculas nuevas.
 
 Arquitectura:
-    * MariaDB (Enrollment) contiene unicamente las matriculas nuevas creadas
-      por la API.
+    * MariaDB (Enrollment) contiene las matriculas creadas por la API y los
+      datos de prueba de Central.csv cuando la tabla esta vacia.
     * Derby, HSQLDB, H2 y Oracle contienen fuentes historicas separadas por
       casas; se consultan por identificador cuando hace falta.
     * Los CSV de /app/data inicializan las tablas historicas vacias; las
@@ -105,7 +105,7 @@ class EnrollmentIn(BaseModel):
 
 class EnrollmentCreate(EnrollmentIn):
     """Alta con casa Central por defecto e identificador generado por la API."""
-    house: str = Field(default="Central", min_length=2, max_length=80)
+    house: str = Field(default="Central", min_length=2, max_length=15)
 
 
 class EnrollmentOut(EnrollmentIn):
@@ -135,7 +135,7 @@ class StudentOut(BaseModel):
 app = FastAPI(
     title="API de estudiantes de Hogwarts",
     version="2.1.0",
-    description=("MariaDB contiene solo matrículas nuevas. Derby, HSQLDB, H2 y Oracle "
+    description=("MariaDB contiene matrículas y datos de prueba de Central.csv. Derby, HSQLDB, H2 y Oracle "
                  "son fuentes históricas de consulta; SQLite almacena la caché temporal. "
                  "Las rutas en inglés siguen operativas para clientes anteriores pero no aparecen en /docs."),
 )
@@ -216,6 +216,38 @@ def source_connection(kind: str) -> Iterator[Any]:
         yield connection
     finally:
         connection.close()
+
+
+def create_central_enrollments() -> None:
+    """Carga Central.csv en MariaDB solo si no hay matrículas, sin sobrescribirlas."""
+    path = CSV_DIR / "Central.csv"
+    if not path.exists():
+        return
+    with identity_session() as session:
+        if session.scalar(select(Enrollment.id).limit(1)) is not None:
+            return
+        with path.open(encoding="utf-8-sig", newline="") as file:
+            reader = csv.DictReader(file)
+            required = {"student_id", "full_name", "apellido", "house", "birth_date"}
+            if not required.issubset(reader.fieldnames or []):
+                raise ValueError("Central.csv: faltan columnas de matrícula")
+            seen = set()
+            for line, row in enumerate(reader, start=2):
+                student_id = (row.get("student_id") or "").strip()
+                if not student_id or len(student_id) > 64 or student_id in seen:
+                    raise ValueError(f"Central.csv, línea {line}: student_id vacío, duplicado o demasiado largo")
+                values = EnrollmentIn(
+                    student_id=student_id,
+                    full_name=row.get("full_name") or "",
+                    apellido=row.get("apellido") or "",
+                    house=row.get("house") or "",
+                    birth_date=row.get("birth_date") or None,
+                )
+                if values.house != "Central":
+                    raise ValueError(f"Central.csv, línea {line}: la casa debe ser Central")
+                session.add(Enrollment(**values.model_dump()))
+                seen.add(student_id)
+            session.flush()
 
 
 def create_history_tables() -> None:
@@ -326,6 +358,7 @@ def cache(key: str, payload: Any) -> None:
 def startup() -> None:
     """Prepara MariaDB, SQLite y, si es necesario, las casas históricas."""
     Base.metadata.create_all(engine)
+    create_central_enrollments()
     cache_db().close()
     time.sleep(3)
     create_history_tables()
@@ -368,10 +401,64 @@ def search_students(name: str | None = Query(default=None), house: str | None = 
             break
     return result
 
-@app.get("/students/{student_id}", dependencies=[Depends(require_api_key)], response_model=StudentOut, include_in_schema=False)
-@app.get("/estudiantes/{student_id}", dependencies=[Depends(require_api_key)], response_model=StudentOut, tags=["Consultas"], summary="Consultar estudiante por ID", description="Consulta primero MariaDB, después SQLite y, si no existe, los cuatro motores históricos. Solo cachea los resultados históricos.")
-def get_student(student_id: str) -> StudentOut:
-    """Consulta MariaDB, después SQLite y finalmente las bases de las casas."""
+def matches_student_base(student_id: str, base: str) -> bool:
+    return student_id == base or re.fullmatch(re.escape(base) + r"-\d+", student_id) is not None
+
+
+def query_history_by_base(base: str) -> list[StudentOut]:
+    result: list[StudentOut] = []
+    escaped = base.replace("!", "!!").replace("%", "!%").replace("_", "!_")
+    for house, config in SOURCES.items():
+        try:
+            with source_connection(config["kind"]) as connection:
+                cursor = connection.cursor()
+                try:
+                    placeholders = (":1", ":2") if config["kind"] == "oracle" else ("?", "?")
+                    cursor.execute(
+                        "SELECT id,nombre,apellido,casa,alias,especie,genero,nacimiento,nacionalidad,patronus,patronus_origen,imagen,wiki FROM students "
+                        f"WHERE id = {placeholders[0]} OR id LIKE {placeholders[1]} ESCAPE '!' ORDER BY id",
+                        [base, escaped + "-%"],
+                    )
+                    result.extend(row_to_student(row, house) for row in cursor.fetchall() if matches_student_base(str(row[0]), base))
+                finally:
+                    cursor.close()
+        except Exception as error:
+            raise HTTPException(503, f"Fuente histórica no disponible: {house}") from error
+    return result
+
+
+def get_students_by_base(base: str) -> StudentOut | list[StudentOut]:
+    with Session() as session:
+        query = select(Enrollment).where(
+            (Enrollment.student_id == base) | Enrollment.student_id.startswith(base + "-", autoescape=True)
+        )
+        current = session.scalars(query.order_by(Enrollment.student_id)).all()
+        result = {
+            row.student_id: StudentOut(id=row.student_id, nombre=row.full_name, apellido=row.apellido, casa=row.house or "", origen="mariadb")
+            for row in current if matches_student_base(row.student_id, base)
+        }
+    key = f"student:base:v1:{base}"
+    hit = cached(key)
+    if hit is None:
+        historical = query_history_by_base(base)
+        cache(key, [item.model_dump() for item in historical])
+    else:
+        historical = [StudentOut(**item) for item in hit]
+    for item in historical:
+        result.setdefault(item.id, item)
+    if not result:
+        raise HTTPException(404, "Estudiante no encontrado")
+    if len(result) == 1:
+        return next(iter(result.values()))
+    return sorted(result.values(), key=lambda item: item.id)
+
+
+@app.get("/students/{student_id}", dependencies=[Depends(require_api_key)], response_model=StudentOut | list[StudentOut], include_in_schema=False)
+@app.get("/estudiantes/{student_id}", dependencies=[Depends(require_api_key)], response_model=StudentOut | list[StudentOut], tags=["Consultas"], summary="Consultar estudiante por ID", description="Acepta el ID base (por ejemplo GR-HAR-POT) o un ID completo con sufijo. Si el ID base coincide con varios estudiantes, devuelve una lista con todos los datos de cada estudiante. Una sola coincidencia devuelve el detalle habitual; sin coincidencias, 404. Combina MariaDB con históricos cacheados en SQLite; un ID con sufijo se consulta de forma exacta.")
+def get_student(student_id: str) -> StudentOut | list[StudentOut]:
+    """Consulta un ID completo o todas las coincidencias de un ID base."""
+    if re.fullmatch(r"[^-]+-[^-]+-[^-]+", student_id):
+        return get_students_by_base(student_id)
     with Session() as session:
         current = session.scalar(select(Enrollment).where(Enrollment.student_id == student_id))
         if current:

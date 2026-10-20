@@ -1,101 +1,103 @@
-# API de estudiantes de Hogwarts
+# API de estudiantes — entrega portable
 
-## Estado del despliegue
+## Qué hace
 
-El proyecto se ejecuta en Docker Desktop en `dm2_casa` (`C:\Users\alain\IA\api-estudiantes`). La API FastAPI publica solo el puerto `8000`; las bases no publican puertos al exterior.
+Servicio HTTP desarrollado con FastAPI para consultar estudiantes históricos y gestionar matrículas nuevas. Se ejecuta con Docker Compose e incluye una API, MariaDB para matrículas y cuatro motores históricos:
 
-Servicios:
+- **MariaDB** guarda las matrículas y los datos de prueba de `data/Central.csv`; permite crearlas, modificarlas y eliminarlas.
+- **Derby, HSQLDB, H2 y Oracle** alojan los registros históricos de las cuatro casas. La API los consulta, sin ofrecer operaciones de escritura sobre ellos.
+- **SQLite** conserva temporalmente resultados históricos para acelerar consultas repetidas. No sustituye a las bases de datos.
 
-- `api`: FastAPI, documentación automática en `/docs`, `/redoc` y `/openapi.json`.
-- `mariadb`: matrículas nuevas de Secretaría (`enrollments`), único origen que admite alta, modificación y baja.
-- `derby`: Gryffindor, solo lectura.
-- `hsqldb`: Slytherin, solo lectura.
-- `h2`: Hufflepuff, solo lectura.
-- `oracle`: Ravenclaw, solo lectura.
-- SQLite: archivo `/data/cache.sqlite3`, volumen `api_cache`, usado como caché temporal y separado de MariaDB.
+La consulta de estudiantes combina MariaDB con los datos históricos y evita duplicados. Las búsquedas por identificador admiten IDs base con variantes. Los datos CSV se usan para inicializar las tablas históricas vacías y las matrículas de Central en MariaDB.
 
-Los cuatro CSV adjuntos se cargan en su propio motor durante la creación inicial de los contenedores. No se copian a MariaDB: la tabla `enrollments` permanece independiente.
+## Cómo funciona
 
-## Mapeo y conectores
+FastAPI expone las rutas y la documentación interactiva. Las consultas y operaciones de matrícula (excepto el estado y la documentación) requieren la cabecera `X-API-Key`. La clave se configura por instalación y no debe compartirse.
 
-| Casa | Motor | Conector en Python | Servicio Docker |
-|---|---|---|---|
-| Gryffindor | Apache Derby | JayDeBeApi + JDBC | `derby:1527` |
-| Slytherin | HSQLDB | JayDeBeApi + JDBC | `hsqldb:9001` |
-| Hufflepuff | H2 | JayDeBeApi + JDBC | `h2:9092` |
-| Ravenclaw | Oracle Free | `oracledb` | `oracle:1521/FREEPDB1` |
+La ruta `/salud` comprueba la API y MariaDB. `/docs` ofrece Swagger UI; también están disponibles `/redoc` y `/openapi.json`. Las conexiones de bases de datos son internas a la red de Docker. SQLite se guarda en un volumen persistente.
 
-JayDeBeApi carga los JAR de `/opt/jdbc`. Oracle utiliza el controlador Thin de `oracledb`, sin instalar un cliente Oracle dentro de la API.
+La inicialización puede crear tablas y cargar los CSV cuando las tablas están vacías. Por ello, el primer arranque escribe los datos iniciales en los motores históricos y carga `data/Central.csv` en `enrollments` de MariaDB si esa tabla está vacía. Si ya contiene alguna matrícula, no se importa Central: no se sobrescriben ni se mezclan los datos existentes. La carga conserva los IDs del CSV, valida nombres, apellidos, fechas y casa Central, y se confirma en una sola transacción; si hay un error, se revierte la carga completa. Reiniciar con una tabla no vacía no duplica ni restaura filas eliminadas. Si se vacía por completo, el siguiente arranque vuelve a cargarla. Los cambios hechos a matrículas se guardan en MariaDB. Los volúmenes Docker conservan datos entre reinicios.
 
-## Flujo de una consulta
+## Por qué está organizado así
 
-1. `GET /estudiantes/{student_id}` busca primero una matrícula nueva en MariaDB.
-2. Si no existe, busca una respuesta vigente en SQLite.
-3. Si tampoco existe, consulta las cuatro fuentes históricas, sin escribir en ellas.
-4. La respuesta encontrada se guarda en SQLite con fecha de caché; nunca se inserta en MariaDB.
-5. Las consultas repetidas sirven la respuesta desde SQLite mientras no caduque (24 horas).
+Separar matrículas nuevas de los registros históricos evita modificar las fuentes históricas. La caché SQLite reduce consultas repetidas sin convertirse en la fuente de verdad. Docker Compose reúne la API y sus dependencias, de modo que otro equipo pueda iniciar el conjunto sin instalar localmente Java, JDBC ni los cinco servidores de base de datos. La clave y las contraseñas se generan en el equipo destino, en lugar de trasladar credenciales del PC original.
 
-`GET /estudiantes?name=...&house=...&limit=...` permite búsquedas por nombre y casa a partir de los CSV originales; este listado no consulta las tablas históricas en vivo ni incluye nuevas matrículas de MariaDB. La consulta por identificador sí consulta las bases históricas cuando hay fallo de caché. Las fechas exactas se muestran como `dd/mm/yyyy`; las fechas aproximadas conservan su texto original para no inventar un día.
+## Contenido
 
-## Operaciones de Secretaría
+- `app/main.py`: aplicación, endpoints, autenticación, consultas y caché.
+- `compose.yaml`: API y servicios de base de datos aislados en Docker.
+- `Dockerfile`, `db-image/`: imágenes de la API y de los motores JDBC.
+- `init/mariadb.sql`: esquema inicial para matrículas nuevas.
+- `data/*.csv`: datos de inicialización de ejemplo para las fuentes históricas y MariaDB (`Central.csv`).
+- `requirements.txt`: dependencias Python.
+- `.env.example`, `preparar_config.py`: configuración inicial sin secretos reales.
 
-- `POST /matriculas`: alta solo en MariaDB.
-- `PUT /matriculas/{student_id}`: modificación solo en MariaDB.
-- `DELETE /matriculas/{student_id}`: baja solo en MariaDB.
+El paquete no incluye contraseñas del servidor original, bases de datos en ejecución, cachés, entornos virtuales ni respaldos de matrículas. Los CSV pueden contener datos personales o de prueba; distribuye la carpeta solo con autorización para compartirlos.
 
-Las cuatro bases históricas no tienen endpoints de escritura.
+## Instalación en otro equipo
 
-## Arranque y comprobación
+Requisitos: Docker Desktop con contenedores Linux, Python 3 para generar la configuración, conexión a Internet para descargar imágenes y paquetes, y recursos suficientes para ejecutar cinco bases de datos. El paquete está orientado a x86-64; Oracle puede requerir una plataforma compatible.
 
-```powershell
-cd C:\Users\alain\IA\api-estudiantes
-docker compose config -q
-docker compose up -d --build
-docker compose ps
-curl http://127.0.0.1:8000/health
-start http://127.0.0.1:8000/docs
-```
+1. Copia la carpeta completa a otro equipo y abre una terminal en ella.
+2. Genera credenciales propias. El script no muestra secretos ni reemplaza un `.env` existente:
 
-La respuesta de salud incluye `"code":"R01"`, el mapeo de las fuentes y `"no_migration":true`.
+   ```powershell
+   python preparar_config.py
+   ```
 
-## Reinicio y persistencia
+   Si el comando no está disponible, prueba `py preparar_config.py`. No compartas ni subas `.env`.
 
-```powershell
-docker compose restart
-docker compose ps
-```
+3. Valida y arranca el proyecto:
 
-Los volúmenes `mariadb_data`, `api_cache`, `derby_data`, `hsqldb_data`, `h2_data` y `oracle_data` sobreviven a reinicios. No borrar los volúmenes históricos salvo que se quiera volver a cargar los CSV desde cero.
+   ```powershell
+   docker compose -p API config -q
+   docker compose -p API up -d --build
+   docker compose -p API ps
+   ```
 
-## Publicación para las aplicaciones
+   El primer arranque descarga imágenes, inicia cinco motores y carga los CSV en las tablas históricas vacías y `Central.csv` en MariaDB si no hay matrículas. Puede tardar varios minutos.
 
-Durante el desarrollo en la misma red, JavaFX puede usar `http://IP_DEL_PC:8000`. Para Internet se necesita un túnel HTTPS o un servidor externo; este Compose no publica MariaDB ni las cuatro fuentes históricas. Las rutas de consulta y CRUD requieren X-API-Key; utilizar solo datos ficticios y cerrar el túnel al terminar.
+4. Comprueba el servicio y abre la documentación:
 
+   ```powershell
+   Invoke-RestMethod http://(ip del equipo donde esta alojada la api):8000/salud
+   Start-Process http://(ip del equipo donde esta alojada la api):8000/docs
+   ```
 
-## Rutas en español y documentación automática
+   En Swagger, pulsa **Authorize** e introduce el valor local de `API_ACCESS_KEY` de `.env`.
 
-Abrir `http://127.0.0.1:8000/docs` desde el propio PC, o `http://IP_DEL_PC:8000/docs` desde un equipo que pueda llegar al servidor. Swagger UI se genera a partir de las definiciones y descripciones de `app/main.py`; también están `/redoc` y `/openapi.json`. Una ruta publicada en Swagger no implica acceso desde Internet: eso requiere configurar por separado la red o un túnel HTTPS.
+## Endpoints principales
 
-| Método | Ruta nueva | Función |
+| Método | Ruta | Función |
 |---|---|---|
-| GET | `/salud` | Estado y código `R01` |
-| GET | `/estudiantes?name=...&house=...&limit=20` | Listado histórico desde CSV y caché SQLite |
-| GET | `/estudiantes/{student_id}` | MariaDB → SQLite → las cuatro bases históricas |
-| POST | `/matriculas` | Crear nueva matrícula en MariaDB |
-| PUT | `/matriculas/{student_id}` | Modificar matrícula de MariaDB |
-| DELETE | `/matriculas/{student_id}` | Eliminar matrícula de MariaDB |
+| GET | `/salud` | Estado del servicio |
+| GET | `/estudiantes?name=Ana&house=Central&limit=20` | Búsqueda por nombre/casa |
+| GET | `/estudiantes/{student_id}` | Detalle o coincidencias por ID |
+| POST | `/matriculas` | Alta en MariaDB |
+| PUT | `/matriculas/{student_id}` | Modificación en MariaDB |
+| DELETE | `/matriculas/{student_id}` | Baja en MariaDB |
 
-Los parámetros de búsqueda `name`, `house`, `limit` y los campos JSON de matrículas (`student_id`, `full_name`, `house`, `birth_date`) mantienen sus nombres actuales para no romper aplicaciones existentes; se han traducido las **rutas** y su explicación, no el contrato de datos. Para crear o modificar, enviar JSON con `student_id` y `full_name` obligatorios. Pydantic interpreta `birth_date` como `YYYY-MM-DD`; `dd/mm/yyyy` se aplica a fechas exactas del estudiante histórico devueltas en `nacimiento` y `fecha_nacimiento`.
+Consulta `/docs` para los campos exactos, parámetros y respuestas actuales. La API también conserva alias en inglés para clientes anteriores.
 
-Las rutas antiguas `/health`, `/students` y `/enrollments` siguen funcionando para clientes existentes, pero están ocultas del esquema OpenAPI; los clientes nuevos deben usar las rutas en español. Para aplicar cambios de documentación o código: `docker compose up -d --build api`. No borrar los volúmenes para reconstruir la API.
+## Mantenimiento y límites
 
-## Acceso remoto de desarrollo
+```powershell
+docker compose -p api_entregable logs --tail=100 api
+docker compose -p api_entregable stop
+docker compose -p api_entregable start
+docker compose -p api_entregable down
+```
 
-URL actual: https://dumblewindows-api.tail6bccfa.ts.net/docs (probada el 04/10/2026). Desde Internet `/salud` y `/docs` devuelven 200; `/estudiantes` sin clave devuelve 401. Una consulta local con clave devolvió 200.
+`down` conserva los volúmenes. No uses `down -v` salvo que quieras borrar permanentemente las bases y la caché de esta instalación.
 
-El contenedor `api-estudiantes-tailscale` crea un túnel HTTPS saliente hacia `http://api:8000`; las bases permanecen dentro de Docker. No se abrió ningún puerto del router. Ver el contenedor con `docker ps --filter name=api-estudiantes-tailscale`; ver la URL vigente con `docker logs api-estudiantes-tailscale`. Detener el acceso público con `docker stop api-estudiantes-tailscale` y reanudar con `docker start api-estudiantes-tailscale`.
+El puerto publicado se limita a `0.0.0.0`: la API queda accesible desde cualquier equipo de la red.
 
-Swagger `/docs` incluye **Authorize**. La clave se guarda solo en `.api-secret.env` configurar JavaFX con la URL base y enviar la cabecera `X-API-Key` en consultas y CRUD. No compartir la clave por chat. Una clave incrustada en una app distribuida es extraíble: para datos reales se necesitan usuarios y autorización. El PC y Docker Desktop deben mantenerse encendidos. El puerto local 8000 sigue accesible en la red del PC.
+## Incorporar cambios en Central.csv
 
-## Contenido de los .csv
-El contenido de los .csv son datos de prueba.
+Los CSV se copian dentro de la imagen de la API. Tras añadir o cambiar `data/Central.csv`, reconstruye la API desde esta carpeta:
+
+```powershell
+docker compose -p api_entregable up -d --build
+```
+
+Esto conserva los volúmenes. No borres matrículas ni volúmenes para forzar la importación: si MariaDB ya contiene datos, conserva esos datos y planifica una importación adicional por separado.
