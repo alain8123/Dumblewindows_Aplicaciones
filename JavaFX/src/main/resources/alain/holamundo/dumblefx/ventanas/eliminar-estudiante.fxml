@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Carga y muestra el registro antes de solicitar confirmación para eliminarlo.
+     fx:id enlaza controles con el controlador; onAction referencia sus métodos.
+     Los textos con % son claves de traducción y styleClass remite a app.css. -->
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox fx:id="operationPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alain.holamundo.dumblefx.controllers.StudentController" spacing="18" styleClass="card" maxWidth="Infinity" maxHeight="Infinity">

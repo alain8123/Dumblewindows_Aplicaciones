@@ -20,9 +20,27 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Formulario modal de primera ejecución para guardar la conexión con la API.
+ * Valida las URLs antes de persistir la configuración; la clave se introduce oculta,
+ * pero el archivo de configuración la almacena en texto plano.
+ *
+ * @author Alain Paunero
+ */
 public final class ConfigDialog {
+    /**
+     * Impide crear instancias de esta utilidad.
+     */
     private ConfigDialog() { }
 
+    /**
+     * Comprueba si existe configuración y, si falta, solicita los datos en un diálogo.
+     * Cancelar el diálogo devuelve false; un fallo al guardar mantiene abierto el formulario.
+     *
+     * @param owner ventana propietaria del diálogo; puede ser null
+     * @return true si ya existe configuración o se guarda; false si se cancela
+     * @throws IOException si no se puede leer o guardar la configuración
+     */
     public static boolean ensureConfiguration(Window owner) throws IOException {
         if (ApiConfig.hasConfiguration()) return true;
 
@@ -72,12 +90,14 @@ public final class ConfigDialog {
                 if (required && value.isEmpty()) {
                     error.setText("Completa la URL base y la clave de la API.");
                     entry.getValue().requestFocus();
+                    // Evita que el botón cierre el diálogo mientras haya errores.
                     event.consume();
                     return;
                 }
                 if (!value.isEmpty() && !entry.getKey().equals("DUMBLEFX_API_KEY") && !validUrl(value)) {
                     error.setText("Introduce una URL http:// o https:// válida en " + entry.getKey() + ".");
                     entry.getValue().requestFocus();
+                    // Evita que el botón cierre el diálogo mientras haya errores.
                     event.consume();
                     return;
                 }
@@ -97,6 +117,16 @@ public final class ConfigDialog {
         return dialog.showAndWait().orElse(false);
     }
 
+    /**
+     * Añade un campo al formulario y lo precarga desde su variable de entorno, si existe.
+     *
+     * @param form cuadrícula que recibe el campo
+     * @param fields campos indexados por nombre de variable de configuración
+     * @param label etiqueta visible del campo
+     * @param name nombre o filtro de nombre; en configuración, nombre de la variable
+     * @param prompt texto de ejemplo del campo
+     * @param password true para ocultar el texto introducido
+     */
     private static void addField(GridPane form, Map<String, TextField> fields,
                                  String label, String name, String prompt, boolean password) {
         TextField field = password ? new PasswordField() : new TextField();
@@ -108,6 +138,13 @@ public final class ConfigDialog {
         fields.put(name, field);
     }
 
+    /**
+     * Valida una URL HTTP o HTTPS sin credenciales ni fragmento.
+     * Sustituye temporalmente el marcador de estudiante para poder analizar URLs de operaciones.
+     *
+     * @param value valor que se valida, transforma o envía
+     * @return true si la URL cumple las restricciones de conexión
+     */
     private static boolean validUrl(String value) {
         try {
             URI uri = URI.create(value.replace("{student_id}", "student-id"));

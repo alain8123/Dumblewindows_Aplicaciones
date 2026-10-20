@@ -386,3 +386,17 @@ Antes de distribuir, comprueba las cinco pantallas, los tres idiomas, el arranqu
 ---
 
 Documentación preparada a partir de los archivos revisados del proyecto el **15 de octubre de 2026**. Describe el cliente JavaFX; no certifica la implementación interna ni la disponibilidad del servidor de la API.
+
+## 13. Documentación del código y Javadoc
+
+Las clases Java incorporan Javadoc de responsabilidad, métodos, parámetros, resultados y errores declarados; los campos documentan su papel. Los comentarios internos explican validaciones, trabajo en segundo plano y decisiones de interfaz sin cambiar la lógica. Las vistas FXML y los estilos CSS incluyen comentarios de orientación.
+
+Para generar el sitio Javadoc desde la raíz del proyecto con JDK 21 y Maven:
+
+```powershell
+.\mvnw.cmd javadoc:javadoc -Dshow=private -Ddocencoding=UTF-8 -Dencoding=UTF-8 -Dcharset=UTF-8
+```
+
+Abre `target/site/apidocs/index.html` al terminar. Maven puede necesitar descargar el plugin de Javadoc la primera vez. También puedes generarlo con la herramienta `javadoc` del JDK y las dependencias del proyecto en el classpath.
+
+En Actualizar, la casa permanece **Central**, deshabilitada y no editable en el FXML; al cargar un alumno el controlador vuelve a establecer ese valor. Esta documentación no añade un selector de patronus ni modifica el contrato de la API.

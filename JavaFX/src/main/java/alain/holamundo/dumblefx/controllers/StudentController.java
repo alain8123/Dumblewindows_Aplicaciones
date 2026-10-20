@@ -18,16 +18,51 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+/**
+ * Controlador compartido por las pantallas de consulta, alta, actualización y eliminación.
+ * Cada FXML inyecta solamente los controles que utiliza; por ello algunos campos pueden ser null.
+ * Las llamadas a la API se ejecutan en tareas de fondo y sus resultados se aplican en el hilo JavaFX.
+ *
+ * @author Alain Paunero
+ */
 public final class StudentController {
+    /**
+     * Panel que se deshabilita temporalmente durante las peticiones.
+     */
     @FXML private VBox operationPane;
+    /**
+     * Campos opcionales de identificador, filtros y datos de matrícula, según el FXML cargado.
+     */
     @FXML private TextField idField, searchField, houseFilterField, limitField, nameField, surnameField, houseField;
+    /**
+     * Calendario de nacimiento, presente en las pantallas de alta y actualización.
+     */
     @FXML private DatePicker birthDatePicker;
+    /**
+     * Etiquetas de estado y detalle, presentes según la operación.
+     */
     @FXML private Label status, result;
+    /**
+     * Tabla de resultados de la consulta por datos.
+     */
     @FXML private TableView<Alumno> table;
+    /**
+     * Columnas de identificador, nombre, apellidos, casa y nacimiento de la tabla.
+     */
     @FXML private TableColumn<Alumno, String> idColumn, nameColumn, surnameColumn, houseColumn, birthColumn;
+    /**
+     * Cliente de acceso a la API utilizado por las tareas de fondo.
+     */
     private final ApiClient api = new ApiClient();
+    /**
+     * ID cargado y seleccionado antes de actualizar o eliminar; null si no hay registro preparado.
+     */
     private String loadedId;
 
+    /**
+     * Prepara validadores, calendario y columnas de los controles presentes en el FXML.
+     * En el alta genera una vista previa del ID; el calendario impide fechas futuras.
+     */
     @FXML private void initialize() {
         validateInput(nameField, false);
         validateInput(surnameField, false);
@@ -36,15 +71,22 @@ public final class StudentController {
         if (birthDatePicker != null) {
             birthDatePicker.setEditable(false);
             birthDatePicker.setDayCellFactory(picker -> new DateCell() {
+                /**
+                 * Deshabilita celdas vacías y fechas posteriores a hoy.
+                 * @param date fecha representada por la celda
+                 * @param empty true si la celda no contiene una fecha
+                 */
                 @Override public void updateItem(LocalDate date, boolean empty) {
                     super.updateItem(date, empty);
                     setDisable(empty || date == null || date.isAfter(LocalDate.now()));
                 }
             });
         }
+        // El FXML de alta distingue su modo mediante el ID no editable.
         if (surnameField != null && !idField.isEditable()) {
             idField.setEditable(false);
             idField.setDisable(true);
+            // Se mantiene la casa Central, también al cargar datos para actualizar.
             houseField.setText("Central");
 
             nameField.textProperty().addListener((observable, previous, current) -> previewId());
@@ -63,6 +105,13 @@ public final class StudentController {
         table.setPlaceholder(placeholder);
     }
 
+    /**
+     * Instala un filtro de entrada y convierte los IDs escritos a mayúsculas.
+     * Ignora controles ausentes y rechaza cambios no válidos mostrando una explicación.
+     *
+     * @param field campo de texto, o null si no existe en la vista
+     * @param identifier true para aplicar las reglas de ID; false para nombres
+     */
     private void validateInput(TextField field, boolean identifier) {
         if (field == null) return;
         field.setTextFormatter(new TextFormatter<String>(change -> {
@@ -77,15 +126,24 @@ public final class StudentController {
         }));
     }
 
+    /**
+     * Recalcula la vista previa del identificador usando casa, nombre y apellidos.
+     */
     private void previewId() {
         idField.setText(StudentIdPreview.generate(houseField.getText(), nameField.getText(), surnameField.getText()));
     }
 
+    /**
+     * Valida el ID y consulta coincidencias, permitiendo elegir el estudiante que se muestra.
+     */
     @FXML private void findId() {
         String id = parsedId();
         if (id != null) run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.view", this::describe));
     }
 
+    /**
+     * Valida filtros y límite, consulta la API y reemplaza los resultados de la tabla.
+     */
     @FXML private void search() {
         int limit;
         try {
@@ -107,12 +165,17 @@ public final class StudentController {
         });
     }
 
+    /**
+     * Valida el formulario, crea la matrícula y muestra el ID definitivo recibido.
+     * Tras el éxito limpia nombre, apellidos y fecha, y restablece la casa Central.
+     */
     @FXML private void create() {
         Matricula value = form(null);
         if (value == null) return;
         run(() -> api.create(value), created -> {
             nameField.clear();
             surnameField.clear();
+            // Se mantiene la casa Central, también al cargar datos para actualizar.
             houseField.setText("Central");
             birthDatePicker.setValue(null);
             idField.setText(created.studentId());
@@ -120,6 +183,10 @@ public final class StudentController {
         });
     }
 
+    /**
+     * Carga y selecciona el estudiante a modificar, conservando Central en el campo casa.
+     * Si la fecha recibida no es válida, avisa y no habilita el registro como cargado.
+     */
     @FXML private void loadForUpdate() {
         String id = parsedId();
         if (id == null) return;
@@ -127,6 +194,7 @@ public final class StudentController {
         run(() -> api.findById(id), alumnos -> selectStudent(alumnos, "selection.update", alumno -> {
             nameField.setText(alumno.getNombre());
             surnameField.setText(alumno.getApellidos());
+            // Se mantiene la casa Central, también al cargar datos para actualizar.
             houseField.setText("Central");
             String birth = alumno.getNacimiento();
             try {
@@ -142,6 +210,10 @@ public final class StudentController {
         }));
     }
 
+    /**
+     * Actualiza únicamente el ID que se cargó y seleccionó previamente.
+     * Valida el formulario y conserva el identificador devuelto por la API.
+     */
     @FXML private void update() {
         String id = parsedId();
         if (id == null) return;
@@ -157,6 +229,9 @@ public final class StudentController {
         });
     }
 
+    /**
+     * Limpia la selección anterior y carga el estudiante cuyos datos se van a eliminar.
+     */
     @FXML private void loadForDelete() {
         String id = parsedId();
         loadedId = null;
@@ -169,6 +244,10 @@ public final class StudentController {
         }));
     }
 
+    /**
+     * Exige cargar el registro y confirmar la eliminación antes de llamar a la API.
+     * Al completarse borra la selección y los detalles mostrados.
+     */
     @FXML private void delete() {
         String id = parsedId();
         if (id == null) return;
@@ -192,6 +271,11 @@ public final class StudentController {
         });
     }
 
+    /**
+     * Lee el identificador, elimina espacios exteriores y valida su formato.
+     *
+     * @return ID válido, o null tras mostrar un mensaje de validación
+     */
     private String parsedId() {
         String id = idField.getText().trim();
         if (!InputValidation.isId(id)) {
@@ -201,6 +285,13 @@ public final class StudentController {
         return id;
     }
 
+    /**
+     * Valida nombres, casa y fecha antes de construir los datos de matrícula.
+     * En el alta usa Central si la casa está vacía; las fechas ausentes se envían como null.
+     *
+     * @param id identificador del estudiante; null al construir los datos de alta
+     * @return matrícula preparada, o null si falla alguna validación
+     */
     private Matricula form(String id) {
         String name = nameField.getText().trim();
         String surname = surnameField.getText().trim();
@@ -226,11 +317,24 @@ public final class StudentController {
         return new Matricula(id, name, surname, house.isBlank() ? null : house, birth == null ? null : birth.toString());
     }
 
+    /**
+     * Muestra los datos del estudiante mediante un mensaje traducido.
+     *
+     * @param alumno estudiante cuyos datos se presentan
+     */
     private void describe(Alumno alumno) {
         I18n.message(result.textProperty(), "result.details", alumno.getId(), text(alumno.getNombre()),
                 text(alumno.getApellidos()), text(alumno.getCasa()), text(alumno.getNacimiento()));
     }
 
+    /**
+     * Gestiona cero, una o varias coincidencias de consulta.
+     * Para varias muestra un diálogo con selección obligatoria; cancelar no ejecuta el callback.
+     *
+     * @param alumnos coincidencias recibidas de la API
+     * @param headerKey clave traducida del encabezado del diálogo
+     * @param selected callback que recibe el estudiante elegido
+     */
     private void selectStudent(List<Alumno> alumnos, String headerKey, Consumer<Alumno> selected) {
         if (alumnos.isEmpty()) {
             I18n.message(status.textProperty(), "status.empty");
@@ -266,6 +370,13 @@ public final class StudentController {
                 () -> I18n.message(status.textProperty(), "status.cancelled"));
     }
 
+    /**
+     * Construye una columna traducida para la tabla del diálogo de selección.
+     *
+     * @param key clave del catálogo de traducciones
+     * @param value función que obtiene el texto de cada estudiante
+     * @return columna que presenta el valor extraído del estudiante
+     */
     private TableColumn<Alumno, String> selectionColumn(String key, java.util.function.Function<Alumno, String> value) {
         TableColumn<Alumno, String> column = new TableColumn<>();
         I18n.message(column.textProperty(), key);
@@ -273,12 +384,33 @@ public final class StudentController {
         return column;
     }
 
+    /**
+     * Sustituye valores ausentes por un guion de presentación.
+     *
+     * @param value valor que se valida, transforma o envía
+     * @return valor original o raya si es null o está en blanco
+     */
     private static String text(String value) { return value == null || value.isBlank() ? "—" : value; }
 
+    /**
+     * Ejecuta trabajo de API en un hilo daemon y bloquea el panel mientras dura la tarea.
+     * Los callbacks de Task vuelven al hilo JavaFX: restauran el panel y muestran éxito o error.
+     *
+     * @param <T> tipo del resultado de la operación de fondo
+     * @param work operación de fondo que puede lanzar una excepción
+     * @param success callback de interfaz que recibe el resultado
+     */
     private <T> void run(Callable<T> work, Consumer<T> success) {
         I18n.message(status.textProperty(), "status.connecting");
         operationPane.setDisable(true);
-        Task<T> task = new Task<>() { @Override protected T call() throws Exception { return work.call(); } };
+        Task<T> task = new Task<>() {
+            /**
+             * Ejecuta la operación fuera del hilo de interfaz.
+             * @return resultado de la operación de API
+             * @throws Exception si falla la operación de fondo
+             */
+            @Override protected T call() throws Exception { return work.call(); }
+        };
         task.setOnSucceeded(event -> {
             operationPane.setDisable(false);
             I18n.message(status.textProperty(), "status.ready"); success.accept(task.getValue());

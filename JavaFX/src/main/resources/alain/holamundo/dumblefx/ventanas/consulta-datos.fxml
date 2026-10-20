@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Consulta por filtros y muestra los resultados en una tabla; el controlador valida el límite.
+     fx:id enlaza controles con el controlador; onAction referencia sus métodos.
+     Los textos con % son claves de traducción y styleClass remite a app.css. -->
+
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>

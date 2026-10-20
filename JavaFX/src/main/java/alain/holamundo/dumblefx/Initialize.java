@@ -9,8 +9,20 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+/**
+ * Aplicación JavaFX: prepara la configuración, carga la vista principal y muestra la ventana.
+ * Si falla la configuración inicial, informa al usuario y finaliza el arranque.
+ *
+ * @author Alain Paunero
+ */
 public class Initialize extends Application {
 
+    /**
+     * Prepara la conexión y construye la escena, los estilos, los iconos y el título traducido.
+     *
+     * @param stage ventana principal proporcionada por JavaFX
+     * @throws Exception si falla la carga de la vista, los recursos o el arranque
+     */
     @Override
     public void start(Stage stage) throws Exception {
         try {
