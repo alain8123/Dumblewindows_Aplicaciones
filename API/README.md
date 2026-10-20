@@ -97,7 +97,105 @@ El puerto publicado se limita a `0.0.0.0`: la API queda accesible desde cualquie
 Los CSV se copian dentro de la imagen de la API. Tras añadir o cambiar `data/Central.csv`, reconstruye la API desde esta carpeta:
 
 ```powershell
-docker compose -p api_entregable up -d --build
+docker compose -p API up -d --build
 ```
 
 Esto conserva los volúmenes. No borres matrículas ni volúmenes para forzar la importación: si MariaDB ya contiene datos, conserva esos datos y planifica una importación adicional por separado.
+
+## Pruebas Python aisladas con .venv
+
+La carpeta `test/` contiene pruebas automatizadas del codigo real de `app/main.py`.
+No hay una copia de la API: asi los tests siempre comprueban tu implementacion actual.
+Usan `unittest` (incluido con Python), FastAPI TestClient y SQLite temporal.
+No necesitan arrancar Docker, Java ni servidores de bases de datos.
+
+### Crear el entorno virtual (Windows / PowerShell)
+
+Abre una terminal en la carpeta del proyecto. Python 3.10 o posterior es necesario;
+la preparacion se ha realizado con Python 3.13.
+
+```powershell
+cd (Tu ruta de la api)
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r \requirements.txt
+```
+
+Si no existe el comando `python`, usa `py -3 -m venv .venv` en su lugar.
+Si `.venv` ya existe, reutilizalo: no hace falta recrearlo en cada ejecucion.
+Estos comandos instalan solo las dependencias necesarias para las pruebas aisladas.
+`requirements.txt` sigue siendo la lista de dependencias del servicio completo en Docker;
+este entorno de pruebas no sustituye ese despliegue ni sus controladores JDBC/Oracle.
+
+### Ejecutar los tests
+
+Desde la raiz del proyecto:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s test -p "test_*.py" -v
+```
+
+Ejecutar un unico test:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s test -p "test_*.py" -k test_crear_genera_id -v
+```
+Listado de teses individuales por si se quieren probar uno a uno 
+```
+test_rutas_protegidas_sin_clave
+test_clave_incorrecta
+test_limites_invalidos
+test_listado_vacio
+test_identificadores_repetidos
+test_crear_genera_id_e_ignora_id_cliente
+test_openapi_publico
+test_cache_temporal
+test_alias_en_ingles
+test_consulta_base_devuelve_variantes
+test_fecha_invalida
+test_busqueda_por_nombre_y_casa
+test_historicos_sin_duplicar_matricula
+test_modificar_inexistente
+test_actualizar_matricula
+test_eliminar_matricula
+test_consultar_matricula_por_id
+test_validacion_nombres
+test_clave_no_configurada
+```
+
+Si todo esta bien aparece `OK`; un fallo muestra la prueba y su motivo.
+Las pruebas cubren autenticacion, salud, validacion de entradas, altas, consultas,
+filtros, identificadores repetidos, modificaciones, bajas, cache, alias y OpenAPI.
+
+### Activacion opcional y aislamiento de otros proyectos
+
+No necesitas activar el entorno si usas la ruta completa a su `python.exe`, como arriba.
+Asi no cambias el Python ni los paquetes de otros proyectos, y tampoco necesitas
+cambiar la politica de ejecucion de PowerShell. Nunca uses `pip` global para estas pruebas.
+
+Si prefieres activarlo:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m unittest discover -s test -p "test_*.py" -v
+deactivate
+```
+
+Si PowerShell bloquea `Activate.ps1`, usa directamente `.\.venv\Scripts\python.exe`;
+no es necesario modificar la politica del equipo. En VS Code selecciona ese mismo
+interprete con **Python: Select Interpreter**. Cada proyecto debe tener su propio `.venv`.
+No copies ni compartas `.venv`: se reconstruye con los comandos anteriores.
+
+### Que se aisla y que no se comprueba
+
+Cada prueba crea sus propias bases SQLite dentro del directorio temporal del sistema,
+las cierra y las elimina al terminar. Se usa una clave ficticia; no se lee `.env`.
+No se consultan tus CSV reales, no se envian peticiones a una API desplegada y no
+se modifican matriculas ni volumenes Docker reales.
+
+Se sustituyen los controladores externos, las consultas historicas y el bloqueo
+especifico de MariaDB; el CRUD y los modelos usan SQLAlchemy real con SQLite.
+TestClient se utiliza sin arrancar el ciclo de inicio que carga las bases reales.
+Por tanto, son pruebas aisladas de logica y rutas HTTP, no pruebas de integracion
+contra MariaDB, Oracle, H2, HSQLDB o Derby, ni de concurrencia del bloqueo MariaDB.
+Para esos casos haria falta un despliegue de integracion separado con datos desechables.
+
