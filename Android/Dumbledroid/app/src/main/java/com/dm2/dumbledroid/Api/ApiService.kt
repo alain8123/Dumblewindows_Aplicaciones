@@ -1,5 +1,7 @@
-package com.dm2.dumbledroid
+package com.dm2.dumbledroid.Api
 
+import com.dm2.dumbledroid.Constantes
+import com.dm2.dumbledroid.Modelos.Estudiante
 import com.google.gson.JsonElement
 import retrofit2.http.GET
 import retrofit2.http.Path

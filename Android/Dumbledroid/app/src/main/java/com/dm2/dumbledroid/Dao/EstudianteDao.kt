@@ -1,9 +1,10 @@
-package com.dm2.dumbledroid.db
+package com.dm2.dumbledroid.Dao
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import com.dm2.dumbledroid.Estudiante
+import com.dm2.dumbledroid.Db.DbHelper
+import com.dm2.dumbledroid.Modelos.Estudiante
 import com.google.gson.Gson
 
 /**

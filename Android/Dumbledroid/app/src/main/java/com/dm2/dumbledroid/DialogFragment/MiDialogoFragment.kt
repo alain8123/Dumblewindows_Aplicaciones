@@ -1,4 +1,4 @@
-package com.dm2.dumbledroid
+package com.dm2.dumbledroid.DialogFragment
 
 import android.app.Dialog
 import android.os.Bundle
@@ -8,9 +8,9 @@ import androidx.fragment.app.DialogFragment
 /**
  * Diálogo de ayuda reutilizable para la app.
  *
- * Muestra un título y un mensaje en un [AlertDialog]. Los datos NO se pasan
+ * Muestra un título y un mensaje en un [androidx.appcompat.app.AlertDialog]. Los datos NO se pasan
  * por constructor (eso rompe la recreación al girar), sino a través del
- * [Bundle] de argumentos, siguiendo el patrón `newInstance()` recomendado
+ * [android.os.Bundle] de argumentos, siguiendo el patrón `newInstance()` recomendado
  * por Android.
  *
  * Uso:
@@ -23,7 +23,7 @@ class MiDialogoFragment : DialogFragment() {
 
     /**
      * Crea una nueva instancia del diálogo con los textos indicados.
-     * Los argumentos se guardan en el [Bundle] para que Android pueda
+     * Los argumentos se guardan en el [android.os.Bundle] para que Android pueda
      * reconstruir el Fragment al recrear la Activity (giro, cambio de idioma, etc.).
      *
      * @param titulo Texto que aparecerá en el título del diálogo.

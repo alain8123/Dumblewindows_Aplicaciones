@@ -1,4 +1,4 @@
-package com.dm2.dumbledroid.db
+package com.dm2.dumbledroid.Db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

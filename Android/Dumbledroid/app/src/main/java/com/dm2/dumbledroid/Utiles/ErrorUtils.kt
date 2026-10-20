@@ -1,4 +1,4 @@
-package com.dm2.dumbledroid.utils
+package com.dm2.dumbledroid.Utiles
 
 import android.content.Context
 import com.dm2.dumbledroid.R

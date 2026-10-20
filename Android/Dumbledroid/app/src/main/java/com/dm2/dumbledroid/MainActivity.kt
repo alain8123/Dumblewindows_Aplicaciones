@@ -18,9 +18,13 @@ import androidx.recyclerview.widget.LinearLayoutManager    // Layout lineal para
 import androidx.recyclerview.widget.RecyclerView           // Lista eficiente para muchos elementos
 import coil.load                                           // Extensión de Coil para cargar imágenes desde URL
 import coil.size.Size                                      // Enum para definir el tamaño de imagen
+import com.dm2.dumbledroid.Adapters.EstudianteListAdapter
+import com.dm2.dumbledroid.Api.ApiService_id
+import com.dm2.dumbledroid.DialogFragment.MiDialogoFragment
 import com.dm2.dumbledroid.databinding.ActivityMainBinding // Binding del layout principal
-import com.dm2.dumbledroid.repository.EstudianteRepository
-import com.dm2.dumbledroid.utils.ErrorUtils
+import com.dm2.dumbledroid.Utiles.EstudianteRepository
+import com.dm2.dumbledroid.Utiles.ErrorUtils
+import com.dm2.dumbledroid.Modelos.Estudiante
 import com.google.gson.Gson                                // Serialización JSON para guardar el estado
 import com.google.gson.reflect.TypeToken                   // Tipo genérico para deserializar listas
 import kotlinx.coroutines.Dispatchers                      // Hilos (IO, Main, etc.)

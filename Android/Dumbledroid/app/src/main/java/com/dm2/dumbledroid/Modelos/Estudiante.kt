@@ -1,4 +1,4 @@
-package com.dm2.dumbledroid
+package com.dm2.dumbledroid.Modelos
 
 data class Estudiante(
     val id : String,
