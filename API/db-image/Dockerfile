@@ -7,5 +7,6 @@ RUN mkdir -p /opt/db /data \
  && curl -fsSL https://repo1.maven.org/maven2/org/hsqldb/hsqldb/2.7.4/hsqldb-2.7.4.jar -o /opt/db/hsqldb.jar \
  && curl -fsSL https://repo1.maven.org/maven2/com/h2database/h2/2.3.232/h2-2.3.232.jar -o /opt/db/h2.jar
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Quita los CRLF de Windows; con ellos el contenedor falla con "exec /entrypoint.sh: no such file or directory".
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
