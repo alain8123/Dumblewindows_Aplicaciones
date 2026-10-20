@@ -39,3 +39,6 @@ crashlytics-build.properties
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Archivos temporales que Unity crea al compilar
+/.utmp/

@@ -1,6 +1,6 @@
 # DumbleUnity
 
-Aplicación de escritorio hecha en **Unity** que permite buscar a un estudiante de Hogwarts por su nombre y ver su **patronus** animado en pixel art.
+Aplicación para **Windows** y **Android** hecha en **Unity** que permite buscar a un estudiante de Hogwarts por su nombre y ver su **patronus** animado en pixel art.
 
 Forma parte del proyecto **Dumblewindows**: los datos de los estudiantes vienen de la API de Dumblewindows y esta aplicación es la interfaz visual para consultarlos.
 
@@ -11,15 +11,17 @@ Forma parte del proyecto **Dumblewindows**: los datos de los estudiantes vienen 
 1. [Qué hace la aplicación](#qué-hace-la-aplicación)
 2. [Requisitos](#requisitos)
 3. [Puesta en marcha](#puesta-en-marcha)
-4. [Estructura del proyecto](#estructura-del-proyecto)
-5. [La escena](#la-escena)
-6. [Flujo de una búsqueda](#flujo-de-una-búsqueda)
-7. [Scripts](#scripts)
-8. [Animaciones de los patronus](#animaciones-de-los-patronus)
-9. [Mensajes de error](#mensajes-de-error)
-10. [Cómo ampliar la aplicación](#cómo-ampliar-la-aplicación)
-11. [Decisiones de diseño](#decisiones-de-diseño)
-12. [Autor y derechos](#autor-y-derechos)
+4. [Conectar con la API](#conectar-con-la-api)
+5. [Compilar el proyecto](#compilar-el-proyecto)
+6. [Estructura del proyecto](#estructura-del-proyecto)
+7. [La escena](#la-escena)
+8. [Flujo de una búsqueda](#flujo-de-una-búsqueda)
+9. [Scripts](#scripts)
+10. [Animaciones de los patronus](#animaciones-de-los-patronus)
+11. [Mensajes de error](#mensajes-de-error)
+12. [Cómo ampliar la aplicación](#cómo-ampliar-la-aplicación)
+13. [Decisiones de diseño](#decisiones-de-diseño)
+14. [Autor y derechos](#autor-y-derechos)
 
 ---
 
@@ -40,7 +42,9 @@ Forma parte del proyecto **Dumblewindows**: los datos de los estudiantes vienen 
 | Unity | **6000.3.24f1** (Unity 6) |
 | Render pipeline | Universal Render Pipeline (URP) 2D |
 | Texto | TextMeshPro (incluido en `com.unity.ugui`) |
-| API | API de Dumblewindows accesible por HTTP/HTTPS |
+| Entrada | Input System (el nuevo sistema de entrada de Unity) |
+| Módulos de Unity Hub | **Windows Build Support** para compilar en Windows y **Android Build Support** (con *OpenJDK* y *Android SDK & NDK Tools*) para Android |
+| API | API de Dumblewindows: en local para Windows en el mismo equipo, o remota para Android (ver [Conectar con la API](#conectar-con-la-api)) |
 
 ---
 
@@ -48,13 +52,13 @@ Forma parte del proyecto **Dumblewindows**: los datos de los estudiantes vienen 
 
 1. Abre la carpeta `DumbleUnity` con **Unity Hub** usando la versión indicada arriba.
 2. Abre la escena `Assets/Scenes/menu.unity`.
-3. En la jerarquía, selecciona el objeto **ControladorConsultaAlumno**.
-4. En el inspector, dentro del componente **Consulta Alumno**, rellena:
+3. En la ventana **Hierarchy**, selecciona el objeto **ControladorConsultaAlumno**.
+4. En la ventana **Inspector**, dentro del componente **Consulta Alumno (Script)**, rellena (paso a paso en [Dónde se introducen en el proyecto](#3-dónde-se-introducen-en-el-proyecto)):
 
    | Campo | Qué poner |
    |---|---|
-   | **Url Base** | Dirección de la colección de estudiantes de la API, por ejemplo `https://<servidor>/estudiantes/` |
-   | **Api Key** | La clave de la API (si la API la pide) |
+   | **Url Base** | `http://127.0.0.1:8000/estudiantes` en Windows en el mismo equipo, o la URL remota en Android (ver [Conectar con la API](#conectar-con-la-api)) |
+   | **Api Key** | La clave del archivo `.env` de la carpeta `API` |
    | **Nombre Cabecera** | Cabecera donde va la clave. Por defecto `X-API-Key` (lo indica Swagger en el botón *Authorize*) |
    | **Usar Bearer** | Actívalo solo si la API pide `Authorization: Bearer <clave>` |
 
@@ -65,13 +69,100 @@ Forma parte del proyecto **Dumblewindows**: los datos de los estudiantes vienen 
 
 ---
 
+## Conectar con la API
+
+La aplicación no trae datos propios: todo lo consulta a la **API de Dumblewindows**. Los valores de **Url Base** y **Api Key** se sacan de esa API, no se inventan.
+
+### 1. Url Base
+
+Depende de dónde se ejecute DumbleUnity:
+
+| Dónde se usa DumbleUnity | Url Base |
+|---|---|
+| **Windows / editor de Unity**, en el **mismo equipo** donde está montada la API | `http://127.0.0.1:8000/estudiantes` |
+| **Android** | La **URL remota** donde está publicada la API, terminada en `/estudiantes` (por ejemplo `https://<servidor>/estudiantes`) |
+
+- **API en local:** arráncala desde la carpeta `API` del repositorio; debe quedar escuchando en el **puerto 8000**. `127.0.0.1` significa "este mismo equipo", por eso solo sirve si la app y la API están en el mismo PC.
+- **Android:** en un móvil, `127.0.0.1` sería el propio móvil, así que la versión de Android **solo funciona con la URL remota**. Compílala siempre con esa URL.
+
+### 2. Api Key
+
+La clave está en el archivo **`.env`** de la carpeta `API`. Ábrelo, copia el valor de la clave y pégalo en **Api Key**.
+
+> El `.env` contiene la clave real: no debe subirse al repositorio ni compartirse.
+
+### 3. Dónde se introducen en el proyecto
+
+La URL y la clave **no se escriben en el código**: se rellenan en el **Inspector** de Unity.
+
+1. Abre el proyecto en Unity y abre la escena **`Assets/Scenes/menu.unity`** (doble clic en la ventana **Project**).
+2. En la ventana **Hierarchy** (la lista de objetos de la escena), haz clic en **`ControladorConsultaAlumno`**.
+3. En la ventana **Inspector** aparece el componente **Consulta Alumno (Script)**. Rellena:
+   - En el apartado **API** → campo **Url Base**: `http://127.0.0.1:8000/estudiantes` para Windows en el mismo equipo, o la URL remota para Android
+   - En el apartado **Autenticación** → campo **Api Key**: la clave del `.env`
+4. Guarda la escena con **Ctrl + S**. Si no la guardas, los valores se pierden al cerrar Unity.
+
+```
+Hierarchy                         Inspector
+─────────────────────────         ───────────────────────────────────────
+Main Camera                       ▼ Consulta Alumno (Script)
+Global Light 2D                     UI
+Canvas                                ...
+EventSystem                         API
+ControladorConsultaAlumno  ◄──        Url Base     [ http://127.0.0.1:8000/estudiantes ]
+                                    Autenticación
+                                      Nombre Cabecera  [ X-API-Key ]
+                                      Api Key          [ <clave del .env> ]
+                                      Usar Bearer      [ ]
+```
+
+Al pasar el ratón por encima de cada campo, Unity muestra una explicación (*Tooltip*).
+
+En Swagger, el botón **Authorize** indica el nombre de la cabecera que espera la API. Si es distinto de `X-API-Key`, cámbialo en **Nombre Cabecera**. Si Swagger pide `Authorization: Bearer ...`, activa **Usar Bearer**.
+
+---
+
+## Compilar el proyecto
+
+Las compilaciones se hacen desde **File → Build Profiles**. En **Scene List** debe estar marcada la escena `Scenes/menu`, que es la única de la aplicación.
+
+> Antes de compilar, rellena **Url Base** y **Api Key** con los valores que corresponden a la plataforma: la API local para Windows en el mismo equipo y la URL remota para Android. Esos valores **se quedan dentro de la aplicación compilada**: si cambian, hay que volver a compilar.
+
+### Windows
+
+1. En **Build Profiles**, elige **Windows** y pulsa **Switch Platform** si no es la plataforma activa.
+2. En **Player Settings** (botón del mismo panel) revisa:
+   - **Company Name** (`Dumblewindows`) y **Product Name** (`DumbleUnity`): el `.exe` se llama como el producto.
+   - **Resolution and Presentation → Fullscreen Mode**: la aplicación está pensada para 1920 × 1080 a pantalla completa.
+3. Pulsa **Build** y elige una carpeta vacía, por ejemplo `Builds/Windows` (la carpeta `Builds` está en el `.gitignore` y no se sube al repositorio).
+4. Se genera `DumbleUnity.exe` junto con la carpeta `DumbleUnity_Data`, `UnityPlayer.dll` y otros archivos. Para repartir la aplicación hay que copiar **la carpeta entera**: el `.exe` solo no funciona.
+
+### Android
+
+1. Instala desde **Unity Hub → Installs → (versión) → Add modules** el módulo **Android Build Support** con *OpenJDK* y *Android SDK & NDK Tools*, si no lo tienes.
+2. En **Build Profiles**, elige **Android** y pulsa **Switch Platform**. La primera vez tarda, porque Unity reimporta los recursos.
+3. El proyecto ya tiene configurado lo básico para Android:
+   - **Package Name** (identificador único de la aplicación): `com.dumblewindows.dumbleunity`.
+   - **Orientación**: horizontal (**Landscape Left**), porque la interfaz está diseñada en horizontal.
+   - **IL2CPP** y **ARM64** (lo que exige Google Play), con Android 7.1 (API 25) como versión mínima.
+4. Pon en **Url Base** la **URL remota** de la API (ver [Conectar con la API](#conectar-con-la-api)). Con `127.0.0.1` la versión de Android no puede conectarse.
+5. Pulsa **Build** para generar un `.apk`, o conecta el móvil por USB con la **depuración USB** activada y pulsa **Build And Run** para instalarlo y abrirlo directamente.
+
+> Para pruebas basta con la firma de depuración que Unity usa por defecto. Para publicar la aplicación hay que crear un *keystore* propio en **Player Settings → Publishing Settings** y guardarlo bien: sin él no se pueden publicar actualizaciones.
+
+**Diferencias en Android:**
+- No hay ratón, así que no existe el "pasar por encima". El recuadro de derechos de autor se ve **mientras se mantiene el dedo** sobre la etiqueta, y el efecto del botón de salir solo se nota al pulsarlo.
+- El botón de salir cierra la aplicación igual que en Windows.
+
+---
+
 ## Estructura del proyecto
 
 ```
 Assets/
 ├── Prefabs/
 │   └── UI/                      Prefabs de la interfaz, todos colocados en la escena
-│       ├── BotonMenu.prefab
+│       ├── BotonMenu.prefab              Botón "Buscar" del menú
 │       ├── BotonSalir.prefab
 │       ├── PopupAlumno.prefab
 │       ├── PopupAviso.prefab
