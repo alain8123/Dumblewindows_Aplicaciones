@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Formulario modal de primera ejecución para guardar la conexión con la API.
+ * Formulario modal para crear o editar la conexión con la API desde la aplicación.
  * Valida las URLs antes de persistir la configuración; la clave se introduce oculta,
  * pero el archivo de configuración la almacena en texto plano.
  *
@@ -43,17 +43,44 @@ public final class ConfigDialog {
      */
     public static boolean ensureConfiguration(Window owner) throws IOException {
         if (ApiConfig.hasConfiguration()) return true;
+        return showConfiguration(owner, false);
+    }
+
+    /**
+     * Abre la configuración existente y aplica los cambios a las siguientes peticiones.
+     * Cancelar no modifica el archivo ni la conexión activa.
+     *
+     * @param owner ventana propietaria del diálogo; puede ser null
+     * @return true si se guarda; false si se cancela
+     * @throws IllegalStateException si no se puede leer el archivo existente
+     */
+    public static boolean editConfiguration(Window owner) {
+        return showConfiguration(owner, true);
+    }
+
+    /**
+     * Construye el formulario compartido por el arranque y el botón de configuración.
+     * Conserva propiedades adicionales y mantiene abierto el diálogo si no puede guardar.
+     *
+     * @param owner ventana propietaria; puede ser null
+     * @param editing true para precargar y reemplazar la configuración existente
+     * @return true si se guarda correctamente; false al cancelar
+     */
+    private static boolean showConfiguration(Window owner, boolean editing) {
+        Properties initial = editing ? ApiConfig.editableConfiguration() : new Properties();
 
         Dialog<Boolean> dialog = new Dialog<>();
         if (owner != null && owner.getScene() != null) {
             dialog.initOwner(owner);
         }
-        dialog.setTitle("Configuración inicial de DumbleFX");
-        dialog.setHeaderText("No existe config.properties. Introduce los datos de conexión.");
-        ButtonType save = new ButtonType("Guardar y continuar", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        dialog.setTitle(editing ? "Configuración de DumbleFX" : "Configuración inicial de DumbleFX");
+        dialog.setHeaderText(editing ? "Revisa y corrige los datos de conexión."
+                : "No existe config.properties. Introduce los datos de conexión.");
+        ButtonType save = new ButtonType(I18n.text("action.save"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancel = new ButtonType(I18n.text("action.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(save, cancel);
         I18n.tooltip((Button) dialog.getDialogPane().lookupButton(save), "tooltip.saveConfig");
-        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL), "tooltip.cancelConfig");
+        I18n.tooltip((Button) dialog.getDialogPane().lookupButton(cancel), "tooltip.cancelConfig");
 
         GridPane form = new GridPane();
         form.setPadding(new Insets(15));
@@ -62,11 +89,14 @@ public final class ConfigDialog {
         Map<String, TextField> fields = new LinkedHashMap<>();
         addField(form, fields, "URL base de la API *", "DUMBLEFX_API_URL", "https://servidor:puerto", false);
         addField(form, fields, "Clave de la API *", "DUMBLEFX_API_KEY", "Clave X-API-Key", true);
-        addField(form, fields, "Consulta por ID", "DUMBLEFX_API_URL_CONSULTA_ID", "URL consulta id ", false);
-        addField(form, fields, "Consulta por datos", "DUMBLEFX_API_URL_CONSULTA_DATOS", "URL consulta datos", false);
-        addField(form, fields, "Crear matrícula", "DUMBLEFX_API_URL_CREAR", "URL crear matricula", false);
-        addField(form, fields, "Eliminar matrícula", "DUMBLEFX_API_URL_ELIMINAR", "URL eliminar matricula", false);
-        addField(form, fields, "Actualizar matrícula", "DUMBLEFX_API_URL_ACTUALIZAR", "URL actualizar matricula", false);
+        addField(form, fields, "Consulta por ID", "DUMBLEFX_API_URL_CONSULTA_ID", "http://127.0.0.1:8000/estudiantes/{student_id}", false);
+        addField(form, fields, "Consulta por datos", "DUMBLEFX_API_URL_CONSULTA_DATOS", "http://127.0.0.1:8000/estudiantes", false);
+        addField(form, fields, "Crear matrícula", "DUMBLEFX_API_URL_CREAR", "http://127.0.0.1:8000/matriculas", false);
+        addField(form, fields, "Eliminar matrícula", "DUMBLEFX_API_URL_ELIMINAR", "http://127.0.0.1:8000/matriculas/{student_id}", false);
+        addField(form, fields, "Actualizar matrícula", "DUMBLEFX_API_URL_ACTUALIZAR", "http://127.0.0.1:8000/matriculas/{student_id}", false);
+        fields.forEach((name, field) -> {
+            if (initial.containsKey(name)) field.setText(initial.getProperty(name));
+        });
         Label help = new Label("* Obligatorios. Las URLs de operación son opcionales.\n"
                 + "Si se dejan vacías, se guardan vacías con su ejemplo como comentario.\n"
                 + "Conserva {student_id} en las URLs que lo necesiten.\n"
@@ -83,6 +113,7 @@ public final class ConfigDialog {
         dialog.setResultConverter(button -> button == save);
         dialog.getDialogPane().lookupButton(save).addEventFilter(ActionEvent.ACTION, event -> {
             Properties properties = new Properties();
+            properties.putAll(initial);
             StringBuilder examples = new StringBuilder("Ejemplos de las variables opcionales (pueden dejarse vacías):\n");
             for (Map.Entry<String, TextField> entry : fields.entrySet()) {
                 String value = entry.getValue().getText().trim();
@@ -102,13 +133,23 @@ public final class ConfigDialog {
                     return;
                 }
                 properties.setProperty(entry.getKey(), value);
+                boolean studentUrl = entry.getKey().equals("DUMBLEFX_API_URL_CONSULTA_ID")
+                        || entry.getKey().equals("DUMBLEFX_API_URL_ELIMINAR")
+                        || entry.getKey().equals("DUMBLEFX_API_URL_ACTUALIZAR");
+                if (studentUrl && !value.isEmpty() && !value.contains("{student_id}")) {
+                    error.setText("Conserva {student_id} en " + entry.getKey() + ".");
+                    entry.getValue().requestFocus();
+                    event.consume();
+                    return;
+                }
                 if (!required) {
                     examples.append(entry.getKey()).append(": ")
                             .append(entry.getValue().getPromptText().trim()).append('\n');
                 }
             }
             try {
-                ApiConfig.saveInitialConfiguration(properties, examples.toString());
+                if (editing) ApiConfig.saveConfiguration(properties, examples.toString());
+                else ApiConfig.saveInitialConfiguration(properties, examples.toString());
             } catch (IOException failure) {
                 error.setText("No se pudo guardar la configuración. Comprueba la ruta y los permisos de escritura.");
                 event.consume();

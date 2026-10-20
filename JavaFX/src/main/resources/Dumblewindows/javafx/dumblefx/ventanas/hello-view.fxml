@@ -28,6 +28,7 @@
       <Button fx:id="deleteButton" text="%nav.delete" onAction="#delete" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navDelete" /></tooltip></Button>
       <Button fx:id="updateButton" text="%nav.update" onAction="#update" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.navUpdate" /></tooltip></Button>
       <Region VBox.vgrow="ALWAYS" />
+      <Button fx:id="configButton" text="%nav.config" onAction="#configure" maxWidth="Infinity" styleClass="nav-button"><tooltip><Tooltip text="%tooltip.config" /></tooltip></Button>
       <Label fx:id="lbl_SideNote" text="%sidebar.note" styleClass="side-note" />
       <HBox alignment="CENTER_RIGHT">
         <Label fx:id="creditsIcon" text="©" styleClass="info-icon" />

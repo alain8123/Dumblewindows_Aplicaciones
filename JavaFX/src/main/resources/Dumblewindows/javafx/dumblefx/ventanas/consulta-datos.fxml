@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="operationPane" maxHeight="Infinity" maxWidth="Infinity" spacing="16" styleClass="card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Dumblewindows.javafx.dumblefx.controllers.StudentController">
+<VBox fx:id="operationPane" maxHeight="Infinity" maxWidth="Infinity" spacing="16" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Dumblewindows.javafx.dumblefx.controllers.StudentController">
   <Label styleClass="card-title" text="%nav.data" />
   <Label styleClass="hint" text="%search.hint" wrapText="true" />
   <HBox spacing="10"><TextField fx:id="searchField" onAction="#search" promptText="%field.nameOptional" HBox.hgrow="ALWAYS" /><TextField fx:id="houseFilterField" onAction="#search" promptText="%field.houseOptional" /></HBox>
@@ -24,4 +24,3 @@
   </TableView>
   <Label fx:id="status" styleClass="status" text="%status.searchInitial" />
 </VBox>
-

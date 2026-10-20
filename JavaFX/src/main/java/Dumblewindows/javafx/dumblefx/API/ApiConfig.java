@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 /**
@@ -17,15 +19,17 @@ import java.util.Properties;
  * @author Alain Paunero
  */
 public final class ApiConfig {
+    /** Propiedades publicadas como una instantánea tras leer o guardar la configuración. */
+    private static volatile Properties cachedProperties;
+
     /**
-     * Carga diferida de las propiedades, compartida durante la vida de la aplicación.
-     * La configuración se lee al primer acceso a un valor, no al abrir el formulario inicial.
+     * Obtiene la instantánea activa y permite reintentar si una lectura anterior falló.
+     *
+     * @return propiedades de conexión compartidas, sin modificarlas
      */
-    private static class Loaded {
-        /**
-         * Propiedades leídas una sola vez al inicializar el contenedor diferido.
-         */
-        private static final Properties PROPERTIES = load();
+    private static synchronized Properties properties() {
+        if (cachedProperties == null) cachedProperties = load();
+        return cachedProperties;
     }
 
     /**
@@ -90,6 +94,41 @@ public final class ApiConfig {
      * @throws IOException si no se puede leer o guardar la configuración
      */
     public static void saveInitialConfiguration(Properties properties, String examples) throws IOException {
+        writeConfiguration(properties, examples, false);
+    }
+
+    /**
+     * Lee una copia editable del archivo, conservando también propiedades desconocidas.
+     * Las variables de entorno no se copian: mantienen su prioridad al realizar peticiones.
+     *
+     * @return propiedades actuales del archivo o recurso empaquetado
+     * @throws IllegalStateException si no se puede leer la configuración
+     */
+    public static Properties editableConfiguration() {
+        return load();
+    }
+
+    /**
+     * Sustituye el archivo de configuración y actualiza la conexión sin reiniciar.
+     * Intenta un reemplazo atómico; si no está soportado usa un reemplazo normal.
+     *
+     * @param properties propiedades completas que se guardarán
+     * @param examples comentarios de ayuda para las URLs opcionales
+     * @throws IOException si no se puede escribir o reemplazar el archivo
+     */
+    public static void saveConfiguration(Properties properties, String examples) throws IOException {
+        writeConfiguration(properties, examples, true);
+    }
+
+    /**
+     * Escribe primero un temporal y publica la instantánea solo tras guardar correctamente.
+     *
+     * @param properties propiedades que se guardarán en UTF-8
+     * @param examples comentarios de ayuda
+     * @param replace true para reemplazar; false para proteger un archivo existente
+     * @throws IOException si falla la escritura o el movimiento del archivo
+     */
+    private static synchronized void writeConfiguration(Properties properties, String examples, boolean replace) throws IOException {
         Path file = configurationFile();
         Files.createDirectories(file.getParent());
         Path temporary = Files.createTempFile(file.getParent(), ".dumblefx-config-", ".tmp");
@@ -97,14 +136,25 @@ public final class ApiConfig {
             try (var writer = Files.newBufferedWriter(temporary, StandardCharsets.UTF_8)) {
                 properties.store(writer, "DumbleFX\n" + examples);
             }
-            Files.move(temporary, file);
+            if (replace) {
+                try {
+                    Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                } catch (AtomicMoveNotSupportedException unsupported) {
+                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } else {
+                Files.move(temporary, file);
+            }
+            Properties snapshot = new Properties();
+            snapshot.putAll(properties);
+            cachedProperties = snapshot;
         } finally {
             Files.deleteIfExists(temporary);
         }
     }
 
     /**
-     * Lee las propiedades una sola vez a través de Loaded.
+     * Lee las propiedades del archivo o del recurso empaquetado.
      * Prioriza el archivo externo; un error de lectura se comunica como IllegalStateException.
      *
      * @return propiedades cargadas; vacías si no hay archivo ni recurso predeterminado
@@ -142,7 +192,7 @@ public final class ApiConfig {
     private static String value(String name, String fallback) {
         String environment = System.getenv(name);
         return environment == null || environment.isBlank()
-                ? Loaded.PROPERTIES.getProperty(name, fallback).trim() : environment.trim();
+                ? properties().getProperty(name, fallback).trim() : environment.trim();
     }
 
     /**

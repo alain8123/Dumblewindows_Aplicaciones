@@ -76,7 +76,7 @@ JavaFX/
 
 - **`Launcher`:** punto de entrada configurado para ejecutar la aplicación.
 - **`Initialize`:** prepara la configuración, carga la vista principal, aplica traducciones, estilos e iconos y muestra la ventana.
-- **`ConfigDialog`:** solicita los datos iniciales de conexión si falta configuración.
+- **`ConfigDialog`:** solicita los datos iniciales y permite editarlos con el botón **Configuración** del menú lateral.
 - **`ApiConfig`:** localiza y carga las propiedades, consulta variables de entorno y resuelve las URLs.
 - **`ApiClient`:** construye peticiones HTTP, envía la clave y procesa respuestas y errores.
 - **`MainController`:** cambia la sección visible, su título, la ayuda y el botón activo del menú.
@@ -107,10 +107,10 @@ Los FXML definen los controles y su distribución; los controladores responden a
 En desarrollo, ejecutando desde la raíz del proyecto, la ruta predeterminada es:
 
 ```text
-C:\Users\alain\IA\JavaFX\src\main\resources\alain\holamundo\dumblefx\config.properties
+C:\Users\alain\Documents\Dumblewindows_Aplicaciones\JavaFX\src\main\resources\Dumblewindows\javafx\dumblefx\config.properties
 ```
 
-El código calcula `src/main/resources/alain/holamundo/dumblefx/config.properties` **respecto al directorio de trabajo**; no tiene fija la carpeta personal de Alain.
+El código calcula `src/main/resources/Dumblewindows/javafx/dumblefx/config.properties` **respecto al directorio de trabajo**; no tiene fija la carpeta personal de Alain.
 
 Se puede indicar otro archivo mediante esta opción de la JVM:
 
@@ -154,7 +154,7 @@ DUMBLEFX_API_URL_ACTUALIZAR=
 
 Si una URL opcional está vacía, se utiliza la URL base más la ruta de la operación. Si se indica, tiene prioridad. Las URLs específicas de consulta por ID, actualización y eliminación deben conservar literalmente `{student_id}`.
 
-Las variables de entorno **no vacías** del mismo nombre prevalecen sobre el archivo. Reinicia la aplicación después de cambiar la configuración para recargarla.
+Las variables de entorno **no vacías** del mismo nombre prevalecen sobre el archivo. Los cambios guardados desde **Configuración** se aplican a las siguientes peticiones sin reiniciar. Si editas el archivo externamente o cambias el entorno, reinicia la aplicación.
 
 **Seguridad:** el formulario oculta la clave al introducirla, pero el archivo la almacena en texto plano. No lo publiques ni incluyas la clave en capturas. Una clave en un cliente de escritorio no equivale a autenticación individual por usuario. Validar una URL no comprueba la disponibilidad del servidor ni la validez de la clave.
 
@@ -400,3 +400,23 @@ Para generar el sitio Javadoc desde la raíz del proyecto con JDK 21 y Maven:
 Abre `target/site/apidocs/index.html` al terminar. Maven puede necesitar descargar el plugin de Javadoc la primera vez. También puedes generarlo con la herramienta `javadoc` del JDK y las dependencias del proyecto en el classpath.
 
 En Actualizar, la casa permanece **Central**, deshabilitada y no editable en el FXML; al cargar un alumno el controlador vuelve a establecer ese valor. Esta documentación no añade un selector de patronus ni modifica el contrato de la API.
+
+## 14. Configuración desde el menú y revisión de ventanas 
+
+El botón **Configuración**, situado al pie del menú lateral, abre un formulario modal como el de la referencia. Permite revisar la URL base, la clave oculta y las cinco URLs de operación sin abandonar la pantalla actual.
+
+- **Guardar cambios** valida HTTP/HTTPS, los campos obligatorios y `{student_id}` en las URLs específicas de consulta por ID, eliminación y actualización. Las URLs opcionales pueden quedar vacías para usar la URL base y la ruta predeterminada.
+- Se precargan las propiedades del archivo y se conservan otras propiedades que no aparecen en el formulario. Las variables de entorno siguen teniendo prioridad; editar el archivo no las modifica.
+- La escritura utiliza un temporal y un reemplazo atómico cuando el sistema lo permite. La configuración activa solo se actualiza si el guardado termina correctamente. Las peticiones que ya estaban en curso no se reinician.
+- **Cancelar** o cerrar el diálogo no escribe cambios. Durante el primer arranque, cancelar sigue cerrando la aplicación.
+- La clave permanece oculta en pantalla, pero se guarda en texto plano. No compartas `config.properties` ni lo incluyas en el repositorio.
+
+`ConfigDialog.editConfiguration`, el manejador `MainController.configure` y los nuevos métodos de `ApiConfig` incorporan Javadoc. `saveInitialConfiguration` sigue protegiendo los archivos existentes; `saveConfiguration` permite reemplazarlos y actualizar la instantánea de configuración.
+
+### Ventanas, FXML y eventos
+
+Los métodos `onAction="#..."` deben existir en el controlador declarado por `fx:controller` y llevar `@FXML` si son privados. Las vistas deben abrirse con `FXMLLoader` y el catálogo de traducciones; abrir un FXML aislado sin ese catálogo no reproduce el arranque normal.
+
+Se unifica el namespace de las vistas de alta y consulta por datos a JavaFX 21, la versión utilizada por Maven, en lugar de JavaFX 26. También se elimina del arranque la solicitud del icono de 512 píxeles, porque no existe entre los recursos del proyecto y provocaba una excepción antes de mostrar la ventana.
+
+Si IntelliJ sigue marcando un `onAction` pero la aplicación carga esa vista correctamente, recarga Maven y comprueba el SDK 21 del proyecto y del ejecutor Maven. Ese aviso del editor debe distinguirse de una excepción real de `FXMLLoader`; el texto y la traza de la excepción permiten localizar el control afectado.

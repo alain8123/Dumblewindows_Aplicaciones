@@ -50,7 +50,7 @@ public class Initialize extends Application {
         stage.setMinHeight(700);
         stage.titleProperty().bind(I18n.binding("app.title"));
         stage.setScene(scene);
-        for (int size : new int[] {16, 24, 32, 48, 64, 128, 256, 512, 1024}) {
+        for (int size : new int[] {16, 24, 32, 48, 64, 128, 256, 1024}) {
             String path = "/Dumblewindows/javafx/dumblefx/icono/icon-" + size + "x" + size + ".png";
             Image icon = new Image(java.util.Objects.requireNonNull(getClass().getResource(path),
                     "No se encuentra el icono: " + path).toExternalForm());

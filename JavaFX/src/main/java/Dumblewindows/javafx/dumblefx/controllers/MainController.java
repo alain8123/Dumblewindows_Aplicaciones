@@ -1,11 +1,13 @@
 package Dumblewindows.javafx.dumblefx.controllers;
 
 import Dumblewindows.javafx.dumblefx.i18n.I18n;
+import Dumblewindows.javafx.dumblefx.ConfigDialog;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -126,6 +128,21 @@ public final class MainController {
      * Abre el formulario de actualización de matrícula.
      */
     @FXML private void update() { show("actualizar-estudiante.fxml", "nav.update", updateButton); }
+
+    /**
+     * Abre el editor modal de config.properties sin abandonar la sección actual.
+     * Si la lectura falla, informa al usuario sin interrumpir la navegación.
+     */
+    @FXML private void configure() {
+        try {
+            ConfigDialog.editConfiguration(content.getScene().getWindow());
+        } catch (IllegalStateException failure) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, I18n.text("config.read"));
+            alert.initOwner(content.getScene().getWindow());
+            alert.setHeaderText(I18n.text("nav.config"));
+            alert.showAndWait();
+        }
+    }
 
     /**
      * Carga una pantalla FXML, enlaza sus traducciones y actualiza navegación y ayuda.
