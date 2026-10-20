@@ -8,7 +8,12 @@ import com.dm2.dumbledroid.Modelos.Estudiante
 import com.google.gson.Gson
 
 /**
- * DAO de estudiantes para la caché SQLite.
+ * DAO (objeto de acceso a datos): concentra las lecturas y escrituras en SQLite.
+ * Repository lo usa; las pantallas no necesitan conocer SQL ni abrir la base.
+ * Guarda el objeto completo como JSON y un timestamp (hora de guardado).
+ * El cursor recorre filas de una consulta y se cierra al terminar, igual que la base.
+ * Los filtros SQL usan ? y argumentos separados, no concatenan el texto del usuario.
+ * prefs guarda solo el ID del último detalle abierto, no una segunda copia del alumno.
  *
  * La app es de **solo consulta**, por lo que este DAO solo contempla:
  *  - Guardar estudiantes (al recibir datos de la API).
@@ -113,6 +118,7 @@ class EstudianteDao(context: Context) {
             DbHelper.TABLA_ESTUDIANTES,
             arrayOf(DbHelper.COL_JSON, DbHelper.COL_TIMESTAMP),
             "${DbHelper.COL_ID} LIKE ?",
+            // % significa cualquier continuación: incluye el ID base y sus sufijos.
             arrayOf("$base%"),
             null, null, null
         )
@@ -130,10 +136,11 @@ class EstudianteDao(context: Context) {
     }
 
     /**
-     * Devuelve el estudiante más reciente de la caché (el último consultado),
+     * Devuelve el estudiante guardado más recientemente en la caché,
      * siempre que siga vigente (< 24h).
      *
-     * @return El último [Estudiante] consultado o `null`.
+     * No equivale al último detalle abierto: para eso está obtenerUltimoConsultado.
+     * @return El último [Estudiante] guardado o `null`.
      */
     fun obtenerUltimo(): Estudiante? {
         val db = dbHelper.readableDatabase
@@ -159,12 +166,15 @@ class EstudianteDao(context: Context) {
     }
 
     /**
-     * Busca en caché por nombre/alias y/o casa (case-insensitive, coincidencia parcial).
+     * Busca en caché por nombre/apellido y/o casa, sin distinguir mayúsculas.
+     * El nombre coincide parcialmente; la casa debe coincidir completa.
+     * No busca por alias. Solo examina alumnos ya guardados y vigentes,
+     * no todos los que pueda tener el servidor.
      *
      * Como el modelo `Estudiante` tiene campos nullable, se usa `orEmpty()` para
      * evitar NullPointerException al llamar a métodos como `contains` o `equals`.
      *
-     * @param nombre Texto a buscar en nombre/alias (puede estar vacío).
+     * @param nombre Texto a buscar en nombre/apellido (puede estar vacío).
      * @param casa   Casa a buscar (puede estar vacía).
      * @return Lista de estudiantes que coinciden y siguen vigentes.
      */

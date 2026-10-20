@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Formulario de búsqueda por ID. et_estudiante es el texto que lee
+MainActivity.buscar_estudiante_id al pulsar bt_Buscar. No se introduce la API key
+aquí: el cliente HTTP la añade a la cabecera. progress_cargando indica espera.
+Los botones de ayuda y vuelta llaman a boton_ayuda_id y mostrar_menu.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

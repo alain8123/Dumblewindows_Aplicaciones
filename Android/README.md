@@ -1,3 +1,15 @@
+# Android: guía del proyecto actual
+
+El proyecto que se abre en Android Studio está dentro de `Dumbledroid`.
+La explicación completa y actualizada está en [Dumbledroid/README.md](Dumbledroid/README.md).
+Empieza por su recorrido de búsqueda y sigue después los comentarios de los archivos Kotlin y XML.
+
+## Apuntes originales (referencia histórica)
+
+Se conservan a continuación los apuntes originales. Sus fragmentos de configuración
+no son instrucciones para reemplazar la configuración actual: comprueba las versiones
+y la sintaxis reales en `Dumbledroid/app/build.gradle.kts`.
+
 # Configuracion binding
 
 Para poder usar "binding" al llamar a los objetos de la interfaz hacemos los siguientes pasos:
@@ -56,4 +68,3 @@ dependencies {
 Debes agregar el permiso de internet en el archivo AndroidManifest.xml:
 
 <uses-permission android:name="android.permission.INTERNET" />
-

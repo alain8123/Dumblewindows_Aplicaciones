@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Fondo reutilizable de botones. Define su apariencia, no la acción que ejecutan.
+Se referencia desde los layouts mediante @drawable/bg_boton_plata.
+-->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Estado pulsado -->

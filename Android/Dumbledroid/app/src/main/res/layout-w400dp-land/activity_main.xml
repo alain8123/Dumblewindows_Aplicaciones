@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Alternativa del menú para orientación horizontal con al menos 400dp de ancho.
+Android elige esta variante automáticamente cuando coincide la configuración.
+Debe mantener los IDs y enlaces de layout/activity_main.xml para que el mismo
+ActivityMainBinding y los mismos eventos funcionen en ambas orientaciones.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

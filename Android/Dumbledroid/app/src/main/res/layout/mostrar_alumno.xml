@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Ficha individual que rellena MainActivity.mostrarDetalleAlumno.
+Los IDs detalle_* enlazan foto, nombre, alias, casa y demás campos con Kotlin.
+Coil carga la imagen desde su URL; el resto se asigna a TextView. ScrollView
+permite desplazar la ficha cuando su contenido no cabe en la pantalla.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

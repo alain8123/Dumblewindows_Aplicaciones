@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Variante horizontal de la ficha para anchos de al menos 400dp.
+La rellena el mismo mostrarDetalleAlumno que la versión normal; mantener los
+IDs detalle_* compatibles al editar ambas versiones. Android decide cuál cargar.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

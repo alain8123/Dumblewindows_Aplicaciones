@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Diseño de UNA fila del RecyclerView, no una pantalla independiente.
+EstudianteListAdapter.VH busca fila_nombre, fila_apellido, fila_alias y fila_casa
+y asigna los datos al reciclar cada fila. El clic se configura en el adaptador.
+Los valores tools:text son ejemplos del editor, no datos reales de la API.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

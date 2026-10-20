@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Menú principal, enlazado con ActivityMainBinding en MainActivity.
+Los botones abren búsqueda por ID, búsqueda por datos y último detalle consultado.
+selector_idioma permite elegir el idioma. android:onClick nombra métodos públicos
+de MainActivity: si se renombra un método, hay que actualizar su enlace XML.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

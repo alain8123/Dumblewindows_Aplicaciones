@@ -16,6 +16,10 @@ import java.net.UnknownHostException
  * definidos en `strings.xml`, de forma que el usuario vea algo como
  * "No hay conexión a Internet" en lugar de
  * "Unable to resolve host ...".
+ * No reintenta peticiones ni resuelve el fallo: solo elige el mensaje traducido.
+ * El orden importa: UnknownHostException y SocketTimeoutException son IOException
+ * y deben comprobarse antes del caso general. HTTP 401/403 usa actualmente
+ * error_servidor; no hay un texto específico para una API key incorrecta.
  */
 object ErrorUtils {
 

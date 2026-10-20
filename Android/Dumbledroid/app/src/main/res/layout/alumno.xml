@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Pantalla de RESULTADOS EN LISTA, cargada por mostrarListaAlumnos.
+recycler_resultados recibe un LinearLayoutManager y EstudianteListAdapter.
+Cada resultado usa fila_alumno.xml; al pulsarlo se abre mostrar_alumno.xml.
+No confundir este contenedor con el diseño de una fila o con la ficha completa.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

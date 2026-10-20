@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteOpenHelper
 
 /**
  * Helper de SQLite que crea y gestiona la base de datos local usada como caché
- * de estudiantes.
+ * de estudiantes. SQLiteOpenHelper abre o crea el archivo dentro del
+ * almacenamiento privado de la app: no es una base de datos del servidor.
+ * EstudianteDao realiza consultas; esta clase solo define y mantiene el esquema.
  *
  * Tabla `estudiantes`:
  *  - `id`        → clave primaria (ID que devuelve la API, ej. "GR-HAR-POT").
@@ -53,7 +55,9 @@ class DbHelper(context: Context) : SQLiteOpenHelper(
 
     /**
      * Se ejecuta al cambiar [DB_VERSION].
-     * En una caché es aceptable tirar la tabla y recrearla.
+     * La estrategia actual elimina la tabla y la recrea: se pierden los
+     * estudiantes locales. Solo es apropiada porque son una caché recuperable
+     * desde la API, no datos únicos del usuario. No es una migración conservadora.
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLA_ESTUDIANTES")

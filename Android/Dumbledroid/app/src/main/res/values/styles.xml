@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Estilos visuales reutilizables por las vistas. Agrupan atributos de apariencia;
+no realizan consultas ni cambian los datos del estudiante.
+-->
 <resources>
 
     <!-- ============ BOTÓN PRINCIPAL ============ -->

@@ -1,3 +1,8 @@
+<!--
+Textos por defecto de la interfaz, en español. Kotlin usa getString(R.string...)
+y los XML usan @string/.... Las traducciones deben conservar los mismos nombres.
+Los textos escritos directamente en Kotlin no se traducen con estos recursos.
+-->
 <resources>
     <string name="app_name">Dumbledroid</string>
     <string name="formato_id">XX-XXX-XXX</string>

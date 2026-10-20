@@ -1,3 +1,7 @@
+<!--
+Traducción inglesa. Mantener las claves de values/strings.xml; Android elige
+esta carpeta al seleccionar en. Si falta una clave, se usa el recurso por defecto.
+-->
 <resources>
     <string name="app_name">Dumbledroid</string>
     <string name="formato_id">XX-XXX-XXX</string>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Formulario de filtros: et_Nombre y et_Casa se leen en buscar_estudiante_datos.
+Debe rellenarse al menos uno. bt_Buscar inicia la consulta; progress_cargando
+es el indicador de espera. La ayuda y la flecha llaman a MainActivity.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

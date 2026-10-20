@@ -44,7 +44,17 @@ import retrofit2.converter.gson.GsonConverterFactory       // Convertidor JSON <
  *  - Configurar Retrofit para consumir la API.
  *  - Permitir el cambio de idioma desde un Spinner.
  *  - Mantener el estado (pantalla y datos) al girar el dispositivo.
- *  - Usar caché SQLite (24h) para búsquedas offline.
+ *  - Usar caché SQLite (24h) para búsquedas offline si hay coincidencias guardadas.
+ *
+ * Recorrido de una búsqueda: botón XML -> validación -> Repository -> DAO/API
+ * -> lista de Estudiante -> detalle (uno) o RecyclerView (varios).
+ * Esta clase coordina la interfaz; Repository decide de dónde vienen los datos.
+ *
+ * Hay una sola Activity: setContentView sustituye la pantalla visible.
+ * binding conserva solo el menú activity_main, NO los formularios ni el detalle.
+ * Por eso las otras pantallas usan findViewById después de cargar su XML.
+ * Los métodos públicos con parámetro View están enlazados con android:onClick.
+ * No se deben renombrar sin cambiar también esos enlaces en los layouts.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -83,6 +93,12 @@ class MainActivity : AppCompatActivity() {
     //                    CICLO DE VIDA
     // ==========================================================
 
+    /**
+     * Punto de entrada al crear o recrear la ventana. Inicializa menú, adaptador,
+     * servicio HTTP y repositorio, en ese orden: el repositorio necesita el servicio.
+     * Si Android entrega un Bundle, recupera la pantalla y los datos guardados.
+     * Un Bundle es un contenedor de pares clave/valor, no una base de datos.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -111,6 +127,13 @@ class MainActivity : AppCompatActivity() {
         actualizarBotonUltimoConsultado()
     }
 
+    /**
+     * Guarda una copia temporal de pantalla, resultados y textos antes de recrear
+     * la Activity, por ejemplo al girar el móvil. Gson convierte objetos a JSON
+     * (texto) para introducirlos en el Bundle. No guarda una petición en curso
+     * ni sustituye la caché persistente de SQLite.
+     * Las búsquedas de vistas usan ?.let porque cada pantalla tiene IDs distintos.
+     */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
@@ -138,6 +161,12 @@ class MainActivity : AppCompatActivity() {
     //                 RESTAURACIÓN DE ESTADO
     // ==========================================================
 
+    /**
+     * Reconstruye objetos desde JSON y vuelve a cargar el layout correspondiente.
+     * TypeToken conserva el tipo List<Estudiante> para que Gson sepa qué crear.
+     * No repite la consulta HTTP; usa los resultados que estaban guardados.
+     * Restaurar el detalle también vuelve a marcarlo como último consultado.
+     */
     private fun restaurarEstado(state: Bundle) {
         val pantalla = state.getString(KEY_PANTALLA, "menu")
 
@@ -177,11 +206,19 @@ class MainActivity : AppCompatActivity() {
     //                       NAVEGACIÓN
     // ==========================================================
 
+    /**
+     * Abre buscar_id.xml desde el botón del menú.
+     * @param view Vista que Android entrega al invocar android:onClick; no se usa.
+     */
     fun mostrar_busqueda_id(view: View) {
         pantallaActual = "buscar_id"
         setContentView(R.layout.buscar_id)
     }
 
+    /**
+     * Abre buscar_datos.xml para introducir nombre y/o casa.
+     * @param view Botón que origina el evento android:onClick; no se usa.
+     */
     fun mostrar_busqueda_datos(view: View) {
         pantallaActual = "buscar_datos"
         setContentView(R.layout.buscar_datos)
@@ -200,6 +237,13 @@ class MainActivity : AppCompatActivity() {
     //                   BUSCAR POR ID
     // ==========================================================
 
+    /**
+     * Evento del botón Buscar de buscar_id.xml. Lee et_estudiante, elimina
+     * espacios exteriores y convierte el ID a mayúsculas antes de validarlo.
+     * Si falta el ID o su formato no coincide, muestra un aviso sin consultar.
+     * La API key no viene del formulario: setupRetrofit la añade a la cabecera.
+     * @param view Botón pulsado, recibido por el enlace android:onClick.
+     */
     fun buscar_estudiante_id(view: View) {
         val id = findViewById<EditText>(R.id.et_estudiante).text.toString().trim().uppercase()
 
@@ -220,10 +264,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Acepta XX-XXX-XXX o XX-XXX-XXX-NN (letras mayúsculas y dos cifras).
+     * Solo comprueba la forma del texto; no garantiza que exista el estudiante.
+     * @return true si el ID cumple cualquiera de las dos expresiones regulares.
+     */
     private fun verificar_formato_id(id: String): Boolean {
         return REGEX_ID.matches(id.trim()) || REGEX_ID_DUPE.matches(id.trim())
     }
 
+    /**
+     * Consulta sin bloquear la interfaz: Dispatchers.IO realiza el trabajo de
+     * red/caché y withContext(Main) vuelve al hilo que puede modificar vistas.
+     * El repositorio recibe el prefijo para caché y el ID completo para la API.
+     * Cero resultados: aviso; uno: detalle; varios: lista de selección.
+     * lifecycleScope vincula la corrutina a la vida de esta Activity.
+     * Los fallos capturados se traducen mediante ErrorUtils.
+     */
     private fun getEstudiantesPorId(id: String) {
         val base = idBase(id)
 
@@ -266,6 +323,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Elimina solo un sufijo final de dos cifras: GR-HAR-POT-02 -> GR-HAR-POT.
+     * El prefijo se usa para encontrar variantes guardadas en SQLite; el ID
+     * completo se conserva para la petición HTTP si no hay resultados locales.
+     */
     private fun idBase(id: String): String {
         val partes = id.split("-")
         return if (partes.size == 4 && partes[3].length == 2 && partes[3].all { it.isDigit() }) {
@@ -279,6 +341,13 @@ class MainActivity : AppCompatActivity() {
     //                   BUSCAR POR DATOS
     // ==========================================================
 
+    /**
+     * Lee et_Nombre y et_Casa de buscar_datos.xml. Se permite dejar uno vacío,
+     * pero no los dos. Valida caracteres antes de llamar al repositorio.
+     * El filtro local busca el texto en nombre/apellido, no en alias; la casa
+     * local se compara completa sin distinguir mayúsculas.
+     * @param view Botón Buscar enlazado desde el XML.
+     */
     fun buscar_estudiante_datos(view: View) {
         val nombre = findViewById<EditText>(R.id.et_Nombre).text.toString().trim()
         val casa = findViewById<EditText>(R.id.et_Casa).text.toString().trim()
@@ -318,6 +387,13 @@ class MainActivity : AppCompatActivity() {
         getEstudiantePorDatos(nombre, casa)
     }
 
+    /**
+     * Carga alumno.xml (pantalla de lista, no la ficha individual).
+     * LinearLayoutManager coloca las filas verticalmente; el adaptador crea
+     * cada fila desde fila_alumno.xml. submitList entrega los datos a ListAdapter,
+     * que calcula qué filas deben actualizarse mediante DiffUtil.
+     * Pulsar una fila ejecuta el callback creado en onCreate y abre su detalle.
+     */
     private fun mostrarListaAlumnos(lista: List<Estudiante>) {
         pantallaActual = "lista"
         listaActual = lista
@@ -330,6 +406,11 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(lista)
     }
 
+    /**
+     * Busca por nombre/casa usando el mismo reparto de hilos y pantallas que
+     * la búsqueda por ID. El repositorio devuelve caché si encuentra coincidencias;
+     * si no, consulta la API con el límite predeterminado del servicio (20).
+     */
     private fun getEstudiantePorDatos(nombre: String, casa: String) {
 
         mostrarCargando()
@@ -388,8 +469,8 @@ class MainActivity : AppCompatActivity() {
         estudianteActual = e
 
         // Marca este estudiante como el último consultado.
-        // Esto actualiza su timestamp en SQLite y hace que el botón
-        // "Último: ..." del menú principal lo muestre al volver.
+        // Guarda su ID en SharedPreferences; NO actualiza el timestamp de SQLite.
+        // El botón del menú lo recuperará mientras su entrada siga vigente.
         repository.marcarComoConsultado(e)
         Log.d("Dumbledroid", "Marcado como consultado: ${e.id}")
 
@@ -403,7 +484,8 @@ class MainActivity : AppCompatActivity() {
             size(Size.ORIGINAL)
         }
 
-        // Nombre completo (nombre + apellido), tratados con orEmpty().
+        // Se calcula una alternativa sin nulos, pero esta variable no se usa abajo.
+        // El TextView actual concatena directamente nombre y apellido.
         val nombreCompleto = listOfNotNull(e.nombre, e.apellido)
             .joinToString(" ")
             .trim()
@@ -422,6 +504,14 @@ class MainActivity : AppCompatActivity() {
     //               CONFIGURACIÓN DE RETROFIT
     // ==========================================================
 
+    /**
+     * Construye el cliente de la API. Retrofit genera ApiService_id a partir de
+     * sus anotaciones; Gson transforma el JSON recibido en objetos Kotlin.
+     * El interceptor de OkHttp añade X-API-Key a cada solicitud de este cliente.
+     * BuildConfig.API_KEY se genera al compilar desde secrets.properties; nunca
+     * se debe mostrar la clave en mensajes, capturas o registros.
+     * Constantes.Base_URL indica el servidor y ApiService.kt define las rutas.
+     */
     private fun setupRetrofit() {
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -489,6 +579,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Compone la explicación del formato del ID con textos traducibles y muestra
+     * un MiDialogoFragment. No ejecuta búsquedas ni modifica datos.
+     */
     fun boton_ayuda_id(view: View) {
         val titulo = getString(R.string.ayuda_formato_del_id)
         val texto = getString(R.string.el_formato_del_id_es) + "\n" +
@@ -504,6 +598,10 @@ class MainActivity : AppCompatActivity() {
             .show(supportFragmentManager, "miDialogo")
     }
 
+    /**
+     * Muestra la ayuda del formulario por nombre/casa en un diálogo reutilizable.
+     * El ejemplo es texto explicativo; no se envía automáticamente a la API.
+     */
     fun boton_ayuda_datos(view: View) {
         val titulo = getString(R.string.ayuda_de_busqueda_por_datos)
         val texto =
@@ -521,6 +619,10 @@ class MainActivity : AppCompatActivity() {
     //                       ÚLTIMO CONSULTADO
     // ==========================================================
 
+    /**
+     * Al volver a primer plano, refresca el acceso al último alumno solo si
+     * la pantalla actual es el menú, para no actuar sobre otra pantalla.
+     */
     override fun onResume() {
         super.onResume()
         if (pantallaActual == "menu") {
@@ -549,6 +651,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Abre la ficha cuyo ID se guardó al consultar un detalle. Si no existe
+     * o su caché ha caducado, informa al usuario; no hace una petición de red.
+     */
     fun abrirUltimoConsultado(view: View) {
         val ultimo = repository.getUltimoConsultado()
         if (ultimo != null) {
@@ -585,6 +691,7 @@ class MainActivity : AppCompatActivity() {
     //                       CONSTANTES
     // ==========================================================
 
+    /** Claves internas del Bundle. Guardar y restaurar deben usar los mismos nombres. */
     private companion object {
         const val KEY_PANTALLA   = "pantalla_actual"
         const val KEY_ESTUDIANTE = "estudiante_json"

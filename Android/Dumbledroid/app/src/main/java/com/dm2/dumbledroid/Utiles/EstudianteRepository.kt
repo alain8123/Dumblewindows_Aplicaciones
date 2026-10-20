@@ -21,7 +21,13 @@ import com.google.gson.reflect.TypeToken
  *  3. Si no hay o ha caducado → llama a la API.
  *  4. Guarda en SQLite todo lo recibido de la API para futuras búsquedas.
  *
- * La app es de SOLO CONSULTA: nunca se modifica ni borra la caché salvo por caducidad.
+ * La app solo consulta el servidor: no crea, edita ni borra estudiantes remotos.
+ * La caché local sí se escribe y reemplaza al recibir resultados y se limpia al caducar.
+ *
+ * Importante: encontrar cualquier coincidencia local evita consultar la API.
+ * La caché puede ser parcial y no asegura resultados completos ni recién actualizados.
+ * Offline solo funciona si la consulta encuentra datos vigentes ya guardados.
+ * MainActivity llama estas búsquedas desde Dispatchers.IO porque el DAO es síncrono.
  */
 class EstudianteRepository(
     private val context: Context,
@@ -44,7 +50,7 @@ class EstudianteRepository(
      *  3. Se guarda cada estudiante por separado en la caché.
      *
      * @param base Prefijo del ID (ej. "GR-JAM-POT", sin sufijo -02).
-     * @param id   ID completo tal cual lo escribió el usuario (fallback).
+     * @param id   ID completo normalizado a mayúsculas por la Activity; se usa en la API.
      * @return Lista de estudiantes encontrados.
      */
     suspend fun getEstudiantesPorId(base: String, id: String): List<Estudiante> {
@@ -73,8 +79,11 @@ class EstudianteRepository(
 
     /**
      * Busca estudiantes por nombre y/o casa.
+     * La caché compara texto parcial en nombre/apellido y casa completa.
+     * Si no encuentra coincidencias, envía name y house al servidor; sus reglas
+     * de filtrado dependen de la API. El servicio pide un máximo de 20 resultados.
      *
-     * @param nombre Nombre o alias a buscar (puede estar vacío).
+     * @param nombre Texto de nombre (en caché, también apellido); puede estar vacío.
      * @param casa   Casa a buscar (puede estar vacía).
      * @return Lista de estudiantes.
      */
@@ -96,6 +105,11 @@ class EstudianteRepository(
         return deApi
     }
 
+    /**
+     * Publica un aviso de procedencia de datos (caché o Internet).
+     * Las consultas llegan desde IO: Handler envía el Toast al hilo principal
+     * mediante su Looper, para no manipular la interfaz desde el hilo de trabajo.
+     */
     fun info_import(mensaje: String) {
         Handler(Looper.getMainLooper()).post {
             Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
@@ -146,6 +160,9 @@ class EstudianteRepository(
      * La API puede devolver array u objeto según el caso.
      *
      * @param json Respuesta cruda de Retrofit.
+     * Un array se convierte con TypeToken para conservar su tipo genérico;
+     * un objeto se envuelve en una lista de un elemento. Otros tipos de JSON
+     * producen una lista vacía; errores de deserialización se propagan al llamador.
      * @return Lista de estudiantes (posiblemente vacía, nunca null).
      */
     private fun normalizarRespuesta(json: JsonElement): List<Estudiante> {

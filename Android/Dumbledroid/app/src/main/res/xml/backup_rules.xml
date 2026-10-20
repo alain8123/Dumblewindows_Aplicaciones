@@ -1,4 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Reglas de copia de seguridad referenciadas por android:fullBackupContent
+en el manifiesto. Controlan datos respaldados, no la caducidad de la caché.
+--><!--
    Sample backup rules file; uncomment and customize as necessary.
    See https://developer.android.com/guide/topics/data/autobackup
    for details.

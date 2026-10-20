@@ -21,17 +21,9 @@ import androidx.fragment.app.DialogFragment
  */
 class MiDialogoFragment : DialogFragment() {
 
-    /**
-     * Crea una nueva instancia del diálogo con los textos indicados.
-     * Los argumentos se guardan en el [android.os.Bundle] para que Android pueda
-     * reconstruir el Fragment al recrear la Activity (giro, cambio de idioma, etc.).
-     *
-     * @param titulo Texto que aparecerá en el título del diálogo.
-     * @param texto  Texto del cuerpo del diálogo.
-     * @return Un [MiDialogoFragment] listo para mostrar con `show()`.
-     */
+    /** Fábrica de diálogos y claves de los argumentos que Android puede restaurar. */
     companion object {
-        // Claves de las claves usadas dentro del Bundle de argumentos.
+        // Claves compartidas entre newInstance (escritura) y onCreateDialog (lectura).
         private const val ARG_TITULO = "arg_titulo"
         private const val ARG_TEXTO  = "arg_texto"
 

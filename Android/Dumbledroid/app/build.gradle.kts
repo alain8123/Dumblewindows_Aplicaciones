@@ -1,4 +1,5 @@
-//import para poder leer la api_key en secret.properties
+// Configuración del módulo app: Android Studio la evalúa al sincronizar/compilar.
+// Properties lee secrets.properties para generar BuildConfig.API_KEY; no se lee al pulsar Buscar.
 import java.util.Properties
 
 plugins {
@@ -20,7 +21,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        //lee secret.properties para recoger la api_key
+        // Archivo local, fuera del código fuente. No imprimir ni compartir su contenido.
+        // Si no existe o no tiene API_KEY, se genera una cadena vacía (la autenticación puede fallar).
         val secrets = Properties().apply {
             val f = rootProject.file("secrets.properties")
             if (f.exists()) f.inputStream().use { load(it) }
@@ -28,6 +30,8 @@ android {
         buildConfigField("String", "API_KEY", "\"${secrets["API_KEY"] ?: ""}\"")
     }
 
+    // Genera clases Binding para los layouts y BuildConfig para constantes de compilación.
+    // Son archivos generados: se cambia esta configuración, no las clases generadas.
     buildFeatures{
         viewBinding = true
         buildConfig = true
@@ -50,12 +54,13 @@ dependencies {
     // Retrofit y convertidor Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // Permisos y otras dependencias necesarias
+    // Gson convierte JSON a Estudiante y viceversa. Los permisos van en AndroidManifest.xml.
     implementation("com.google.code.gson:gson:2.8.8")
 
     // Coil (para cargar imágenes desde URL)
     implementation("io.coil-kt:coil:2.6.0")
 
+    // Alias definidos en gradle/libs.versions.toml: interfaz Android y pruebas existentes.
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

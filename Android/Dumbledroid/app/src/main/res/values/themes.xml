@@ -1,3 +1,7 @@
+<!--
+Tema visual por defecto de la aplicación. AndroidManifest.xml selecciona
+Theme.Dumbledroid; los layouts pueden sobrescribir atributos concretos.
+-->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Dumbledroid" parent="Theme.Material3.DayNight.NoActionBar">

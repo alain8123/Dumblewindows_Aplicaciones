@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Paleta compartida. Los layouts usan @color/nombre para reutilizar colores
+sin repetir valores; cambiar uno puede afectar a varias pantallas.
+-->
 <resources>
     <!-- Negros -->
     <color name="negro">#0A0A0A</color>

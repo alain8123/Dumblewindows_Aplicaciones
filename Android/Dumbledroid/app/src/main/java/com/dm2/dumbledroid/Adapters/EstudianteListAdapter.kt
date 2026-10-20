@@ -11,7 +11,10 @@ import com.dm2.dumbledroid.Modelos.Estudiante
 import com.dm2.dumbledroid.R
 
 /**
- * Adaptador de la lista de estudiantes.
+ * Puente entre List<Estudiante> y las filas de recycler_resultados en alumno.xml.
+ * ListAdapter recibe datos con submitList y recicla vistas al desplazarse.
+ * El adaptador NO consulta la API ni decide la navegación: avisa mediante onClick.
+ * Los nombres cortos existentes son: VH = ViewHolder, D = comparador de diferencias.
  *
  * @param onClick Callback ejecutado al pulsar un elemento.
  */
@@ -19,9 +22,19 @@ class EstudianteListAdapter(
  private val onClick: (Estudiante) -> Unit
 ) : ListAdapter<Estudiante, EstudianteListAdapter.VH>(D) {
 
+ /**
+  * Crea una fila solo cuando RecyclerView necesita una vista nueva.
+  * inflate convierte fila_alumno.xml en vistas; false deja que RecyclerView
+  * las añada a su contenedor, en lugar de adjuntarlas inmediatamente.
+  */
  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
   VH(LayoutInflater.from(parent.context).inflate(R.layout.fila_alumno, parent, false))
 
+ /**
+  * Rellena una fila nueva o reciclada con el estudiante de esta posición.
+  * El clic captura ese estudiante y lo entrega a MainActivity; no su posición,
+  * que podría variar al actualizar la lista.
+  */
  override fun onBindViewHolder(holder: VH, position: Int) {
   val item = getItem(position)
   holder.bind(item)
@@ -33,6 +46,7 @@ class EstudianteListAdapter(
   * Se encarga de asignar los datos del estudiante a los TextView.
   */
  class VH(v: View) : RecyclerView.ViewHolder(v) {
+  // n = nombre; ap = apellido; al = alias; c = casa. Son las vistas de fila_alumno.xml.
   val n: TextView = v.findViewById(R.id.fila_nombre)
   val ap: TextView = v.findViewById(R.id.fila_apellido)
   val al: TextView = v.findViewById(R.id.fila_alias)
@@ -56,7 +70,9 @@ class EstudianteListAdapter(
   * Comparador para el cálculo de diferencias de la lista.
   */
  object D : DiffUtil.ItemCallback<Estudiante>() {
+  /** Mismo ID: representa al mismo alumno, aunque algún dato haya cambiado. */
   override fun areItemsTheSame(a: Estudiante, b: Estudiante) = a.id == b.id
+  /** Igualdad de la data class: si cambia un campo, hay que volver a dibujar la fila. */
   override fun areContentsTheSame(a: Estudiante, b: Estudiante) = a == b
  }
 }
