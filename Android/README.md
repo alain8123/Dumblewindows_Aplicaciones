@@ -41,7 +41,7 @@ En la raiz del proyecto android copiamos ``secrets.properties.example`` y lo ren
 
 ![Imagen donde se muestra el archivo secrets.properties.example y el secrets.properties](img/secrets.png)
 
-Despues de eso remplazamos el valor de ``API_KEY`` a la nuetra.
+Despues de eso remplazamos el valor de ``API_KEY`` a la nuestra.
 Deberia quedar algo como el siguiente ejemplo:
 ``API_KEY=adh86jdn876dvfvn``
 
@@ -78,7 +78,7 @@ En el panel de la izquierda pulsaremos este icono:
 
 ![Imagen que muestra el icono de build variants](img/buildvariants.png)
 
-Nos aparecera el menu de la ``Build Variant``s, ahi pulsaremos en el desplegable que pone ``debug (default)`` y seleccionaremos ``release``.
+Nos aparecera el menu de la ``Build Variants``, ahi pulsaremos en el desplegable que pone ``debug (default)`` y seleccionaremos ``release``.
 
 (Si no muestra el desplegable con un click haremos doble click)
 
