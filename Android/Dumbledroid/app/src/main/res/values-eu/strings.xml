@@ -1,0 +1,64 @@
+<!--
+Traducción al euskera. Mantener las claves de values/strings.xml; Android elige
+esta carpeta al seleccionar eu. Si falta una clave, se usa el recurso por defecto.
+-->
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">CC-NNN-AAA</string>
+    <string name="hechizo_buscar">Bilatu</string>
+    <string name="buscar_por_id">Bilatu ID bidez</string>
+    <string name="buscar_por_datos">Bilatu datuen bidez</string>
+    <string name="flecha_menu">Menura itzultzeko gezia</string>
+    <string name="casa">Etxea</string>
+    <string name="nombre">Izena</string>
+    <string name="volver">Itzuli</string>
+    <string name="foto_alumno">ikaslearen argazkia</string>
+    <string name="coincidencias">koincidentziak</string>
+    <string name="idioma">Hizkuntza: </string>
+    <string name="escribe_un_id">Idatzi ID</string>
+    <string name="buscando">Bilatu...</string>
+    <string name="error">Errorea: %1$s</string>
+    <string name="rellena_al_menos_un_campo">Bete gutxienez eremu bat</string>
+    <string name="sin_resultados">Emaitzarik ez</string>
+    <string name="el_id_no_cumple_el_formato">IDak ez du formatua betetzen</string>
+    <string name="boton_ayuda_formato_id">Laguntza botoiaren formatua id</string>
+    <string name="ayuda_formato_del_id">Laguntza ID formatua</string>
+    <string name="el_formato_del_id_es">ID formatua hau da:</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">2 C letrak etxeko inizialak dira</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">3 N letrak izenaren inizialak dira</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">3 A letrak abizenaren inizialak dira</string>
+    <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Adibidez, Harry James Potter ikaslea hau izango litzateke:</string>
+    <string name="estudiante_con_id_repetido">Behin eta berriz NANa duten ikasleak badaude, \'-01 \' bezalako aurrizkia izango dute NANean, baina aurrizkirik gabe bilatzen badituzu, zerrenda bat agertuko da IDa partekatzen duten guztiekin.</string>
+    <string name="ayuda_de_busqueda_por_datos">Datuak bilatzeko laguntza</string>
+    <string name="al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional">Datuak bilatzean, Ganberaren eremuan sartzea aukerakoa da</string>
+    <string name="buscara_la_coincidencia_de_los_caracteres">Izen-eremua derrigorrezkoa da eta ikasleen lehen eta abizena duten pertsonaien parekatzea bilatuko da</string>
+    <string name="ejemplo">Adibidea:</string>
+    <string name="al_buscar_ivan_te_muestra">ivan bilatzean erakusten zaitu:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">Izenak letrak, espazioak eta apostoluak bakarrik izan ditzake</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">Etxeak gutunak eta espazioak baino ezin ditu</string>
+    <string name="ultimo_consultado">Azken kontsulta</string>
+    <string name="nombre_y_apellido">Izen abizena eta abizena</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Espezieak</string>
+    <string name="genero">Generoa</string>
+    <string name="fecha_de_nacimiento">Jaiotze data</string>
+    <string name="patronus">Patronoa</string>
+    <string name="nacionalidad">Nazionalitatea</string>
+    <string name="bloque_informacion_estudiante">Ikasleen informazio blokea</string>
+    <string name="boton_de_busqueda">Bilatu botoia</string>
+    <string name="insertar_id">Txertatu id</string>
+    <string name="insertar_nombre">Txertatu izena</string>
+    <string name="insertar_casa">Txertatu etxea</string>
+    <string name="mostrado_de_cache">Cache pantaila</string>
+    <string name="mostrado_de_internet">Internet Show</string>
+    <string name="error_sin_conexion">Ez dago Interneteko konexiorik. Begiratu zure sarea eta saiatu berriro</string>
+    <string name="error_timeout">Zerbitzariak denbora gehiegi behar du erantzuteko. Mesedez, saiatu berriro segundo batzuetan</string>
+    <string name="error_no_encontrado">Eskatutako baliabidea ez zen zerbitzarian aurkitu</string>
+    <string name="error_servidor">Zerbitzariak arazoak ditu. Saiatu berriro geroago</string>
+    <string name="error_datos">Zerbitzariak jasotako akatsak tratatzeko datuak</string>
+    <string name="error_desconocido">Ustekabeko akats bat gertatu da. Saiatu berriro</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Ireki kontsultatutako azken ikaslea</string>
+    <string name="busqueda_mediante_datos">Bilatu datuak erabiliz</string>
+    <string name="busqueda_mediante_id">Bilatu IDa erabiliz</string>
+    <string name="selector_de_idioma">Hizkuntza hautatzailea</string>
+</resources>

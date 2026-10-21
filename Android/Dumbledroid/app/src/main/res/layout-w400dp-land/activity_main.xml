@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Alternativa del menú para orientación horizontal con al menos 400dp de ancho.
+Android elige esta variante automáticamente cuando coincide la configuración.
+Debe mantener los IDs y enlaces de layout/activity_main.xml para que el mismo
+ActivityMainBinding y los mismos eventos funcionen en ambas orientaciones.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/negro"
+    tools:context=".MainActivity">
+
+    <!-- Etiqueta "Idioma" sutil, arriba a la DERECHA -->
+
+    <!-- Spinner forzado a texto plata desde XML -->
+    <TextView
+        android:id="@+id/texto_idiomas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:letterSpacing="0.15"
+        android:text="@string/idioma"
+        android:textAllCaps="true"
+        android:textColor="@color/plata_brillo"
+        app:layout_constraintBottom_toBottomOf="@+id/selector_idioma"
+        app:layout_constraintEnd_toStartOf="@+id/selector_idioma"
+        app:layout_constraintTop_toTopOf="@+id/selector_idioma" />
+
+    <Spinner
+        android:id="@+id/selector_idioma"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="60dp"
+        android:background="@drawable/bg_input_plata"
+        android:entries="@array/idiomas"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:popupBackground="@color/negro_elevado"
+        android:spinnerMode="dropdown"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
+        android:tooltipText="@string/selector_de_idioma"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/contenedor_botones"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.55">
+
+        <Button
+            android:id="@+id/bt_menu_id"
+            style="@style/BotonPlata"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="16dp"
+            android:onClick="mostrar_busqueda_id"
+            android:text="@string/buscar_por_id"
+            android:tooltipText="@string/busqueda_mediante_id" />
+
+        <Button
+            android:id="@+id/bt_menu_datos"
+            style="@style/BotonPlata"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="16dp"
+            android:onClick="mostrar_busqueda_datos"
+            android:text="@string/buscar_por_datos"
+            android:tooltipText="@string/busqueda_mediante_datos" />
+
+        <Button
+            android:id="@+id/bt_menu_ultimo"
+            style="@style/BotonPlata"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:onClick="abrirUltimoConsultado"
+            android:text="@string/ultimo_consultado"
+            android:tooltipText="@string/abrir_el_ltimo_estudiante_consultado"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

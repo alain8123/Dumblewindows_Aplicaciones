@@ -1,0 +1,11 @@
+<!--
+Variante del tema que Android aplica en modo nocturno.
+Comparte el nombre del tema normal para que la selección sea automática.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Dumbledroid" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    </style>
+</resources>

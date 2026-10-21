@@ -1,0 +1,64 @@
+<!--
+Traducción inglesa. Mantener las claves de values/strings.xml; Android elige
+esta carpeta al seleccionar en. Si falta una clave, se usa el recurso por defecto.
+-->
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">CC-NNN-AAA</string>
+    <string name="hechizo_buscar">Search</string>
+    <string name="buscar_por_id">Search by ID</string>
+    <string name="buscar_por_datos">Search by data</string>
+    <string name="flecha_menu">Arrow to go back to menu</string>
+    <string name="casa">Home</string>
+    <string name="nombre">Name</string>
+    <string name="volver">Return</string>
+    <string name="foto_alumno">photo of the student</string>
+    <string name="coincidencias">Coincidences</string>
+    <string name="idioma">Language: </string>
+    <string name="escribe_un_id">Write an ID</string>
+    <string name="buscando">Searching...</string>
+    <string name="error">Error: %1$s</string>
+    <string name="rellena_al_menos_un_campo">Fill out at least one field</string>
+    <string name="sin_resultados">No results</string>
+    <string name="el_id_no_cumple_el_formato">The ID does not comply with the format</string>
+    <string name="boton_ayuda_formato_id">Help button format id</string>
+    <string name="ayuda_formato_del_id">Help ID format</string>
+    <string name="el_formato_del_id_es">The ID format is:</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">The 2 C are the initials of the house</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">The 3 N are the initials of the name</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">The 3 A are the initials of the surname</string>
+    <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">For example, student Harry James Potter would be:</string>
+    <string name="estudiante_con_id_repetido">If there are students with a repeated ID, they will have a prefix like \'-01\' in their ID, but if you search for them without a prefix, a list will appear with all those who share the ID</string>
+    <string name="ayuda_de_busqueda_por_datos">Data search help</string>
+    <string name="al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional">When searching by data, entering the House field is optional</string>
+    <string name="buscara_la_coincidencia_de_los_caracteres">The Name field is mandatory and the matching of the characters in the students first and last name will be sought</string>
+    <string name="ejemplo">Example:</string>
+    <string name="al_buscar_ivan_te_muestra">When searching ivan shows you:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">The name can only contain letters, spaces and apostrophes</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">The house can only contain letters and spaces</string>
+    <string name="ultimo_consultado">Last consultation</string>
+    <string name="nombre_y_apellido">First and last name</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Species</string>
+    <string name="genero">Gender</string>
+    <string name="fecha_de_nacimiento">Date of birth</string>
+    <string name="patronus">Patronus</string>
+    <string name="nacionalidad">Nationality</string>
+    <string name="bloque_informacion_estudiante">Student information block</string>
+    <string name="boton_de_busqueda">Search button</string>
+    <string name="insertar_id">Insert id</string>
+    <string name="insertar_nombre">Insert name</string>
+    <string name="insertar_casa">Insert house</string>
+    <string name="mostrado_de_cache">Cache display</string>
+    <string name="mostrado_de_internet">Internet Show</string>
+    <string name="error_sin_conexion">There is no Internet connection. Check your network and try again</string>
+    <string name="error_timeout">The server takes too long to respond. Please try again in a few seconds</string>
+    <string name="error_no_encontrado">The requested resource was not found on the server</string>
+    <string name="error_servidor">The server is having problems. Try again later</string>
+    <string name="error_datos">Error processing data received from the server</string>
+    <string name="error_desconocido">An unexpected error has occurred. Try again</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Open the last student consulted</string>
+    <string name="busqueda_mediante_datos">Search using Data</string>
+    <string name="busqueda_mediante_id">Search using ID</string>
+    <string name="selector_de_idioma">Language selector</string>
+</resources>
