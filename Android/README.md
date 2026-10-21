@@ -6,6 +6,7 @@ del servidor. Esta guía explica el código existente.
 
 ## Indice
 
+- Version Android Studio
 - Guia de instalacion
 	- Agregar la API_KEY
 	- Cambiar enlaces
@@ -26,6 +27,11 @@ del servidor. Esta guía explica el código existente.
 - 10.Estado, idioma y mensajes
 - 11.Dónde cambiar algo sin perderse
 - 12.Comprobaciones prácticas
+
+## Version Android Studio
+
+Android Studio Quali 4 | 2026.1.4
+Built on August 28, 2026
 
 ## Guia de instalacion
 
