@@ -97,7 +97,7 @@ El puerto publicado se limita a `0.0.0.0`: la API queda accesible desde cualquie
 Los CSV se copian dentro de la imagen de la API. Tras añadir o cambiar `data/Central.csv`, reconstruye la API desde esta carpeta:
 
 ```powershell
-docker compose -p API up -d --build
+docker compose -p api up -d --build
 ```
 
 Esto conserva los volúmenes. No borres matrículas ni volúmenes para forzar la importación: si MariaDB ya contiene datos, conserva esos datos y planifica una importación adicional por separado.
