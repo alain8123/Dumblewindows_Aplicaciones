@@ -109,7 +109,7 @@ Los FXML definen los controles y su distribución; los controladores responden a
 En desarrollo, ejecutando desde la raíz del proyecto, la ruta predeterminada es:
 
 ```text
-C:\Users\alain\Documents\Dumblewindows_Aplicaciones\JavaFX\src\main\resources\Dumblewindows\javafx\dumblefx\config.properties
+Ruta donde esta alojado el proyecto\Dumblewindows_Aplicaciones\JavaFX\src\main\resources\Dumblewindows\javafx\dumblefx\config.properties
 ```
 
 El código calcula `src/main/resources/Dumblewindows/javafx/dumblefx/config.properties` **respecto al directorio de trabajo**.
@@ -415,7 +415,7 @@ java -jar ruta\dumblefx_v1_.jar
 Con un archivo de configuración externo (las opciones de la JVM van **antes** de `-jar`):
 
 ```powershell
-java -Ddumblefx.config=C:\ruta\config.properties -jar target\dumblefx-fat.jar
+java -Ddumblefx.config=C:\ruta\config.properties -jar ruta/dumbledumbleFX_v1.jar
 ```
 
 Con la clave y la URL por variables de entorno, solo para esa sesión de PowerShell:
@@ -423,7 +423,7 @@ Con la clave y la URL por variables de entorno, solo para esa sesión de PowerSh
 ```powershell
 $env:DUMBLEFX_API_URL = "https://api.ejemplo.invalid"
 $env:DUMBLEFX_API_KEY = "REEMPLAZAR_POR_TU_CLAVE"
-java -jar target\dumblefx-fat.jar
+java -jar ruta/dumbleFX_v1.jar
 ```
 
 Si la ruta contiene espacios, enciérrala entre comillas. Para abrir la aplicación sin ventana de consola, usa `javaw` en lugar de `java`.
@@ -431,7 +431,7 @@ Si la ruta contiene espacios, enciérrala entre comillas. Para abrir la aplicaci
 #### En Linux (bash)
 
 ```bash
-java -jar ruta\dumblefx_v1.jar
+java -jar ruta\dumbleFX_v1.jar
 ```
 
 Con variables de entorno:
@@ -439,7 +439,7 @@ Con variables de entorno:
 ```bash
 export DUMBLEFX_API_URL="https://api.ejemplo.invalid"
 export DUMBLEFX_API_KEY="REEMPLAZAR_POR_TU_CLAVE"
-java -jar ruta\dumblefx_v1.jar
+java -jar ruta\dumbleFX_v1.jar
 ```
 
 No hace falta `chmod +x` para ejecutarlo con `java -jar`. JavaFX necesita un entorno gráfico (X11 o Wayland), así que no funciona en un servidor sin escritorio. Si falla por bibliotecas gráficas ausentes, instala GTK 3 con el gestor de paquetes de tu distribución (por ejemplo `sudo apt install libgtk-3-0`).
