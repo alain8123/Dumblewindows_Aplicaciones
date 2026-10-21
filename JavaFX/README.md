@@ -39,7 +39,7 @@ JavaFX/
 ├── pom.xml
 ├── mvnw / mvnw.cmd
 └── src/main/
-    ├── java/alain/holamundo/dumblefx/
+    ├── java/Dumblewindows/javafx/dumblefx/
     │   ├── Launcher.java
     │   ├── Initialize.java
     │   ├── ConfigDialog.java
@@ -50,12 +50,14 @@ JavaFX/
     │   │   ├── MainController.java
     │   │   └── StudentController.java
     │   ├── assets/
-    │   │   ├── Alumno.java
-    │   │   ├── Matricula.java
     │   │   ├── InputValidation.java
     │   │   └── StudentIdPreview.java
+    |   ├──Modelos/
+    |   |     ├──Alumno.java
+    |   |     └──Matricula.java
+    |   | 
     │   └── I18n/I18n.java
-    └── resources/alain/holamundo/dumblefx/
+    └── resources/Dumblewindows/javafx/dumblefx/
         ├── config.properties
         ├── estilos/app.css
         ├── i18n/messages_es.properties
@@ -110,7 +112,7 @@ En desarrollo, ejecutando desde la raíz del proyecto, la ruta predeterminada es
 C:\Users\alain\Documents\Dumblewindows_Aplicaciones\JavaFX\src\main\resources\Dumblewindows\javafx\dumblefx\config.properties
 ```
 
-El código calcula `src/main/resources/Dumblewindows/javafx/dumblefx/config.properties` **respecto al directorio de trabajo**; no tiene fija la carpeta personal de Alain.
+El código calcula `src/main/resources/Dumblewindows/javafx/dumblefx/config.properties` **respecto al directorio de trabajo**.
 
 Se puede indicar otro archivo mediante esta opción de la JVM:
 
@@ -307,10 +309,6 @@ Los tooltips envuelven el texto y se muestran tras una espera breve de unos 200 
 
 **Por qué:** separar traducciones de la lógica facilita añadir o corregir textos y mantener ayudas coherentes con la sección visible.
 
-### Cambiar los autores
-
-En el código revisado, la constante `AUTHORS` de `MainController` contiene `Dumblewindows`. Para poner otros nombres, cambia esa constante. La explicación que rodea a los autores se mantiene en la clave traducida `help.credits`.
-
 ## 9. Diseño visual
 
 `estilos/app.css` centraliza la apariencia. El fondo utiliza `imagenes/hogwarts-background.jpg`, centrado, sin repetición y con ajuste `cover`: cubre el área disponible y puede recortar los bordes según la proporción de la ventana.
@@ -352,6 +350,105 @@ Para compilar y empaquetar:
 ```
 
 Si Maven no encuentra Java, revisa el JDK y `JAVA_HOME`. Estos comandos documentan el uso del proyecto: preparar este README no incluye una compilación nueva ni una prueba visual.
+
+### Ejecutar el fatjar
+
+Un *fatjar* es un único `.jar` que incluye la aplicación y todas sus dependencias (JavaFX y Jackson), por lo que se puede ejecutar sin Maven. Se genera con `mvnw clean package` y queda en la carpeta `target/`. El nombre exacto depende del `artifactId`, la versión y la configuración del `pom.xml` (por ejemplo `target/dumblefx-1.0-SNAPSHOT-fat.jar`); en los ejemplos se usa `dumblefx-fat.jar` como nombre ilustrativo. Sustitúyelo por el real.
+
+**Requisito:** JDK o JRE 21 instalado. Compruébalo con:
+
+```text
+java -version
+```
+
+#### Si no tienes Java instalado
+
+Si `java -version` responde que el comando no existe o muestra una versión inferior a 21, instala Java 21 antes de ejecutar el jar. Para solo ejecutar el fatjar basta un JRE; para compilar el proyecto con Maven hace falta el JDK, por eso aquí se instala el JDK.
+
+**Windows**
+
+Opción A, con `winget` (incluido en Windows 10 y 11 actuales), desde PowerShell:
+
+```powershell
+winget install EclipseAdoptium.Temurin.21.JDK
+```
+
+Opción B, con instalador: descarga el paquete `.msi` de Temurin 21 desde <https://adoptium.net>, ejecútalo y, en el asistente, activa las opciones **Set JAVA_HOME variable** y **Add to PATH**.
+
+Cierra y vuelve a abrir la terminal (el PATH no se actualiza en las ventanas ya abiertas) y comprueba:
+
+```powershell
+java -version
+```
+
+**Linux**
+
+Instala el paquete de OpenJDK 21 con el gestor de tu distribución:
+
+```bash
+# Debian / Ubuntu / Linux Mint
+sudo apt update && sudo apt install openjdk-21-jdk
+```
+
+Si tu versión de la distribución no ofrece Java 21 (por ejemplo, Debian 12), instala Temurin 21 desde <https://adoptium.net> o usa [SDKMAN!](https://sdkman.io):
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java 21-tem
+```
+
+Comprueba la instalación:
+
+```bash
+java -version
+```
+
+Si hay varias versiones de Java instaladas y `java -version` no muestra la 21, selecciónala con `sudo update-alternatives --config java` (Debian/Ubuntu) o `sudo alternatives --config java` (Fedora/RHEL).
+
+#### En Windows (PowerShell o CMD)
+Al descargar la version del github podras ejecutar este comando o hacerle doble click .
+```powershell
+java -jar ruta\dumblefx_v1_.jar
+```
+
+Con un archivo de configuración externo (las opciones de la JVM van **antes** de `-jar`):
+
+```powershell
+java -Ddumblefx.config=C:\ruta\config.properties -jar target\dumblefx-fat.jar
+```
+
+Con la clave y la URL por variables de entorno, solo para esa sesión de PowerShell:
+
+```powershell
+$env:DUMBLEFX_API_URL = "https://api.ejemplo.invalid"
+$env:DUMBLEFX_API_KEY = "REEMPLAZAR_POR_TU_CLAVE"
+java -jar target\dumblefx-fat.jar
+```
+
+Si la ruta contiene espacios, enciérrala entre comillas. Para abrir la aplicación sin ventana de consola, usa `javaw` en lugar de `java`.
+
+#### En Linux (bash)
+
+```bash
+java -jar ruta\dumblefx_v1.jar
+```
+
+Con variables de entorno:
+
+```bash
+export DUMBLEFX_API_URL="https://api.ejemplo.invalid"
+export DUMBLEFX_API_KEY="REEMPLAZAR_POR_TU_CLAVE"
+java -jar ruta\dumblefx_v1.jar
+```
+
+No hace falta `chmod +x` para ejecutarlo con `java -jar`. JavaFX necesita un entorno gráfico (X11 o Wayland), así que no funciona en un servidor sin escritorio. Si falla por bibliotecas gráficas ausentes, instala GTK 3 con el gestor de paquetes de tu distribución (por ejemplo `sudo apt install libgtk-3-0`).
+
+#### Notas comunes
+
+- **Configuración:** `config.properties` no se empaqueta dentro del jar (el `pom.xml` lo excluye). Usa `-Ddumblefx.config=...` o variables de entorno; si no, la aplicación busca el archivo respecto al directorio desde el que lanzas el comando y mostrará el formulario inicial.
+- **Seguridad:** no escribas la clave real en scripts ni en el historial compartido de la terminal si el equipo lo usan otras personas.
+- Si aparece el error *«faltan componentes de JavaFX»*, el jar no es un fatjar completo o se ha arrancado una clase que extiende `Application` directamente. El punto de entrada debe ser `Launcher`, declarado como `Main-Class` en el manifiesto.
 
 ## 11. Problemas habituales
 
