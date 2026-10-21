@@ -47,7 +47,10 @@ public final class ApiClient {
     private JsonNode request(String method, String url, Matricula body) throws Exception {
         String key = ApiConfig.key();
         if (key.isBlank()) throw new IllegalStateException(I18n.text("api.key"));
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
+        URI uri = URI.create(url);
+        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+                .version("https".equalsIgnoreCase(uri.getScheme())
+                        ? HttpClient.Version.HTTP_2 : HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofSeconds(20)).header("Accept", "application/json")
                 .header("X-API-Key", key);
         if (body != null) builder.header("Content-Type", "application/json; charset=UTF-8");
