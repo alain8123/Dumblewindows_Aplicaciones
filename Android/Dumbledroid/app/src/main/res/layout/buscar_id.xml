@@ -19,17 +19,17 @@ Los botones de ayuda y vuelta llaman a boton_ayuda_id y mostrar_menu.
         android:id="@+id/imageView"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginStart="50dp"
         android:layout_marginTop="30dp"
-        android:layout_marginLeft="16dp"
         android:background="@drawable/bg_boton_plata"
         android:contentDescription="@string/flecha_menu"
         android:onClick="mostrar_menu"
         android:padding="12dp"
         android:src="@android:drawable/ic_menu_revert"
-        app:tint="@color/plata_clara"
+        android:tooltipText="@string/volver"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:tooltipText="@string/volver"/>
+        app:tint="@color/plata_clara" />
 
     <ImageView
         android:id="@+id/boton_ayuda"
