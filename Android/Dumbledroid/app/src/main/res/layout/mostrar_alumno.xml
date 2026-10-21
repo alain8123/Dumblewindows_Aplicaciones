@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Ficha individual que rellena MainActivity.mostrarDetalleAlumno.
+Los IDs detalle_* enlazan foto, nombre, alias, casa y demás campos con Kotlin.
+Coil carga la imagen desde su URL; el resto se asigna a TextView. ScrollView
+permite desplazar la ficha cuando su contenido no cabe en la pantalla.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/negro"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <ImageView
+            android:id="@+id/detalle_imagen"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_boton_plata"
+            android:contentDescription="@string/foto_alumno"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ejemplo"
+            tools:ignore="Suspicious0dp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nombre_y_apellido"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_nombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/plata_brillo"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/alias"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_alias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/plata"
+            android:textSize="20sp"
+            android:textStyle="italic"
+            android:layout_marginBottom="14dp"/>
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/casa"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_casa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:paddingBottom="12dp"
+            android:textColor="@color/plata_oscura"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:textAllCaps="true" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/especie"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_especie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/genero"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_genero"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/fecha_de_nacimiento"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_fecha_nacimiento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/patronus"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_patronus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nacionalidad"
+            android:textColor="@color/color_txt"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/detalle_nacionalidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/plata_clara"
+            android:textSize="16sp" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/BotonPlata"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="30dp"
+            android:onClick="mostrar_menu"
+            android:text="@string/volver"
+            android:tooltipText="@string/volver"/>
+
+    </LinearLayout>
+</ScrollView>

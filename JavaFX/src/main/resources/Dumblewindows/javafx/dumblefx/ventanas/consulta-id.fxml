@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Consulta un identificador y presenta el detalle del estudiante seleccionado.
+     fx:id enlaza controles con el controlador; onAction referencia sus métodos.
+     Los textos con % son claves de traducción y styleClass remite a app.css. -->
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="operationPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Dumblewindows.javafx.dumblefx.controllers.StudentController" spacing="18" styleClass="card" maxWidth="Infinity" maxHeight="Infinity">
+  <Label text="%id.title" styleClass="card-title" />
+  <Label text="%id.hint" styleClass="hint" />
+  <HBox spacing="10"><TextField fx:id="idField" promptText="%field.id" onAction="#findId" /><Button text="%action.search" onAction="#findId" styleClass="primary"><tooltip><Tooltip text="%tooltip.findId" /></tooltip></Button></HBox>
+  <Label fx:id="result" text="%result.initial" wrapText="true" styleClass="result" maxWidth="Infinity" />
+  <Label fx:id="status" text="%status.ready" styleClass="status" />
+</VBox>

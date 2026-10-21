@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Coordenadas del proyecto -->
+    <groupId>alain.HolaMundo</groupId>
+    <artifactId>dumbleFX</artifactId>
+    <version>1.0</version>
+
+    <!-- Propiedades -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>21</java.version>
+        <javafx.version>21.0.6</javafx.version>
+        <jackson.version>2.17.2</jackson.version>
+    </properties>
+
+    <!-- Dependencias -->
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!--
+            ============================================================
+            [FAT JAR MULTIPLATAFORMA] Librerías nativas de JavaFX
+            ============================================================
+            JavaFX incluye código nativo (.dll en Windows, .so en Linux).
+            Maven, por defecto, solo descarga las nativas del sistema donde
+            se compila. Para que UN SOLO jar funcione en Windows y en Linux
+            se declaran explícitamente los módulos que contienen código
+            nativo (javafx-base y javafx-graphics) y los que se usan
+            (controls y fxml) con los classifiers "win" y "linux".
+
+            Las dependencias sin classifier de arriba se mantienen intactas.
+            Si se necesita también macOS, añadir classifier "mac" (Intel)
+            y/o "mac-aarch64" (Apple Silicon).
+        -->
+
+        <!-- ===== WINDOWS ===== -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+
+        <!-- ===== LINUX ===== -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>linux</classifier>
+        </dependency>
+    </dependencies>
+
+    <!-- Build -->
+    <build>
+        <!-- Se excluye config.properties para no distribuir las credenciales dentro del artefacto. -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/config.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
+        <!-- Compilación con Java 21 y ejecución de Launcher mediante javafx:run. -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>Dumblewindows.javafx.dumblefx.Launcher</mainClass>
+                </configuration>
+            </plugin>
+
+            <!--
+                ============================================================
+                [FAT JAR] maven-shade-plugin
+                ============================================================
+                Empaqueta tu código + TODAS las dependencias (JavaFX de
+                Windows y Linux, Jackson...) en un único .jar ejecutable.
+                Se ejecuta automáticamente en la fase "package":
+                    mvn clean package
+                Resultado en target/:
+                    dumbleFX-1.0.jar      -> jar normal (solo tu código)
+                    dumbleFX-1.0-all.jar  -> FAT JAR (úsalo para distribuir)
+                Ejecutar (igual en Windows y Linux):
+                    java -jar target/dumbleFX-1.0-all.jar
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- No genera el dependency-reduced-pom.xml en la raíz del proyecto. -->
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+
+                            <!-- Mantiene el jar normal y añade el fat jar con sufijo "-all". -->
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
+
+                            <transformers>
+                                <!--
+                                    Escribe el MANIFEST.MF con la clase principal.
+                                    IMPORTANTE: debe ser el Launcher (clase que NO extiende
+                                    Application). Si se pusiera directamente la clase
+                                    Application de JavaFX, al ejecutar con "java -jar"
+                                    daría: "Error: faltan componentes de runtime de JavaFX".
+                                -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>Dumblewindows.javafx.dumblefx.Launcher</mainClass>
+                                    <manifestEntries>
+                                        <!-- Necesario para jars "multi-release" como Jackson. -->
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+
+                                <!-- Fusiona los ficheros META-INF/services de todas las librerías (SPI). -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+
+                            <filters>
+                                <!--
+                                    Elimina firmas digitales de jars de terceros (provocarían
+                                    "Invalid signature file digest") y los module-info.class,
+                                    que no tienen sentido dentro de un fat jar.
+                                -->
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

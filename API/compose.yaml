@@ -1,0 +1,71 @@
+services:
+  api:
+    build: .
+    ports: ["${IP_API}:${API_PORT}:8000"]
+    environment:
+      API_ACCESS_KEY: "${API_ACCESS_KEY}"
+      MARIADB_URL: "mysql+pymysql://hogwarts_app:${DB_APP_PASSWORD}@mariadb:3306/hogwarts"
+      CACHE_PATH: /data/cache.sqlite3
+      CACHE_TTL_SECONDS: "86400"
+      HISTORY_CSV_DIR: /app/data
+      JAVA_HOME: /opt/java/openjdk
+      DERBY_URL: "jdbc:derby://derby:1527//data/hogwarts;create=true"
+      HSQLDB_URL: "jdbc:hsqldb:hsql://hsqldb:9001/hogwarts"
+      H2_URL: "jdbc:h2:tcp://h2:9092//data/hogwarts"
+      ORACLE_HOST: oracle
+      ORACLE_PORT: "1521"
+      ORACLE_SERVICE: FREEPDB1
+      ORACLE_USER: hogwarts_app
+      ORACLE_PASSWORD: "${DB_APP_PASSWORD}"
+    volumes: [api_cache:/data]
+    depends_on:
+      mariadb: {condition: service_healthy}
+      oracle: {condition: service_healthy}
+      derby: {condition: service_started}
+      hsqldb: {condition: service_started}
+      h2: {condition: service_started}
+  mariadb:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+      MARIADB_DATABASE: hogwarts
+      MARIADB_USER: hogwarts_app
+      MARIADB_PASSWORD: "${DB_APP_PASSWORD}"
+    volumes: [mariadb_data:/var/lib/mysql, ./init/mariadb.sql:/docker-entrypoint-initdb.d/001-mariadb.sql:ro]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  derby:
+    build: ./db-image
+    environment: {DB_ENGINE: derby}
+    volumes: [derby_data:/data]
+  hsqldb:
+    build: ./db-image
+    environment: {DB_ENGINE: hsqldb}
+    volumes: [hsqldb_data:/data]
+  h2:
+    build: ./db-image
+    environment: {DB_ENGINE: h2}
+    volumes: [h2_data:/data]
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    environment:
+      ORACLE_PASSWORD: "${ORACLE_ADMIN_PASSWORD}"
+      APP_USER: hogwarts_app
+      APP_USER_PASSWORD: "${DB_APP_PASSWORD}"
+    volumes: [oracle_data:/opt/oracle/oradata]
+    healthcheck:
+      test: [CMD-SHELL, healthcheck.sh]
+      interval: 15s
+      timeout: 10s
+      retries: 60
+      start_period: 120s
+volumes:
+  api_cache:
+  mariadb_data:
+  derby_data:
+  hsqldb_data:
+  h2_data:
+  oracle_data:

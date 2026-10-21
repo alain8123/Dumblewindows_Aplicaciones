@@ -1,0 +1,65 @@
+<!--
+Textos por defecto de la interfaz, en español. Kotlin usa getString(R.string...)
+y los XML usan @string/.... Las traducciones deben conservar los mismos nombres.
+Los textos escritos directamente en Kotlin no se traducen con estos recursos.
+-->
+<resources>
+    <string name="app_name">Dumbledroid</string>
+    <string name="formato_id">CC-NNN-AAA</string>
+    <string name="hechizo_buscar">Buscar</string>
+    <string name="buscar_por_id">Buscar por ID</string>
+    <string name="buscar_por_datos">Buscar por Datos</string>
+    <string name="flecha_menu">Flecha para volver al menu</string>
+    <string name="casa">Casa</string>
+    <string name="nombre">Nombre</string>
+    <string name="volver">Volver</string>
+    <string name="foto_alumno">foto del alumno</string>
+    <string name="coincidencias">Coincidencias</string>
+    <string name="idioma">Idioma: </string>
+    <string name="escribe_un_id">Escribe un ID</string>
+    <string name="buscando">Buscando...</string>
+    <string name="error">Error: %1$s</string>
+    <string name="rellena_al_menos_un_campo">Rellena al menos un campo</string>
+    <string name="sin_resultados">Sin resultados</string>
+    <string name="el_id_no_cumple_el_formato">El ID no cumple el formato</string>
+    <string name="boton_ayuda_formato_id">Boton ayuda formato id</string>
+    <string name="ayuda_formato_del_id">Ayuda formato del ID</string>
+    <string name="el_formato_del_id_es">El formato del ID es:</string>
+    <string name="las_2_primeras_x_son_las_iniciales_de_la_casa">Las 2 C son las iniciales de la casa</string>
+    <string name="las_3_primeras_x_son_las_iniciales_del_nombre">Las 3 N son las iniciales del nombre</string>
+    <string name="las_3_ultimas_x_son_las_iniciales_del_apellido">Las 3 A son las iniciales del apellido</string>
+    <string name="por_ejemplo_el_estudiante_harry_james_potter_seria">Por ejemplo, el estudiante Harry James Potter seria:</string>
+    <string name="estudiante_con_id_repetido">En caso de haber estudiantes con ID repetido estos tendran es su ID un prefijo como \'-01\' pero si los buscas sin prefijo saldra un listado con todos los que comparten el ID</string>
+    <string name="ayuda_de_busqueda_por_datos">Ayuda de busqueda por datos</string>
+    <string name="al_buscar_por_datos_introducir_el_campo_de_la_casa_es_opcional">Al buscar por datos introducir el campo de la Casa es opcional</string>
+    <string name="buscara_la_coincidencia_de_los_caracteres">El campo de Nombre es obligatorio y se buscara la coincidencia de los caracteres en el nombre y apellido de los estudiantes</string>
+    <string name="ejemplo">"Ejemplo: "</string>
+    <string name="al_buscar_ivan_te_muestra">Al buscar ivan te muestra:</string>
+    <string name="el_nombre_solo_puede_contener_letras_espacios_y_ap_strofos">El nombre solo puede contener letras, espacios y apóstrofos</string>
+    <string name="la_casa_solo_puede_contener_letras_y_espacios">La casa solo puede contener letras y espacios</string>
+    <string name="ultimo_consultado">Último consultado</string>
+    <string name="nombre_y_apellido">Nombre y apellido</string>
+    <string name="alias">Alias</string>
+    <string name="especie">Especie</string>
+    <string name="genero">Genero</string>
+    <string name="fecha_de_nacimiento">Fecha de nacimiento</string>
+    <string name="patronus">Patronus</string>
+    <string name="nacionalidad">Nacionalidad</string>
+    <string name="bloque_informacion_estudiante">Bloque informacion estudiante</string>
+    <string name="boton_de_busqueda">Boton de busqueda</string>
+    <string name="insertar_id">Insertar id</string>
+    <string name="insertar_nombre">Insertar nombre</string>
+    <string name="insertar_casa">Insertar casa</string>
+    <string name="mostrado_de_cache">Mostrado de cache</string>
+    <string name="mostrado_de_internet">Mostrado de Internet</string>
+    <string name="error_sin_conexion">No hay conexión a Internet. Comprueba tu red e inténtalo de nuevo</string>
+    <string name="error_timeout">El servidor tarda demasiado en responder. Inténtalo de nuevo en unos segundos</string>
+    <string name="error_no_encontrado">No se ha encontrado el recurso solicitado en el servidor</string>
+    <string name="error_servidor">El servidor está teniendo problemas. Inténtalo más tarde</string>
+    <string name="error_datos">Error al procesar los datos recibidos del servidor</string>
+    <string name="error_desconocido">Ha ocurrido un error inesperado. Inténtalo de nuevo</string>
+    <string name="abrir_el_ltimo_estudiante_consultado">Abrir el último estudiante consultado</string>
+    <string name="busqueda_mediante_datos">Busqueda mediante Datos</string>
+    <string name="busqueda_mediante_id">Busqueda mediante ID</string>
+    <string name="selector_de_idioma">Selector de idioma</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permite las consultas HTTP y cargar fotos. No solicita un permiso en tiempo de ejecución. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Configuración global: tema, iconos y reglas de respaldo.
+         usesCleartextTraffic permite HTTP sin cifrar; no obliga a usarlo.
+         La URL actual de la API se define en Constantes.kt y utiliza HTTPS. -->
+    <application
+        android:usesCleartextTraffic="true"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/icono"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/icono"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Dumbledroid">
+        <!-- Una sola Activity contiene menú, formularios, lista y detalle.
+             MAIN + LAUNCHER hace que Android la abra desde el icono de la aplicación. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Estilos visuales reutilizables por las vistas. Agrupan atributos de apariencia;
+no realizan consultas ni cambian los datos del estudiante.
+-->
+<resources>
+
+    <!-- ============ BOTÓN PRINCIPAL ============ -->
+    <style name="BotonPlata" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/bg_boton_plata</item>
+        <item name="android:textColor">@color/plata_clara</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+    </style>
+
+    <!-- ============ CAMPO DE TEXTO ============ -->
+    <style name="InputPlata">
+        <item name="android:background">@drawable/bg_input_plata</item>
+        <item name="android:textColor">@color/plata_clara</item>
+        <item name="android:textColorHint">@color/plata_oscura</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:minHeight">52dp</item>
+    </style>
+
+    <!-- ============ TÍTULO ============ -->
+    <style name="TituloPlata">
+        <item name="android:textColor">@color/plata_brillo</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.05</item>
+    </style>
+
+    <!-- ============ TEXTO SECUNDARIO ============ -->
+    <style name="TextoPlata">
+        <item name="android:textColor">@color/plata</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+</resources>
