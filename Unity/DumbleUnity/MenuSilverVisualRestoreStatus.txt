@@ -1,0 +1,1 @@
+SUCCESS: Original menu crest, motto, labels and silver details restored without house names; buttons unchanged; prefab connections preserved; no prefab asset written. Scene saved. Backup: ThemeBackups/MenuVisualRestore_20261014_084105_543
