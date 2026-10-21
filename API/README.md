@@ -50,9 +50,9 @@ Requisitos: Docker Desktop con contenedores Linux, Python 3 para generar la conf
 3. Valida y arranca el proyecto:
 
    ```powershell
-   docker compose -p API config -q
-   docker compose -p API up -d --build
-   docker compose -p API ps
+   docker compose -p api config -q
+   docker compose -p api up -d --build
+   docker compose -p api ps
    ```
 
    El primer arranque descarga imágenes, inicia cinco motores y carga los CSV en las tablas históricas vacías y `Central.csv` en MariaDB si no hay matrículas. Puede tardar varios minutos.
@@ -82,10 +82,10 @@ Consulta `/docs` para los campos exactos, parámetros y respuestas actuales. La 
 ## Mantenimiento y límites
 
 ```powershell
-docker compose -p API logs --tail=100 api
-docker compose -p API stop
-docker compose -p API start
-docker compose -p API down
+docker compose -p api logs --tail=100 api
+docker compose -p api stop
+docker compose -p api start
+docker compose -p api down
 ```
 
 `down` conserva los volúmenes. No uses `down -v` salvo que quieras borrar permanentemente las bases y la caché de esta instalación.
