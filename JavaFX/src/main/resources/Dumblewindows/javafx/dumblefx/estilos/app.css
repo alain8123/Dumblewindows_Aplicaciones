@@ -1,0 +1,213 @@
+/* Estilos base. Los tamaños em son relativos a la fuente heredada. */
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 1em;
+    -fx-background-color: #f3f6fb;
+}
+/* Menú lateral y estados de los botones de navegación. */
+.sidebar {
+    -fx-padding: 30 18;
+    -fx-background-color: #151414;
+}
+.brand {
+    -fx-text-fill: white;
+    -fx-font-size: 2em;
+    -fx-font-weight: bold;
+}
+.eyebrow {
+    -fx-text-fill: #9fb3cc;
+    -fx-font-size: 0.714286em;
+    -fx-font-weight: bold;
+}
+.side-note {
+    -fx-text-fill: #9fb3cc;
+    -fx-font-size: 0.857143em;
+}
+
+#lbl_SideText,#lbl_PaneText,#lbl_SideNote{
+    -fx-text-fill: #75682c;
+}
+
+.sidebar .separator .line {
+    -fx-border-color: #5f5f60;
+}
+.nav-button { -fx-alignment: CENTER_LEFT;
+    -fx-background-color: transparent;
+    -fx-text-fill: #e5edf7;
+    -fx-background-radius: 10;
+    -fx-padding: 13 14;
+    -fx-cursor: hand;
+}
+.nav-button:hover {
+    -fx-background-color: #575759;
+}
+.nav-button:focused {
+    -fx-border-color: #f1d48b;
+    -fx-border-radius: 10;
+}
+.nav-button {
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+.nav-button:selected {
+    -fx-background-color: #858592;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.nav-button:selected:hover {
+    -fx-background-color: #9696a3;
+}
+/* Espaciado del contenido y jerarquía de títulos y formularios. */
+.workspace {
+    -fx-padding: 34;
+}
+.overline {
+    -fx-text-fill: #61748c;
+    -fx-font-size: 0.857143em;
+    -fx-font-weight: bold;
+}
+.page-title {
+    -fx-text-fill: #162b48;
+    -fx-font-size: 1.928571em;
+    -fx-font-weight: bold;
+}
+.card { -fx-padding: 28;
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: #e1e8f0;
+    -fx-border-radius: 16;
+}
+.card-title {
+    -fx-text-fill: #223956;
+    -fx-font-size: 1.357143em;
+    -fx-font-weight: bold;
+}
+.hint {
+    -fx-text-fill: #64768d;
+}
+.field-label {
+    -fx-text-fill: #344b67;
+    -fx-font-weight: bold;
+}
+/* Campos de entrada y señal visual de foco. */
+.text-field {
+    -fx-background-color: #f9fbfe;
+    -fx-border-color: #ccd8e5;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12;
+}
+.text-field:focused {
+    -fx-border-color: #3776cd;
+}
+/* Botones comunes y variantes de acción principal, secundaria y destructiva. */
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-padding: 10 17;
+}
+.primary {
+    -fx-background-color: #575759;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.primary:hover {
+    -fx-background-color: #174f99;
+}
+.danger {
+    -fx-background-color: #bf3445;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.danger:hover {
+    -fx-background-color: #a52b39;
+}
+.secondary {
+    -fx-background-color: #e9eff7;
+    -fx-text-fill: #27415e;
+}
+/* Mensajes de operación, detalle del estudiante y resultados tabulares. */
+.status {
+    -fx-text-fill: #385775;
+    -fx-font-size: 0.857143em;
+}
+.result {
+    -fx-padding: 18;
+    -fx-background-color: #eef5ff;
+    -fx-background-radius: 10;
+    -fx-text-fill: #0a0a0a;
+}
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #dce5f0;
+    -fx-border-radius: 8;
+}
+.table-view .column-header-background {
+    -fx-background-color: #eaf0f7;
+}
+
+/* Apariencia del selector de idioma. */
+.language-selector {
+    -fx-background-color: #e9eff7;
+    -fx-background-radius: 8;
+    -fx-padding: 4 6;
+    -fx-cursor: hand;
+}
+.language-selector .list-cell {
+    -fx-text-fill: #27415e;
+}
+/* Tema sobre imagen local: estas reglas posteriores prevalecen cuando coinciden los selectores. */
+.app {
+    -fx-background-color: #101d30;
+    -fx-background-image: url("../imagenes/hogwarts-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+.app .workspace {
+    -fx-background-color: rgba(9, 18, 32, 0.18);
+}
+.app .sidebar {
+    -fx-background-color: rgba(14, 17, 24, 0.94);
+}
+.app .card {
+    -fx-background-color: rgba(255, 255, 255, 0.84);
+    -fx-border-color: rgba(225, 232, 240, 0.65);
+}
+.app .page-title {
+    -fx-text-fill: #fff7df;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 8, 0.2, 0, 2);
+}
+.app #lbl_PaneText {
+    -fx-text-fill: #f1d48b;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 6, 0.2, 0, 1);
+}
+/* Iconos circulares de ayuda y créditos; dimensiones proporcionales a la fuente. */
+.info-icon {
+    -fx-alignment: center;
+    -fx-min-width: 2em;
+    -fx-pref-width: 2em;
+    -fx-max-width: 2em;
+    -fx-min-height: 2em;
+    -fx-pref-height: 2em;
+    -fx-max-height: 2em;
+    -fx-padding: 0;
+    -fx-background-radius: 1000;
+    -fx-border-radius: 1000;
+    -fx-border-color: #f1d48b;
+    -fx-background-color: rgba(14, 17, 24, 0.90);
+    -fx-text-fill: #fff7df;
+    -fx-font-size: 1.142857em;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.info-icon:hover {
+    -fx-background-color: #575759;
+}
+.info-tooltip {
+    -fx-font-size: 1em;
+    -fx-padding: 1em;
+    -fx-background-color: #182438;
+    -fx-text-fill: #fff7df;
+    -fx-background-radius: 8;
+}
