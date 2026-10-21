@@ -317,6 +317,8 @@ class MainActivity : AppCompatActivity() {
                 val lista = repository.getEstudiantesPorId(base, id)
 
                 withContext(Dispatchers.Main) {
+                    ocultarCargando()
+                    
                     when {
                         lista.isEmpty() -> Toast.makeText(
                             this@MainActivity,
@@ -459,6 +461,8 @@ class MainActivity : AppCompatActivity() {
                 val lista = repository.getEstudiantesPorDatos(nombre, casa)
 
                 withContext(Dispatchers.Main) {
+                    ocultarCargando()
+
                     when {
                         lista.isEmpty() -> Toast.makeText(
                             this@MainActivity,
