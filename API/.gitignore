@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+.api-secret.env
+.venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log

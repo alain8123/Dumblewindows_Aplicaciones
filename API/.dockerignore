@@ -1,0 +1,11 @@
+.env
+.env.*
+.api-secret.env
+.venv
+.git
+__pycache__
+*.pyc
+*.zip
+*.bak
+README.md
+MANIFEST_SHA256.json
